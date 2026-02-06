@@ -1,0 +1,101 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: medpulse-postgres
+    environment:
+      POSTGRES_DB: medpulse
+      POSTGRES_USER: medpulse
+      POSTGRES_PASSWORD: medpulse_secret
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - medpulse-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U medpulse']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: medpulse-redis
+    ports:
+      - '6379:6379'
+    networks:
+      - medpulse-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medpulse-backend
+    ports:
+      - '3001:3001'
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://medpulse:medpulse_secret@postgres:5432/medpulse?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: medpulse-jwt-secret-change-in-production
+      JWT_REFRESH_SECRET: medpulse-jwt-refresh-secret-change-in-production
+      JWT_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 7d
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:3000
+      UPLOAD_DIR: /app/uploads
+      SMTP_HOST: smtp.ethereal.email
+      SMTP_PORT: 587
+      SMTP_USER: ''
+      SMTP_PASS: ''
+      SMTP_FROM: noreply@medpulse.com
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - medpulse-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medpulse-frontend
+    ports:
+      - '3000:80'
+    depends_on:
+      - backend
+    networks:
+      - medpulse-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: medpulse-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@medpulse.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+    networks:
+      - medpulse-network
+    profiles:
+      - dev
+
+volumes:
+  pgdata:
+  uploads:
+
+networks:
+  medpulse-network:
+    driver: bridge

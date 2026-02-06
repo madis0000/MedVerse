@@ -1,0 +1,84 @@
+{
+  "app": {
+    "name": "MedPulse",
+    "tagline": "Medical Practice Management"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "appointments": "Appointments",
+    "consultations": "Consultations",
+    "prescriptions": "Prescriptions",
+    "laboratory": "Laboratory",
+    "billing": "Billing",
+    "documents": "Documents",
+    "settings": "Settings",
+    "users": "Staff Management",
+    "auditLog": "Audit Log"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email"
+  },
+  "patient": {
+    "title": "Patients",
+    "addNew": "Add Patient",
+    "mrn": "MRN",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "dob": "Date of Birth",
+    "gender": "Gender",
+    "bloodType": "Blood Type",
+    "status": "Status"
+  },
+  "appointment": {
+    "title": "Appointments",
+    "book": "Book Appointment",
+    "calendar": "Calendar",
+    "waitingQueue": "Waiting Queue",
+    "checkIn": "Check In",
+    "visitType": "Visit Type"
+  },
+  "consultation": {
+    "title": "Consultation",
+    "subjective": "Subjective",
+    "objective": "Objective",
+    "assessment": "Assessment",
+    "plan": "Plan",
+    "vitals": "Vitals",
+    "diagnoses": "Diagnoses",
+    "complete": "Complete Consultation"
+  },
+  "billing": {
+    "title": "Billing",
+    "invoice": "Invoice",
+    "payment": "Payment",
+    "amount": "Amount",
+    "total": "Total"
+  }
+}
