@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 
 interface CashFlowData {
   month: string;
@@ -42,7 +43,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">{item.month}</span>
                 <span className={item.net >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  {t('finance.cashFlow.net')}: ${item.net.toLocaleString()}
+                  {t('finance.cashFlow.net')}: {formatCurrency(item.net)}
                 </span>
               </div>
               <div className="space-y-1">
@@ -54,7 +55,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                       style={{ width: `${(item.inflows / maxVal) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs w-20 text-right">${item.inflows.toLocaleString()}</span>
+                  <span className="text-xs w-20 text-right">{formatCurrency(item.inflows)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-muted-foreground w-16">{t('finance.cashFlow.outflow')}</span>
@@ -64,7 +65,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                       style={{ width: `${(item.outflows / maxVal) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs w-20 text-right">${item.outflows.toLocaleString()}</span>
+                  <span className="text-xs w-20 text-right">{formatCurrency(item.outflows)}</span>
                 </div>
               </div>
             </div>

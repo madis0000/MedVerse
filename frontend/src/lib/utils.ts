@@ -31,7 +31,7 @@ export function formatDateTime(date: string | Date) {
 export function formatCurrency(amount: number) {
   return new Intl.NumberFormat(getLocale(), {
     style: 'currency',
-    currency: 'USD',
+    currency: 'DZD',
   }).format(amount);
 }
 

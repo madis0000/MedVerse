@@ -251,7 +251,7 @@ export function FinanceExpensesPage() {
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground">{t('finance.expenses.categories')}</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('finance.expenses.categoriesCount')}</p>
               <p className="text-2xl font-bold mt-1">{(categories || []).length}</p>
             </CardContent>
           </Card>

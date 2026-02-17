@@ -5,8 +5,11 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Save, ChevronLeft, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
+import { CalendarDays, Save, ChevronLeft, ChevronRight, Loader2, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 const MONTH_KEYS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
@@ -14,12 +17,12 @@ const MONTH_KEYS = ['january', 'february', 'march', 'april', 'may', 'june', 'jul
 const DAY_OF_WEEK_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 const DEFAULT_EXPENSES = [
-  { categoryName: 'Rent & Facilities', amount: 40000, description: 'Loyer' },
-  { categoryName: 'Professional Services', amount: 3000, description: 'Impots' },
-  { categoryName: 'Insurance', amount: 5400, description: 'CASNOS' },
-  { categoryName: 'Staff Salaries', amount: 10000, description: 'Salaire Base Assistante' },
-  { categoryName: 'Insurance', amount: 2700, description: 'CNAS Assistante' },
-  { categoryName: 'Maintenance', amount: 1000, description: 'Ménage' },
+  { categoryName: 'Rent & Facilities', amount: 0, description: 'Loyer' },
+  { categoryName: 'Professional Services', amount: 0, description: 'Impots' },
+  { categoryName: 'Insurance', amount: 0, description: 'CASNOS' },
+  { categoryName: 'Staff Salaries', amount: 0, description: 'Salaire Base Assistante' },
+  { categoryName: 'Insurance', amount: 0, description: 'CNAS Assistante' },
+  { categoryName: 'Maintenance', amount: 0, description: 'Ménage' },
 ];
 
 const INPUT_CLASS = "h-8 text-right text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
@@ -159,20 +162,41 @@ export function FinanceDataEntryPage() {
     });
   }
 
-  function updateExpense(index: number, field: keyof ExpenseEntry, value: string) {
-    setExpenses((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
+  // Expense dialog state
+  const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
+  const [editingExpenseIdx, setEditingExpenseIdx] = useState<number | null>(null);
+  const [expenseForm, setExpenseForm] = useState({ categoryName: '', description: '', amount: '' });
+
+  function openEditExpense(idx: number) {
+    const e = expenses[idx];
+    setExpenseForm({ categoryName: e.categoryName, description: e.description, amount: e.amount });
+    setEditingExpenseIdx(idx);
+    setExpenseDialogOpen(true);
   }
 
-  function addExpenseRow() {
-    setExpenses((prev) => [...prev, { categoryName: '', amount: '', description: '' }]);
+  function openNewExpense() {
+    setExpenseForm({ categoryName: '', description: '', amount: '' });
+    setEditingExpenseIdx(null);
+    setExpenseDialogOpen(true);
   }
 
-  function removeExpenseRow(index: number) {
-    setExpenses((prev) => prev.filter((_, i) => i !== index));
+  function saveExpenseForm() {
+    if (!expenseForm.categoryName.trim()) return;
+    if (editingExpenseIdx !== null) {
+      setExpenses((prev) => {
+        const updated = [...prev];
+        updated[editingExpenseIdx] = { ...expenseForm };
+        return updated;
+      });
+    } else {
+      setExpenses((prev) => [...prev, { ...expenseForm }]);
+    }
+    setExpenseDialogOpen(false);
+  }
+
+  function removeExpense(idx: number) {
+    setExpenses((prev) => prev.filter((_, i) => i !== idx));
+    setExpenseDialogOpen(false);
   }
 
   // Totals
@@ -360,7 +384,6 @@ export function FinanceDataEntryPage() {
                     <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.new')}</th>
                     <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.patNum')}</th>
                     <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.fullPaid')}</th>
-                    <th className="text-center py-2.5 px-2 w-[72px]">{t('finance.dataEntry.columns.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -427,15 +450,6 @@ export function FinanceDataEntryPage() {
                           onChange={(e) => updateDay(idx, 'fullPricePatients', e.target.value)}
                         />
                       </td>
-                      <td className="py-1 px-2 text-center">
-                        {entry.isWeekend ? (
-                          <Badge variant="outline" className="text-[10px]">{t('finance.dataEntry.weekend')}</Badge>
-                        ) : entry.hasData ? (
-                          <Badge className="text-[10px] bg-green-600">{t('finance.dataEntry.saved')}</Badge>
-                        ) : parseFloat(entry.revenue) > 0 ? (
-                          <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600">{t('finance.dataEntry.new')}</Badge>
-                        ) : null}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -447,7 +461,6 @@ export function FinanceDataEntryPage() {
                     <td className="py-2 px-1 text-right">{newPatientsTotal}</td>
                     <td className="py-2 px-1 text-right">{totalPatientsTotal}</td>
                     <td className="py-2 px-1 text-right">{fullPriceTotal}</td>
-                    <td></td>
                   </tr>
                   {workingDaysWithData > 0 && (
                     <tr className="text-muted-foreground text-xs">
@@ -457,7 +470,6 @@ export function FinanceDataEntryPage() {
                       <td className="py-1 px-1 text-right">{(newPatientsTotal / workingDaysWithData).toFixed(1)}</td>
                       <td className="py-1 px-1 text-right">{(totalPatientsTotal / workingDaysWithData).toFixed(1)}</td>
                       <td className="py-1 px-1 text-right">{(fullPriceTotal / workingDaysWithData).toFixed(1)}</td>
-                      <td></td>
                     </tr>
                   )}
                 </tfoot>
@@ -471,77 +483,107 @@ export function FinanceDataEntryPage() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle>{t('finance.dataEntry.monthlyExpenses')}</CardTitle>
-            <Button variant="outline" size="sm" onClick={addExpenseRow}>
-              + {t('finance.dataEntry.addLine')}
+            <div>
+              <CardTitle>{t('finance.dataEntry.monthlyExpenses')}</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">{t('finance.dataEntry.clickToEdit')}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={openNewExpense}>
+              <Plus className="w-4 h-4 mr-1" /> {t('finance.dataEntry.addTransaction')}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2">{t('finance.dataEntry.columns.category')}</th>
-                  <th className="text-left py-2 px-2">{t('finance.dataEntry.columns.description')}</th>
-                  <th className="text-right py-2 px-2">{t('finance.dataEntry.columns.amountDZD')}</th>
-                  <th className="w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenses.map((expense, idx) => (
-                  <tr key={idx} className="border-b hover:bg-muted/20">
-                    <td className="py-1 px-1">
-                      <Input
-                        className="h-8 text-sm"
-                        value={expense.categoryName}
-                        onChange={(e) => updateExpense(idx, 'categoryName', e.target.value)}
-                        placeholder={t('finance.dataEntry.columns.category')}
-                      />
-                    </td>
-                    <td className="py-1 px-1">
-                      <Input
-                        className="h-8 text-sm"
-                        value={expense.description}
-                        onChange={(e) => updateExpense(idx, 'description', e.target.value)}
-                        placeholder={t('finance.dataEntry.columns.description')}
-                      />
-                    </td>
-                    <td className="py-1 px-1">
-                      <Input
-                        type="number"
-                        className={INPUT_CLASS}
-                        value={expense.amount}
-                        onChange={(e) => updateExpense(idx, 'amount', e.target.value)}
-                        placeholder="0"
-                      />
-                    </td>
-                    <td className="py-1 px-1">
-                      {idx >= DEFAULT_EXPENSES.length && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-red-500"
-                          onClick={() => removeExpenseRow(idx)}
-                        >
-                          ×
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 font-bold">
-                  <td className="py-2 px-2" colSpan={2}>{t('finance.dataEntry.totalExpenses')}</td>
-                  <td className="py-2 px-2 text-right text-red-600">{formatDZD(expenseTotal)}</td>
-                  <td></td>
-                </tr>
-              </tfoot>
-            </table>
+          <div className="space-y-0">
+            {expenses.map((expense, idx) => {
+              const hasAmount = (parseFloat(expense.amount) || 0) > 0;
+              return (
+                <div
+                  key={idx}
+                  className={`flex items-center justify-between py-2.5 px-3 border-b last:border-b-0 cursor-pointer rounded-sm transition-colors ${
+                    hasAmount
+                      ? 'bg-blue-50/60 hover:bg-blue-100/60 dark:bg-blue-950/15 dark:hover:bg-blue-950/25'
+                      : 'hover:bg-muted/50'
+                  }`}
+                  onClick={() => openEditExpense(idx)}
+                >
+                  <div>
+                    <span className="text-sm font-medium">{expense.categoryName}</span>
+                    {expense.description && (
+                      <span className="text-sm text-muted-foreground ml-2">— {expense.description}</span>
+                    )}
+                  </div>
+                  <span className={`text-sm font-medium tabular-nums ${hasAmount ? '' : 'text-muted-foreground'}`}>
+                    {formatDZD(parseFloat(expense.amount) || 0)}
+                  </span>
+                </div>
+              );
+            })}
+            <div className="flex items-center justify-between py-3 px-3 border-t-2 font-bold">
+              <span>{t('finance.dataEntry.totalExpenses')}</span>
+              <span className="text-red-600 tabular-nums">{formatDZD(expenseTotal)}</span>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Expense Transaction Dialog */}
+      <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingExpenseIdx !== null
+                ? t('finance.dataEntry.editTransaction')
+                : t('finance.dataEntry.addTransaction')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>{t('finance.dataEntry.columns.category')}</Label>
+              <Input
+                value={expenseForm.categoryName}
+                onChange={(e) => setExpenseForm((f) => ({ ...f, categoryName: e.target.value }))}
+                disabled={editingExpenseIdx !== null && editingExpenseIdx < DEFAULT_EXPENSES.length}
+                placeholder={t('finance.dataEntry.columns.category')}
+              />
+            </div>
+            <div>
+              <Label>{t('finance.dataEntry.columns.description')}</Label>
+              <Input
+                value={expenseForm.description}
+                onChange={(e) => setExpenseForm((f) => ({ ...f, description: e.target.value }))}
+                disabled={editingExpenseIdx !== null && editingExpenseIdx < DEFAULT_EXPENSES.length}
+                placeholder={t('finance.dataEntry.columns.description')}
+              />
+            </div>
+            <div>
+              <Label>{t('finance.dataEntry.columns.amountDZD')}</Label>
+              <Input
+                type="number"
+                className={INPUT_CLASS}
+                value={expenseForm.amount}
+                onChange={(e) => setExpenseForm((f) => ({ ...f, amount: e.target.value }))}
+                placeholder="0"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            {editingExpenseIdx !== null && editingExpenseIdx >= DEFAULT_EXPENSES.length && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="mr-auto"
+                onClick={() => removeExpense(editingExpenseIdx)}
+              >
+                <Trash2 className="w-4 h-4 mr-1" /> {t('common.delete')}
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setExpenseDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={saveExpenseForm}>{t('common.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Net Summary */}
       <Card className={netIncome >= 0 ? 'border-green-200 bg-green-50/50 dark:bg-green-950/10' : 'border-red-200 bg-red-50/50 dark:bg-red-950/10'}>
