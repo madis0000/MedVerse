@@ -20,6 +20,11 @@ import { DocumentManagerPage } from '@/pages/documents/document-manager';
 import { UserManagementPage } from '@/pages/users/user-management';
 import { SettingsPage } from '@/pages/settings/settings-page';
 import { AuditLogPage } from '@/pages/audit-log';
+import { FinanceDashboardPage } from '@/pages/finance/finance-dashboard';
+import { FinanceDailyPage } from '@/pages/finance/finance-daily';
+import { FinanceRevenuePage } from '@/pages/finance/finance-revenue';
+import { FinanceExpensesPage } from '@/pages/finance/finance-expenses';
+import { FinanceReportsPage } from '@/pages/finance/finance-reports';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +68,11 @@ export function App() {
               <Route path="laboratory" element={<LabManagementPage />} />
               <Route path="billing" element={<InvoiceListPage />} />
               <Route path="billing/:id" element={<InvoiceDetailPage />} />
+              <Route path="finance" element={<FinanceDashboardPage />} />
+              <Route path="finance/daily" element={<FinanceDailyPage />} />
+              <Route path="finance/revenue" element={<FinanceRevenuePage />} />
+              <Route path="finance/expenses" element={<FinanceExpensesPage />} />
+              <Route path="finance/reports" element={<FinanceReportsPage />} />
               <Route path="documents" element={<DocumentManagerPage />} />
               <Route path="users" element={<UserManagementPage />} />
               <Route path="settings" element={<SettingsPage />} />

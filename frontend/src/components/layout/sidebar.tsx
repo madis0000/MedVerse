@@ -4,7 +4,7 @@ import { useSidebarStore } from '@/stores/sidebar-store';
 import { useAuthStore } from '@/stores/auth-store';
 import {
   LayoutDashboard, Users, Calendar, Stethoscope, Pill, FlaskConical,
-  Receipt, FileText, Settings, UserCog, ChevronLeft, ChevronRight, Activity,
+  Receipt, Landmark, FileText, Settings, UserCog, ChevronLeft, ChevronRight, Activity,
 } from 'lucide-react';
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { path: '/prescriptions', label: 'Prescriptions', icon: Pill, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE'] },
   { path: '/laboratory', label: 'Laboratory', icon: FlaskConical, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'LAB_TECH'] },
   { path: '/billing', label: 'Billing', icon: Receipt, roles: ['SUPER_ADMIN', 'RECEPTIONIST'] },
+  { path: '/finance', label: 'Finance', icon: Landmark, roles: ['SUPER_ADMIN'] },
   { path: '/documents', label: 'Documents', icon: FileText, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE'] },
   { path: '/users', label: 'Staff', icon: UserCog, roles: ['SUPER_ADMIN'] },
   { path: '/settings', label: 'Settings', icon: Settings, roles: ['SUPER_ADMIN'] },

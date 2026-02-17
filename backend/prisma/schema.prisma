@@ -133,6 +133,35 @@ enum DrugInteractionSeverity {
   CONTRAINDICATED
 }
 
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum DailyClosingStatus {
+  OPEN
+  CLOSED
+  RECONCILED
+}
+
+enum WriteOffReason {
+  BAD_DEBT
+  CHARITY_CARE
+  INSURANCE_ADJUSTMENT
+  ADMINISTRATIVE
+  OTHER
+}
+
 model User {
   id          String   @id @default(uuid())
   email       String   @unique
@@ -162,6 +191,11 @@ model User {
   auditLogs       AuditLog[]
   quickTexts      QuickText[]
   templates       ConsultationTemplate[] @relation("DoctorTemplates")
+  expensesCreated    Expense[]          @relation("ExpenseCreatedBy")
+  expensesApproved   Expense[]          @relation("ExpenseApprovedBy")
+  recurringExpenses  RecurringExpense[]
+  dailyClosings      DailyClosing[]
+  writeOffs          WriteOff[]
 
   @@index([email])
   @@index([role])
@@ -539,6 +573,7 @@ model Invoice {
   consultation Consultation? @relation(fields: [consultationId], references: [id])
   items        InvoiceItem[]
   payments     Payment[]
+  writeOffs    WriteOff[]
 
   @@index([patientId])
   @@index([status])
@@ -690,4 +725,121 @@ model DrugInteraction {
   @@unique([medication1Id, medication2Id])
   @@index([medication1Id])
   @@index([medication2Id])
+}
+
+model ExpenseCategory {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  icon        String?
+  color       String?
+  parentId    String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent   ExpenseCategory?  @relation("SubCategories", fields: [parentId], references: [id])
+  children ExpenseCategory[] @relation("SubCategories")
+  expenses Expense[]
+  recurringExpenses RecurringExpense[]
+
+  @@index([parentId])
+}
+
+model Expense {
+  id           String        @id @default(uuid())
+  categoryId   String
+  description  String
+  amount       Float
+  vendor       String?
+  reference    String?
+  expenseDate  DateTime
+  status       ExpenseStatus @default(PENDING)
+  approvedById String?
+  notes        String?
+  isRecurring  Boolean       @default(false)
+  recurrenceId String?
+  createdById  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  category   ExpenseCategory  @relation(fields: [categoryId], references: [id])
+  approvedBy User?            @relation("ExpenseApprovedBy", fields: [approvedById], references: [id])
+  createdBy  User             @relation("ExpenseCreatedBy", fields: [createdById], references: [id])
+  recurring  RecurringExpense? @relation(fields: [recurrenceId], references: [id])
+
+  @@index([categoryId])
+  @@index([expenseDate])
+  @@index([status])
+}
+
+model RecurringExpense {
+  id            String              @id @default(uuid())
+  categoryId    String
+  description   String
+  amount        Float
+  vendor        String?
+  frequency     RecurrenceFrequency
+  dayOfMonth    Int?
+  dayOfWeek     Int?
+  startDate     DateTime
+  endDate       DateTime?
+  isActive      Boolean             @default(true)
+  lastGenerated DateTime?
+  nextDueDate   DateTime?
+  createdById   String
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  category  ExpenseCategory @relation(fields: [categoryId], references: [id])
+  createdBy User            @relation(fields: [createdById], references: [id])
+  expenses  Expense[]
+
+  @@index([categoryId])
+  @@index([nextDueDate])
+}
+
+model DailyClosing {
+  id                    String             @id @default(uuid())
+  date                  DateTime           @unique
+  status                DailyClosingStatus @default(OPEN)
+  expectedCash          Float              @default(0)
+  actualCash            Float              @default(0)
+  expectedCard          Float              @default(0)
+  actualCard            Float              @default(0)
+  expectedInsurance     Float              @default(0)
+  actualInsurance       Float              @default(0)
+  expectedBankTransfer  Float              @default(0)
+  actualBankTransfer    Float              @default(0)
+  varianceCash          Float?
+  varianceTotal         Float?
+  invoiceCount          Int                @default(0)
+  paymentCount          Int                @default(0)
+  consultationCount     Int                @default(0)
+  notes                 String?
+  closedById            String?
+  closedAt              DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  closedBy User? @relation(fields: [closedById], references: [id])
+
+  @@index([date])
+  @@index([status])
+}
+
+model WriteOff {
+  id           String        @id @default(uuid())
+  invoiceId    String
+  amount       Float
+  reason       WriteOffReason
+  description  String?
+  approvedById String
+  createdAt    DateTime      @default(now())
+
+  invoice    Invoice @relation(fields: [invoiceId], references: [id])
+  approvedBy User    @relation(fields: [approvedById], references: [id])
+
+  @@index([invoiceId])
+  @@index([createdAt])
 }

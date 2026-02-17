@@ -250,6 +250,35 @@ async function main() {
     });
   }
 
+  // Seed Expense Categories
+  console.log('Seeding expense categories...');
+  const expenseCategories = [
+    { name: 'Rent', description: 'Office and facility rent', icon: 'building', color: '#6366f1' },
+    { name: 'Salaries', description: 'Staff salaries and wages', icon: 'users', color: '#3b82f6' },
+    { name: 'Medical Supplies', description: 'Medical supplies and consumables', icon: 'pill', color: '#10b981' },
+    { name: 'Equipment', description: 'Medical and office equipment', icon: 'monitor', color: '#f59e0b' },
+    { name: 'Utilities', description: 'Electricity, water, gas, internet', icon: 'zap', color: '#ef4444' },
+    { name: 'Insurance', description: 'Business and malpractice insurance', icon: 'shield', color: '#8b5cf6' },
+    { name: 'Marketing', description: 'Advertising and marketing expenses', icon: 'megaphone', color: '#ec4899' },
+    { name: 'IT & Software', description: 'Software licenses and IT services', icon: 'laptop', color: '#06b6d4' },
+    { name: 'Professional Services', description: 'Legal, accounting, consulting', icon: 'briefcase', color: '#84cc16' },
+    { name: 'Maintenance', description: 'Facility and equipment maintenance', icon: 'wrench', color: '#f97316' },
+    { name: 'Travel', description: 'Business travel and conferences', icon: 'plane', color: '#14b8a6' },
+    { name: 'Miscellaneous', description: 'Other uncategorized expenses', icon: 'circle', color: '#6b7280' },
+  ];
+
+  for (const cat of expenseCategories) {
+    await prisma.expenseCategory.create({
+      data: {
+        name: cat.name,
+        description: cat.description,
+        icon: cat.icon,
+        color: cat.color,
+        isActive: true,
+      },
+    });
+  }
+
   console.log('Seed completed successfully!');
 }
 

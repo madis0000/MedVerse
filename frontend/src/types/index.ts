@@ -252,3 +252,132 @@ export interface PaginatedResponse<T> {
   data: T[];
   meta: PaginationMeta;
 }
+
+// ─── Finance Types ──────────────────────────────────────────────
+
+export type ExpenseStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
+export type RecurrenceFrequency = 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+export type DailyClosingStatus = 'OPEN' | 'CLOSED' | 'RECONCILED';
+export type WriteOffReason = 'BAD_DEBT' | 'CHARITY_CARE' | 'INSURANCE_ADJUSTMENT' | 'ADMINISTRATIVE' | 'OTHER';
+
+export interface ExpenseCategory {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  parentId?: string;
+  isActive: boolean;
+  _count?: { expenses: number };
+}
+
+export interface Expense {
+  id: string;
+  categoryId: string;
+  description: string;
+  amount: number;
+  vendor?: string;
+  reference?: string;
+  expenseDate: string;
+  status: ExpenseStatus;
+  notes?: string;
+  isRecurring: boolean;
+  category?: ExpenseCategory;
+  createdBy?: { id: string; firstName: string; lastName: string };
+  approvedBy?: { id: string; firstName: string; lastName: string };
+  createdAt: string;
+}
+
+export interface RecurringExpense {
+  id: string;
+  categoryId: string;
+  description: string;
+  amount: number;
+  vendor?: string;
+  frequency: RecurrenceFrequency;
+  dayOfMonth?: number;
+  dayOfWeek?: number;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+  lastGenerated?: string;
+  nextDueDate?: string;
+  category?: ExpenseCategory;
+  createdBy?: { id: string; firstName: string; lastName: string };
+  _count?: { expenses: number };
+}
+
+export interface DailyClosing {
+  id: string;
+  date: string;
+  status: DailyClosingStatus;
+  expectedCash: number;
+  actualCash: number;
+  expectedCard: number;
+  actualCard: number;
+  expectedInsurance: number;
+  actualInsurance: number;
+  expectedBankTransfer: number;
+  actualBankTransfer: number;
+  varianceCash?: number;
+  varianceTotal?: number;
+  invoiceCount: number;
+  paymentCount: number;
+  consultationCount: number;
+  notes?: string;
+  closedBy?: { id: string; firstName: string; lastName: string };
+}
+
+export interface FinanceKPIs {
+  totalRevenue: number;
+  totalExpenses: number;
+  netProfit: number;
+  profitMargin: number;
+  outstandingAR: number;
+  outstandingCount: number;
+  collectionRate: number;
+  avgDaysToPayment: number;
+  revenueMoM: number;
+  expenseMoM: number;
+  todayRevenue: number;
+  todayExpenses: number;
+}
+
+export interface WriteOff {
+  id: string;
+  invoiceId: string;
+  amount: number;
+  reason: WriteOffReason;
+  description?: string;
+  invoice?: {
+    id: string;
+    invoiceNumber: string;
+    total: number;
+    patient?: { id: string; firstName: string; lastName: string };
+  };
+  approvedBy?: { id: string; firstName: string; lastName: string };
+  createdAt: string;
+}
+
+export interface AgingBucket {
+  label: string;
+  min: number;
+  max: number;
+  total: number;
+  count: number;
+  invoices: any[];
+}
+
+export interface ProfitLossReport {
+  period: { start: string; end: string };
+  revenue: {
+    items: Array<{ category: string; amount: number }>;
+    total: number;
+  };
+  expenses: {
+    items: Array<{ category: string; amount: number }>;
+    total: number;
+  };
+  netIncome: number;
+  profitMargin: number;
+}
