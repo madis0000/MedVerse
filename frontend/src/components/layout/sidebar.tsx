@@ -1,13 +1,45 @@
+import { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useSidebarStore } from '@/stores/sidebar-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import {
   LayoutDashboard, Users, Calendar, Stethoscope, Pill, FlaskConical,
-  Receipt, Landmark, FileText, Settings, UserCog, ChevronLeft, ChevronRight, Activity,
+  Receipt, Landmark, FileText, Settings, UserCog, ChevronLeft, ChevronRight,
+  Activity, ChevronDown, Clock, TrendingUp, Wallet, FileBarChart, PenLine,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-const navItems = [
+// --- Types ---
+
+interface NavChild {
+  path: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+interface NavItemSimple {
+  path: string;
+  label: string;
+  icon: LucideIcon;
+  roles: string[];
+  children?: undefined;
+}
+
+interface NavItemGroup {
+  path: string;
+  label: string;
+  icon: LucideIcon;
+  roles: string[];
+  children: NavChild[];
+}
+
+type NavItem = NavItemSimple | NavItemGroup;
+
+// --- Data ---
+
+const navItems: NavItem[] = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'LAB_TECH'] },
   { path: '/patients', label: 'Patients', icon: Users, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'] },
   { path: '/appointments', label: 'Appointments', icon: Calendar, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'] },
@@ -15,12 +47,160 @@ const navItems = [
   { path: '/prescriptions', label: 'Prescriptions', icon: Pill, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE'] },
   { path: '/laboratory', label: 'Laboratory', icon: FlaskConical, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE', 'LAB_TECH'] },
   { path: '/billing', label: 'Billing', icon: Receipt, roles: ['SUPER_ADMIN', 'RECEPTIONIST'] },
-  { path: '/finance', label: 'Finance', icon: Landmark, roles: ['SUPER_ADMIN'] },
+  {
+    path: '/finance',
+    label: 'Finance',
+    icon: Landmark,
+    roles: ['SUPER_ADMIN'],
+    children: [
+      { path: '/finance', label: 'Overview', icon: LayoutDashboard },
+      { path: '/finance/daily', label: 'Daily Ops', icon: Clock },
+      { path: '/finance/revenue', label: 'Revenue', icon: TrendingUp },
+      { path: '/finance/expenses', label: 'Expenses', icon: Wallet },
+      { path: '/finance/reports', label: 'Reports', icon: FileBarChart },
+      { path: '/finance/data-entry', label: 'Data Entry', icon: PenLine },
+    ],
+  },
   { path: '/documents', label: 'Documents', icon: FileText, roles: ['SUPER_ADMIN', 'DOCTOR', 'NURSE'] },
   { path: '/users', label: 'Staff', icon: UserCog, roles: ['SUPER_ADMIN'] },
   { path: '/settings', label: 'Settings', icon: Settings, roles: ['SUPER_ADMIN'] },
   { path: '/audit-log', label: 'Audit Log', icon: Activity, roles: ['SUPER_ADMIN'] },
 ];
+
+// --- NavGroup (submenu with children) ---
+
+function NavGroup({ item, isCollapsed }: { item: NavItemGroup; isCollapsed: boolean }) {
+  const location = useLocation();
+  const { openGroups, toggleGroup } = useSidebarStore();
+  const [hovered, setHovered] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isOpen = openGroups.includes(item.path);
+  const isGroupActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+
+  const handleMouseEnter = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimer.current = setTimeout(() => setHovered(false), 150);
+  };
+
+  // --- Collapsed: popover flyout ---
+  if (isCollapsed) {
+    const Icon = item.icon;
+    return (
+      <Popover open={hovered} onOpenChange={setHovered}>
+        <PopoverTrigger asChild>
+          <button
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            className={cn(
+              'flex w-full items-center justify-center rounded-lg px-2 py-2.5 text-sm font-medium transition-colors',
+              isGroupActive
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+            title={item.label}
+          >
+            <Icon className="w-5 h-5 flex-shrink-0" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          side="right"
+          sideOffset={8}
+          className="w-48 p-2"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <p className="px-2 pb-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            {item.label}
+          </p>
+          {item.children.map((child) => {
+            const ChildIcon = child.icon;
+            const isChildActive = location.pathname === child.path;
+            return (
+              <Link
+                key={child.path}
+                to={child.path}
+                onClick={() => setHovered(false)}
+                className={cn(
+                  'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                  isChildActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                )}
+              >
+                <ChildIcon className="w-4 h-4 flex-shrink-0" />
+                <span>{child.label}</span>
+              </Link>
+            );
+          })}
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
+  // --- Expanded: collapsible submenu ---
+  const Icon = item.icon;
+  return (
+    <div>
+      <button
+        onClick={() => toggleGroup(item.path)}
+        className={cn(
+          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+          isGroupActive
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        )}
+      >
+        <Icon className="w-5 h-5 flex-shrink-0" />
+        <span className="flex-1 text-left">{item.label}</span>
+        <ChevronDown
+          className={cn(
+            'w-4 h-4 transition-transform duration-300',
+            isOpen && 'rotate-180',
+          )}
+        />
+      </button>
+
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300',
+          isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="pt-1 space-y-0.5">
+            {item.children.map((child) => {
+              const ChildIcon = child.icon;
+              const isChildActive = location.pathname === child.path;
+              return (
+                <Link
+                  key={child.path}
+                  to={child.path}
+                  className={cn(
+                    'flex items-center gap-2 rounded-lg pl-9 pr-3 py-2 text-sm transition-colors',
+                    isChildActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  )}
+                >
+                  <ChildIcon className="w-4 h-4 flex-shrink-0" />
+                  <span>{child.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Main Sidebar ---
 
 export function Sidebar() {
   const location = useLocation();
@@ -62,6 +242,12 @@ export function Sidebar() {
 
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
         {filteredItems.map((item) => {
+          // Render group with children
+          if (item.children) {
+            return <NavGroup key={item.path} item={item} isCollapsed={isCollapsed} />;
+          }
+
+          // Render simple nav item
           const isActive = location.pathname.startsWith(item.path);
           const Icon = item.icon;
           return (
