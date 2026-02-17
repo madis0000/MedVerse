@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
@@ -37,6 +38,7 @@ interface RevenueSummary {
 }
 
 export function RevenueReport() {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<Period>('monthly');
 
   const { data: reportData, isLoading } = useQuery({
@@ -54,10 +56,16 @@ export function RevenueReport() {
   const breakdown = summary?.breakdown ?? [];
 
   const periods: { value: Period; label: string }[] = [
-    { value: 'daily', label: 'Daily' },
-    { value: 'weekly', label: 'Weekly' },
-    { value: 'monthly', label: 'Monthly' },
+    { value: 'daily', label: t('billing.periods.daily', 'Daily') },
+    { value: 'weekly', label: t('billing.periods.weekly', 'Weekly') },
+    { value: 'monthly', label: t('billing.periods.monthly', 'Monthly') },
   ];
+
+  const periodUnitMap: Record<Period, string> = {
+    daily: t('billing.periodUnits.day', 'Day'),
+    weekly: t('billing.periodUnits.week', 'Week'),
+    monthly: t('billing.periodUnits.month', 'Month'),
+  };
 
   const methodColors: Record<string, string> = {
     CASH: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -88,7 +96,7 @@ export function RevenueReport() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('billing.totalRevenue', 'Total Revenue')}</p>
                 <p className="text-2xl font-bold mt-1">{formatCurrency(total)}</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950/30">
@@ -102,7 +110,7 @@ export function RevenueReport() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Average per {period === 'daily' ? 'Day' : period === 'weekly' ? 'Week' : 'Month'}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('billing.averagePer', 'Average per')} {periodUnitMap[period]}</p>
                 <p className="text-2xl font-bold mt-1">{formatCurrency(average)}</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/30">
@@ -114,7 +122,7 @@ export function RevenueReport() {
 
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm font-medium text-muted-foreground mb-3">By Payment Method</p>
+            <p className="text-sm font-medium text-muted-foreground mb-3">{t('billing.byPaymentMethod', 'By Payment Method')}</p>
             <div className="space-y-2">
               {breakdown.length > 0 ? (
                 breakdown.map((item) => (
@@ -126,7 +134,7 @@ export function RevenueReport() {
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground">No data available</p>
+                <p className="text-xs text-muted-foreground">{t('billing.noDataAvailable', 'No data available')}</p>
               )}
             </div>
           </CardContent>
@@ -136,16 +144,16 @@ export function RevenueReport() {
       {/* Revenue Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Revenue Over Time</CardTitle>
+          <CardTitle className="text-base">{t('billing.revenueOverTime', 'Revenue Over Time')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <div className="animate-pulse text-muted-foreground text-sm">Loading chart data...</div>
+              <div className="animate-pulse text-muted-foreground text-sm">{t('billing.loadingChartData', 'Loading chart data...')}</div>
             </div>
           ) : chartData.length === 0 ? (
             <div className="h-64 flex items-center justify-center text-muted-foreground text-sm">
-              No revenue data for the selected period
+              {t('billing.noRevenueData', 'No revenue data for the selected period')}
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
@@ -168,7 +176,7 @@ export function RevenueReport() {
                     borderRadius: '8px',
                     fontSize: '12px',
                   }}
-                  formatter={(val: number) => [formatCurrency(val), 'Revenue']}
+                  formatter={(val: number) => [formatCurrency(val), t('billing.revenue', 'Revenue')]}
                 />
                 <Bar
                   dataKey="revenue"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSettings, useUpdateSettings } from '@/api/settings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,13 +11,13 @@ import { Save, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DAYS_OF_WEEK = [
-  { value: 'MON', label: 'Monday' },
-  { value: 'TUE', label: 'Tuesday' },
-  { value: 'WED', label: 'Wednesday' },
-  { value: 'THU', label: 'Thursday' },
-  { value: 'FRI', label: 'Friday' },
-  { value: 'SAT', label: 'Saturday' },
-  { value: 'SUN', label: 'Sunday' },
+  { value: 'MON', labelKey: 'common.days.monday' },
+  { value: 'TUE', labelKey: 'common.days.tuesday' },
+  { value: 'WED', labelKey: 'common.days.wednesday' },
+  { value: 'THU', labelKey: 'common.days.thursday' },
+  { value: 'FRI', labelKey: 'common.days.friday' },
+  { value: 'SAT', labelKey: 'common.days.saturday' },
+  { value: 'SUN', labelKey: 'common.days.sunday' },
 ];
 
 interface ClinicSettings {
@@ -50,6 +51,7 @@ const DEFAULT_SETTINGS: ClinicSettings = {
 };
 
 export function ClinicProfileForm() {
+  const { t } = useTranslation();
   const { data, isLoading } = useSettings();
   const updateSettings = useUpdateSettings();
   const [form, setForm] = useState<ClinicSettings>(DEFAULT_SETTINGS);
@@ -90,9 +92,9 @@ export function ClinicProfileForm() {
     e.preventDefault();
     try {
       await updateSettings.mutateAsync(form);
-      toast.success('Clinic profile updated successfully');
+      toast.success(t('settings.clinic.saved'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update settings');
+      toast.error(err.response?.data?.message || t('common.errorSaving'));
     }
   };
 
@@ -106,68 +108,68 @@ export function ClinicProfileForm() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">Clinic Information</CardTitle>
+            <CardTitle className="text-lg">{t('settings.clinic.clinicInformation')}</CardTitle>
           </div>
           <CardDescription>
-            Basic information about your clinic that appears on documents and invoices.
+            {t('settings.clinic.clinicInformationDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <Label htmlFor="clinic_name">Clinic Name</Label>
+              <Label htmlFor="clinic_name">{t('settings.clinic.clinicName')}</Label>
               <Input
                 id="clinic_name"
                 value={form.clinic_name}
                 onChange={(e) => handleChange('clinic_name', e.target.value)}
-                placeholder="Enter clinic name"
+                placeholder={t('settings.clinic.enterClinicName')}
                 className="mt-1.5"
               />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="clinic_address">Address</Label>
+              <Label htmlFor="clinic_address">{t('settings.clinic.address')}</Label>
               <Input
                 id="clinic_address"
                 value={form.clinic_address}
                 onChange={(e) => handleChange('clinic_address', e.target.value)}
-                placeholder="Street address"
+                placeholder={t('settings.clinic.streetAddress')}
                 className="mt-1.5"
               />
             </div>
             <div>
-              <Label htmlFor="clinic_city">City</Label>
+              <Label htmlFor="clinic_city">{t('settings.clinic.city')}</Label>
               <Input
                 id="clinic_city"
                 value={form.clinic_city}
                 onChange={(e) => handleChange('clinic_city', e.target.value)}
-                placeholder="City"
+                placeholder={t('settings.clinic.city')}
                 className="mt-1.5"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="clinic_state">State</Label>
+                <Label htmlFor="clinic_state">{t('settings.clinic.state')}</Label>
                 <Input
                   id="clinic_state"
                   value={form.clinic_state}
                   onChange={(e) => handleChange('clinic_state', e.target.value)}
-                  placeholder="State"
+                  placeholder={t('settings.clinic.state')}
                   className="mt-1.5"
                 />
               </div>
               <div>
-                <Label htmlFor="clinic_zip">ZIP Code</Label>
+                <Label htmlFor="clinic_zip">{t('settings.clinic.zipCode')}</Label>
                 <Input
                   id="clinic_zip"
                   value={form.clinic_zip}
                   onChange={(e) => handleChange('clinic_zip', e.target.value)}
-                  placeholder="ZIP"
+                  placeholder={t('settings.clinic.zip')}
                   className="mt-1.5"
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="clinic_phone">Phone</Label>
+              <Label htmlFor="clinic_phone">{t('settings.clinic.phone')}</Label>
               <Input
                 id="clinic_phone"
                 type="tel"
@@ -178,7 +180,7 @@ export function ClinicProfileForm() {
               />
             </div>
             <div>
-              <Label htmlFor="clinic_email">Email</Label>
+              <Label htmlFor="clinic_email">{t('settings.clinic.email')}</Label>
               <Input
                 id="clinic_email"
                 type="email"
@@ -194,15 +196,15 @@ export function ClinicProfileForm() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Working Hours</CardTitle>
+          <CardTitle className="text-lg">{t('settings.clinic.workingHours')}</CardTitle>
           <CardDescription>
-            Set your clinic operating hours and working days.
+            {t('settings.clinic.workingHoursDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="working_hours_start">Start Time</Label>
+              <Label htmlFor="working_hours_start">{t('settings.clinic.openTime')}</Label>
               <Input
                 id="working_hours_start"
                 type="time"
@@ -212,7 +214,7 @@ export function ClinicProfileForm() {
               />
             </div>
             <div>
-              <Label htmlFor="working_hours_end">End Time</Label>
+              <Label htmlFor="working_hours_end">{t('settings.clinic.closeTime')}</Label>
               <Input
                 id="working_hours_end"
                 type="time"
@@ -224,7 +226,7 @@ export function ClinicProfileForm() {
           </div>
 
           <div>
-            <Label>Working Days</Label>
+            <Label>{t('settings.clinic.workingDays')}</Label>
             <div className="flex flex-wrap gap-2 mt-1.5">
               {DAYS_OF_WEEK.map((day) => (
                 <button
@@ -237,7 +239,7 @@ export function ClinicProfileForm() {
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
-                  {day.label}
+                  {t(day.labelKey)}
                 </button>
               ))}
             </div>
@@ -247,45 +249,45 @@ export function ClinicProfileForm() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Appointment Settings</CardTitle>
+          <CardTitle className="text-lg">{t('settings.clinic.appointmentSettings')}</CardTitle>
           <CardDescription>
-            Configure default appointment duration and buffer time between appointments.
+            {t('settings.clinic.appointmentSettingsDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="appointment_duration">Default Duration (minutes)</Label>
+              <Label htmlFor="appointment_duration">{t('settings.clinic.appointmentDuration')}</Label>
               <Select
                 value={String(form.appointment_duration)}
                 onValueChange={(val) => handleChange('appointment_duration', Number(val))}
               >
                 <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select duration" />
+                  <SelectValue placeholder={t('settings.clinic.selectDuration')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="20">20 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                  <SelectItem value="60">60 minutes</SelectItem>
+                  <SelectItem value="15">{t('common.minutes', { count: 15 })}</SelectItem>
+                  <SelectItem value="20">{t('common.minutes', { count: 20 })}</SelectItem>
+                  <SelectItem value="30">{t('common.minutes', { count: 30 })}</SelectItem>
+                  <SelectItem value="45">{t('common.minutes', { count: 45 })}</SelectItem>
+                  <SelectItem value="60">{t('common.minutes', { count: 60 })}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="appointment_buffer">Buffer Time (minutes)</Label>
+              <Label htmlFor="appointment_buffer">{t('settings.clinic.bufferTime')}</Label>
               <Select
                 value={String(form.appointment_buffer)}
                 onValueChange={(val) => handleChange('appointment_buffer', Number(val))}
               >
                 <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select buffer" />
+                  <SelectValue placeholder={t('settings.clinic.selectBuffer')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">No buffer</SelectItem>
-                  <SelectItem value="5">5 minutes</SelectItem>
-                  <SelectItem value="10">10 minutes</SelectItem>
-                  <SelectItem value="15">15 minutes</SelectItem>
+                  <SelectItem value="0">{t('settings.clinic.noBuffer')}</SelectItem>
+                  <SelectItem value="5">{t('common.minutes', { count: 5 })}</SelectItem>
+                  <SelectItem value="10">{t('common.minutes', { count: 10 })}</SelectItem>
+                  <SelectItem value="15">{t('common.minutes', { count: 15 })}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -296,7 +298,7 @@ export function ClinicProfileForm() {
       <div className="flex justify-end">
         <Button type="submit" disabled={updateSettings.isPending}>
           <Save className="w-4 h-4 mr-2" />
-          {updateSettings.isPending ? 'Saving...' : 'Save Changes'}
+          {updateSettings.isPending ? t('common.saving') : t('common.saveChanges')}
         </Button>
       </div>
     </form>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -38,6 +39,7 @@ function formatCurrencyShort(value: number) {
 }
 
 export function RevenueChart() {
+  const { t } = useTranslation();
   const { data, isLoading } = useRevenueData('monthly');
 
   const chartData: RevenueDataPoint[] = data?.data || fallbackData;
@@ -45,7 +47,7 @@ export function RevenueChart() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold">Revenue Overview</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('dashboard.revenueChart')}</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -72,7 +74,7 @@ export function RevenueChart() {
                   className="text-muted-foreground"
                 />
                 <Tooltip
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                  formatter={(value: number) => [`$${value.toLocaleString()}`, t('finance.revenue.title')]}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',

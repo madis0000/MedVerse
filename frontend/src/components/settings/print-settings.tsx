@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSettings, useUpdateSettings } from '@/api/settings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,7 @@ const DEFAULT_PRINT_SETTINGS: PrintSettingsData = {
 };
 
 export function PrintSettings() {
+  const { t } = useTranslation();
   const { data, isLoading } = useSettings();
   const updateSettings = useUpdateSettings();
   const [form, setForm] = useState<PrintSettingsData>(DEFAULT_PRINT_SETTINGS);
@@ -65,9 +67,9 @@ export function PrintSettings() {
     e.preventDefault();
     try {
       await updateSettings.mutateAsync(form);
-      toast.success('Print settings updated successfully');
+      toast.success(t('settings.printing.saved'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update print settings');
+      toast.error(err.response?.data?.message || t('settings.printing.saveFailed'));
     }
   };
 
@@ -81,31 +83,31 @@ export function PrintSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Printer className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">Prescription Print Layout</CardTitle>
+            <CardTitle className="text-lg">{t('settings.printing.prescriptionLayout')}</CardTitle>
           </div>
           <CardDescription>
-            Customize the header and footer text that appears on printed prescriptions.
+            {t('settings.printing.prescriptionLayoutDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="prescription_header">Prescription Header</Label>
+            <Label htmlFor="prescription_header">{t('settings.printing.prescriptionHeader')}</Label>
             <Textarea
               id="prescription_header"
               value={form.prescription_header}
               onChange={(e) => handleChange('prescription_header', e.target.value)}
-              placeholder="Text to display at the top of prescriptions..."
+              placeholder={t('settings.printing.prescriptionHeaderPlaceholder')}
               rows={3}
               className="mt-1.5"
             />
           </div>
           <div>
-            <Label htmlFor="prescription_footer">Prescription Footer</Label>
+            <Label htmlFor="prescription_footer">{t('settings.printing.prescriptionFooter')}</Label>
             <Textarea
               id="prescription_footer"
               value={form.prescription_footer}
               onChange={(e) => handleChange('prescription_footer', e.target.value)}
-              placeholder="Text to display at the bottom of prescriptions..."
+              placeholder={t('settings.printing.prescriptionFooterPlaceholder')}
               rows={3}
               className="mt-1.5"
             />
@@ -115,26 +117,26 @@ export function PrintSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Invoice Settings</CardTitle>
+          <CardTitle className="text-lg">{t('settings.printing.invoiceSettings')}</CardTitle>
           <CardDescription>
-            Configure invoice formatting, tax rate, and currency.
+            {t('settings.printing.invoiceSettingsDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="invoice_footer">Invoice Footer</Label>
+            <Label htmlFor="invoice_footer">{t('settings.printing.invoiceFooter')}</Label>
             <Textarea
               id="invoice_footer"
               value={form.invoice_footer}
               onChange={(e) => handleChange('invoice_footer', e.target.value)}
-              placeholder="Text to display at the bottom of invoices..."
+              placeholder={t('settings.printing.invoiceFooterPlaceholder')}
               rows={3}
               className="mt-1.5"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="tax_rate">Tax Rate (%)</Label>
+              <Label htmlFor="tax_rate">{t('settings.printing.taxRate')}</Label>
               <Input
                 id="tax_rate"
                 type="number"
@@ -147,13 +149,13 @@ export function PrintSettings() {
               />
             </div>
             <div>
-              <Label htmlFor="currency">Currency</Label>
+              <Label htmlFor="currency">{t('settings.printing.currency')}</Label>
               <Select
                 value={form.currency}
                 onValueChange={(val) => handleChange('currency', val)}
               >
                 <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select currency" />
+                  <SelectValue placeholder={t('settings.printing.selectCurrency')} />
                 </SelectTrigger>
                 <SelectContent>
                   {CURRENCIES.map((currency) => (
@@ -165,7 +167,7 @@ export function PrintSettings() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="invoice_prefix">Invoice Prefix</Label>
+              <Label htmlFor="invoice_prefix">{t('settings.printing.invoicePrefix')}</Label>
               <Input
                 id="invoice_prefix"
                 value={form.invoice_prefix}
@@ -181,7 +183,7 @@ export function PrintSettings() {
       <div className="flex justify-end">
         <Button type="submit" disabled={updateSettings.isPending}>
           <Save className="w-4 h-4 mr-2" />
-          {updateSettings.isPending ? 'Saving...' : 'Save Changes'}
+          {updateSettings.isPending ? t('common.saving') : t('common.saveChanges')}
         </Button>
       </div>
     </form>

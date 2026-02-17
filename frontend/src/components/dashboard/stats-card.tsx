@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,6 +39,7 @@ const colorMap = {
 };
 
 export function StatsCard({ title, value, change, icon: Icon, color = 'blue' }: StatsCardProps) {
+  const { t } = useTranslation();
   const colors = colorMap[color];
 
   return (
@@ -55,7 +57,7 @@ export function StatsCard({ title, value, change, icon: Icon, color = 'blue' }: 
                 )}
               >
                 {change >= 0 ? '+' : ''}
-                {change}% from last month
+                {change}% {t('finance.kpi.vsLastMonth')}
               </p>
             )}
           </div>

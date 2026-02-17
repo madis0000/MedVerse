@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Clock, User } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -12,12 +13,12 @@ const STATUS_COLORS: Record<AppointmentStatus, string> = {
   CANCELLED: 'border-l-gray-300 bg-gray-50 opacity-60 dark:bg-gray-950/20',
 };
 
-const VISIT_TYPE_LABELS: Record<string, string> = {
-  FIRST_VISIT: 'First Visit',
-  FOLLOW_UP: 'Follow-up',
-  EMERGENCY: 'Emergency',
-  PROCEDURE: 'Procedure',
-  TELECONSULTATION: 'Teleconsultation',
+const VISIT_TYPE_KEYS: Record<string, string> = {
+  FIRST_VISIT: 'appointments.types.NEW_VISIT',
+  FOLLOW_UP: 'appointments.types.FOLLOW_UP',
+  EMERGENCY: 'appointments.types.URGENT',
+  PROCEDURE: 'appointments.types.PROCEDURE',
+  TELECONSULTATION: 'appointments.types.CONSULTATION',
 };
 
 interface AppointmentCardProps {
@@ -31,12 +32,16 @@ export function AppointmentCard({
   compact = false,
   onClick,
 }: AppointmentCardProps) {
+  const { t } = useTranslation();
+
   const patientName = appointment.patient
     ? `${appointment.patient.firstName} ${appointment.patient.lastName}`
-    : 'Unknown Patient';
+    : t('appointments.unknownPatient', 'Unknown Patient');
 
   const timeStr = format(parseISO(appointment.dateTime), 'h:mm a');
-  const visitLabel = VISIT_TYPE_LABELS[appointment.visitType] || appointment.visitType;
+  const visitLabel = VISIT_TYPE_KEYS[appointment.visitType]
+    ? t(VISIT_TYPE_KEYS[appointment.visitType])
+    : appointment.visitType;
 
   if (compact) {
     return (

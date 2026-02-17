@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarDays, Save, ChevronLeft, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_KEYS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+
+const DAY_OF_WEEK_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 const DEFAULT_EXPENSES = [
   { categoryName: 'Rent & Facilities', amount: 40000, description: 'Loyer' },
@@ -23,7 +26,7 @@ const INPUT_CLASS = "h-8 text-right text-sm [appearance:textfield] [&::-webkit-o
 
 interface DayEntry {
   day: number;
-  dayOfWeek: string;
+  dayOfWeekIndex: number;
   isWeekend: boolean;
   revenue: string;
   patientsEffective: string;
@@ -39,9 +42,8 @@ interface ExpenseEntry {
   description: string;
 }
 
-function getDayOfWeek(year: number, month: number, day: number): string {
-  const date = new Date(year, month - 1, day);
-  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+function getDayOfWeekIndex(year: number, month: number, day: number): number {
+  return new Date(year, month - 1, day).getDay();
 }
 
 function isWeekendDay(year: number, month: number, day: number): boolean {
@@ -59,6 +61,7 @@ function formatDZD(amount: number): string {
 
 export function FinanceDataEntryPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -71,11 +74,11 @@ export function FinanceDataEntryPage() {
     const count = getDaysInMonth(year, month);
     return Array.from({ length: count }, (_, i) => {
       const day = i + 1;
-      const dow = getDayOfWeek(year, month, day);
+      const dowIndex = getDayOfWeekIndex(year, month, day);
       const weekend = isWeekendDay(year, month, day);
       return {
         day,
-        dayOfWeek: dow,
+        dayOfWeekIndex: dowIndex,
         isWeekend: weekend,
         revenue: '',
         patientsEffective: '',
@@ -203,7 +206,7 @@ export function FinanceDataEntryPage() {
       }));
 
     if (daysData.length === 0 && expensesData.length === 0) {
-      toast.info('No new data to save');
+      toast.info(t('finance.dataEntry.noNewData'));
       return;
     }
 
@@ -216,11 +219,16 @@ export function FinanceDataEntryPage() {
         expenses: expensesData,
       });
       toast.success(
-        `Saved: ${data.invoices} invoices, ${data.payments} payments, ${data.closings} closings, ${data.expenses} expenses`
+        t('finance.dataEntry.savedSummary', {
+          invoices: data.invoices,
+          payments: data.payments,
+          closings: data.closings,
+          expenses: data.expenses,
+        })
       );
       loadExistingData();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to save data');
+      toast.error(err?.response?.data?.message || t('finance.dataEntry.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -236,22 +244,28 @@ export function FinanceDataEntryPage() {
     else setMonth(month + 1);
   }
 
+  const translatedMonthName = t(`finance.dataEntry.months.${MONTH_KEYS[month - 1]}`);
+
+  function getDayOfWeekLabel(dayOfWeekIndex: number): string {
+    return t(`finance.dataEntry.daysOfWeek.${DAY_OF_WEEK_KEYS[dayOfWeekIndex]}`);
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => navigate('/finance')}>
-            <ArrowLeft className="w-4 h-4 mr-1" /> Finance
+            <ArrowLeft className="w-4 h-4 mr-1" /> {t('nav.finance')}
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Monthly Data Entry</h1>
-            <p className="text-sm text-muted-foreground">Enter daily revenue and monthly expenses</p>
+            <h1 className="text-2xl font-bold">{t('finance.dataEntry.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('finance.dataEntry.subtitle')}</p>
           </div>
         </div>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          Save Month
+          {t('finance.dataEntry.saveMonth')}
         </Button>
       </div>
 
@@ -264,7 +278,7 @@ export function FinanceDataEntryPage() {
             </Button>
             <div className="flex items-center gap-2">
               <CalendarDays className="w-5 h-5 text-primary" />
-              <span className="text-xl font-semibold">{MONTH_NAMES[month - 1]} {year}</span>
+              <span className="text-xl font-semibold">{translatedMonthName} {year}</span>
             </div>
             <Button variant="outline" size="icon" onClick={nextMonth}>
               <ChevronRight className="w-4 h-4" />
@@ -277,19 +291,19 @@ export function FinanceDataEntryPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         <Card>
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground">Revenue</p>
+            <p className="text-xs text-muted-foreground">{t('finance.dataEntry.revenue')}</p>
             <p className="text-lg font-bold text-green-600">{formatDZD(revenueTotal)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground">Expenses</p>
+            <p className="text-xs text-muted-foreground">{t('finance.dataEntry.expenses')}</p>
             <p className="text-lg font-bold text-red-600">{formatDZD(expenseTotal)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground">Net Income</p>
+            <p className="text-xs text-muted-foreground">{t('finance.dataEntry.netIncome')}</p>
             <p className={`text-lg font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatDZD(netIncome)}
             </p>
@@ -297,25 +311,25 @@ export function FinanceDataEntryPage() {
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground">Working Days</p>
+            <p className="text-xs text-muted-foreground">{t('finance.dataEntry.workingDays')}</p>
             <p className="text-lg font-bold">{workingDaysWithData}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground">Patients Seen</p>
+            <p className="text-xs text-muted-foreground">{t('finance.dataEntry.patientsSeen')}</p>
             <p className="text-lg font-bold">{patientsTotal}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground">New Patients</p>
+            <p className="text-xs text-muted-foreground">{t('finance.dataEntry.newPatients')}</p>
             <p className="text-lg font-bold text-blue-600">{newPatientsTotal}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-muted-foreground">Full Price</p>
+            <p className="text-xs text-muted-foreground">{t('finance.dataEntry.fullPrice')}</p>
             <p className="text-lg font-bold text-purple-600">{fullPriceTotal}</p>
           </CardContent>
         </Card>
@@ -326,7 +340,7 @@ export function FinanceDataEntryPage() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="w-5 h-5" />
-            Daily Revenue
+            {t('finance.dataEntry.dailyRevenue')}
           </CardTitle>
         </CardHeader>
         <CardContent className="px-0">
@@ -339,14 +353,14 @@ export function FinanceDataEntryPage() {
               <table className="w-full text-sm border-collapse">
                 <thead className="sticky top-0 z-10 bg-card shadow-[0_1px_0_0_hsl(var(--border))]">
                   <tr>
-                    <th className="text-left py-2.5 px-3 w-[50px]">Day</th>
-                    <th className="text-left py-2.5 px-2 w-[44px]">Dow</th>
-                    <th className="text-right py-2.5 px-1 min-w-[140px]">Revenue (DZD)</th>
-                    <th className="text-right py-2.5 px-1 w-[88px]">Pat. Eff</th>
-                    <th className="text-right py-2.5 px-1 w-[88px]">New</th>
-                    <th className="text-right py-2.5 px-1 w-[88px]">Pat. #</th>
-                    <th className="text-right py-2.5 px-1 w-[88px]">Full Paid</th>
-                    <th className="text-center py-2.5 px-2 w-[72px]">Status</th>
+                    <th className="text-left py-2.5 px-3 w-[50px]">{t('finance.dataEntry.columns.day')}</th>
+                    <th className="text-left py-2.5 px-2 w-[44px]">{t('finance.dataEntry.columns.dow')}</th>
+                    <th className="text-right py-2.5 px-1 min-w-[140px]">{t('finance.dataEntry.columns.revenueDZD')}</th>
+                    <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.patEff')}</th>
+                    <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.new')}</th>
+                    <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.patNum')}</th>
+                    <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.fullPaid')}</th>
+                    <th className="text-center py-2.5 px-2 w-[72px]">{t('finance.dataEntry.columns.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -362,7 +376,7 @@ export function FinanceDataEntryPage() {
                       }`}
                     >
                       <td className="py-1 px-3 font-medium">{entry.day}</td>
-                      <td className="py-1 px-2 text-xs">{entry.dayOfWeek}</td>
+                      <td className="py-1 px-2 text-xs">{getDayOfWeekLabel(entry.dayOfWeekIndex)}</td>
                       <td className="py-1 px-1">
                         <Input
                           type="number"
@@ -415,11 +429,11 @@ export function FinanceDataEntryPage() {
                       </td>
                       <td className="py-1 px-2 text-center">
                         {entry.isWeekend ? (
-                          <Badge variant="outline" className="text-[10px]">Weekend</Badge>
+                          <Badge variant="outline" className="text-[10px]">{t('finance.dataEntry.weekend')}</Badge>
                         ) : entry.hasData ? (
-                          <Badge className="text-[10px] bg-green-600">Saved</Badge>
+                          <Badge className="text-[10px] bg-green-600">{t('finance.dataEntry.saved')}</Badge>
                         ) : parseFloat(entry.revenue) > 0 ? (
-                          <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600">New</Badge>
+                          <Badge variant="outline" className="text-[10px] border-amber-500 text-amber-600">{t('finance.dataEntry.new')}</Badge>
                         ) : null}
                       </td>
                     </tr>
@@ -427,7 +441,7 @@ export function FinanceDataEntryPage() {
                 </tbody>
                 <tfoot className="sticky bottom-0 bg-card shadow-[0_-1px_0_0_hsl(var(--border))]">
                   <tr className="border-t-2 font-bold">
-                    <td className="py-2 px-3" colSpan={2}>Totals</td>
+                    <td className="py-2 px-3" colSpan={2}>{t('finance.dataEntry.totals')}</td>
                     <td className="py-2 px-1 text-right text-green-600">{formatDZD(revenueTotal)}</td>
                     <td className="py-2 px-1 text-right">{patientsTotal}</td>
                     <td className="py-2 px-1 text-right">{newPatientsTotal}</td>
@@ -437,7 +451,7 @@ export function FinanceDataEntryPage() {
                   </tr>
                   {workingDaysWithData > 0 && (
                     <tr className="text-muted-foreground text-xs">
-                      <td className="py-1 px-3" colSpan={2}>Daily Average</td>
+                      <td className="py-1 px-3" colSpan={2}>{t('finance.dataEntry.dailyAverage')}</td>
                       <td className="py-1 px-1 text-right">{formatDZD(Math.round(revenueTotal / workingDaysWithData))}</td>
                       <td className="py-1 px-1 text-right">{(patientsTotal / workingDaysWithData).toFixed(1)}</td>
                       <td className="py-1 px-1 text-right">{(newPatientsTotal / workingDaysWithData).toFixed(1)}</td>
@@ -457,9 +471,9 @@ export function FinanceDataEntryPage() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle>Monthly Expenses</CardTitle>
+            <CardTitle>{t('finance.dataEntry.monthlyExpenses')}</CardTitle>
             <Button variant="outline" size="sm" onClick={addExpenseRow}>
-              + Add Line
+              + {t('finance.dataEntry.addLine')}
             </Button>
           </div>
         </CardHeader>
@@ -468,9 +482,9 @@ export function FinanceDataEntryPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 px-2">Category</th>
-                  <th className="text-left py-2 px-2">Description</th>
-                  <th className="text-right py-2 px-2">Amount (DZD)</th>
+                  <th className="text-left py-2 px-2">{t('finance.dataEntry.columns.category')}</th>
+                  <th className="text-left py-2 px-2">{t('finance.dataEntry.columns.description')}</th>
+                  <th className="text-right py-2 px-2">{t('finance.dataEntry.columns.amountDZD')}</th>
                   <th className="w-10"></th>
                 </tr>
               </thead>
@@ -482,7 +496,7 @@ export function FinanceDataEntryPage() {
                         className="h-8 text-sm"
                         value={expense.categoryName}
                         onChange={(e) => updateExpense(idx, 'categoryName', e.target.value)}
-                        placeholder="Category"
+                        placeholder={t('finance.dataEntry.columns.category')}
                       />
                     </td>
                     <td className="py-1 px-1">
@@ -490,7 +504,7 @@ export function FinanceDataEntryPage() {
                         className="h-8 text-sm"
                         value={expense.description}
                         onChange={(e) => updateExpense(idx, 'description', e.target.value)}
-                        placeholder="Description"
+                        placeholder={t('finance.dataEntry.columns.description')}
                       />
                     </td>
                     <td className="py-1 px-1">
@@ -519,7 +533,7 @@ export function FinanceDataEntryPage() {
               </tbody>
               <tfoot>
                 <tr className="border-t-2 font-bold">
-                  <td className="py-2 px-2" colSpan={2}>Total Expenses</td>
+                  <td className="py-2 px-2" colSpan={2}>{t('finance.dataEntry.totalExpenses')}</td>
                   <td className="py-2 px-2 text-right text-red-600">{formatDZD(expenseTotal)}</td>
                   <td></td>
                 </tr>
@@ -534,14 +548,14 @@ export function FinanceDataEntryPage() {
         <CardContent className="py-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Net Income ({MONTH_NAMES[month - 1]} {year})</p>
+              <p className="text-sm text-muted-foreground">{t('finance.dataEntry.netIncome')} ({translatedMonthName} {year})</p>
               <p className={`text-2xl font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatDZD(netIncome)}
               </p>
             </div>
             {revenueTotal > 0 && (
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Profit Margin</p>
+                <p className="text-sm text-muted-foreground">{t('finance.dataEntry.profitMargin')}</p>
                 <p className={`text-xl font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {((netIncome / revenueTotal) * 100).toFixed(1)}%
                 </p>
@@ -555,7 +569,7 @@ export function FinanceDataEntryPage() {
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving} size="lg">
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          Save Month Data
+          {t('finance.dataEntry.saveMonthData')}
         </Button>
       </div>
     </div>

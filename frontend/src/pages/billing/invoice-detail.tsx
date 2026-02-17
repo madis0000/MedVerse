@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Download,
@@ -31,14 +32,8 @@ const statusStyles: Record<InvoiceStatus, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500',
 };
 
-const methodLabels: Record<string, string> = {
-  CASH: 'Cash',
-  CARD: 'Card',
-  INSURANCE: 'Insurance',
-  BANK_TRANSFER: 'Bank Transfer',
-};
-
 export function InvoiceDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: invoiceData, isLoading } = useInvoice(id ?? '');
@@ -46,6 +41,13 @@ export function InvoiceDetailPage() {
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
 
   const invoice: Invoice | null = invoiceData?.data ?? invoiceData ?? null;
+
+  const methodLabels: Record<string, string> = {
+    CASH: t('billing.paymentMethods.CASH'),
+    CARD: t('billing.paymentMethods.CARD'),
+    INSURANCE: t('billing.paymentMethods.INSURANCE'),
+    BANK_TRANSFER: t('billing.paymentMethods.BANK_TRANSFER'),
+  };
 
   async function handleDownloadPdf() {
     if (!id) return;
@@ -63,13 +65,13 @@ export function InvoiceDetailPage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch {
-      toast.error('Failed to download invoice PDF');
+      toast.error(t('billing.downloadFailed'));
     }
   }
 
   if (isLoading) {
     return (
-      <PageWrapper title="Invoice Details" breadcrumbs={[{ label: 'Billing', path: '/billing' }, { label: 'Details' }]}>
+      <PageWrapper title={t('billing.invoice')} breadcrumbs={[{ label: t('nav.billing'), path: '/billing' }, { label: t('common.details') }]}>
         <TableSkeleton rows={8} cols={5} />
       </PageWrapper>
     );
@@ -77,13 +79,13 @@ export function InvoiceDetailPage() {
 
   if (!invoice) {
     return (
-      <PageWrapper title="Invoice Not Found" breadcrumbs={[{ label: 'Billing', path: '/billing' }, { label: 'Details' }]}>
+      <PageWrapper title={t('billing.invoiceNotFound')} breadcrumbs={[{ label: t('nav.billing'), path: '/billing' }, { label: t('common.details') }]}>
         <div className="text-center py-12">
           <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Invoice not found</p>
+          <p className="text-muted-foreground">{t('billing.invoiceNotFound')}</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate('/billing')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Billing
+            {t('common.back')} {t('nav.billing')}
           </Button>
         </div>
       </PageWrapper>
@@ -95,21 +97,21 @@ export function InvoiceDetailPage() {
 
   return (
     <PageWrapper
-      title={`Invoice ${invoice.invoiceNumber}`}
+      title={`${t('billing.invoice')} ${invoice.invoiceNumber}`}
       breadcrumbs={[
-        { label: 'Billing', path: '/billing' },
+        { label: t('nav.billing'), path: '/billing' },
         { label: invoice.invoiceNumber },
       ]}
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handleDownloadPdf}>
             <Download className="h-4 w-4 mr-2" />
-            Download PDF
+            {t('billing.downloadPdf')}
           </Button>
           {remainingBalance > 0 && (
             <Button onClick={() => setPaymentFormOpen(true)}>
               <CreditCard className="h-4 w-4 mr-2" />
-              Record Payment
+              {t('billing.recordPayment')}
             </Button>
           )}
         </div>
@@ -126,7 +128,7 @@ export function InvoiceDetailPage() {
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl font-bold">{invoice.invoiceNumber}</h2>
                     <Badge className={cn('text-xs', statusStyles[invoice.status])}>
-                      {invoice.status}
+                      {t(`billing.status.${invoice.status}`)}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -136,7 +138,7 @@ export function InvoiceDetailPage() {
                     </span>
                     {invoice.dueDate && (
                       <span className="flex items-center gap-1">
-                        Due: {formatDate(invoice.dueDate)}
+                        {t('billing.dueDate')}: {formatDate(invoice.dueDate)}
                       </span>
                     )}
                   </div>
@@ -154,7 +156,7 @@ export function InvoiceDetailPage() {
                   </div>
                   {invoice.patient.phone && (
                     <p className="text-xs text-muted-foreground ml-6 mt-1">
-                      Phone: {invoice.patient.phone}
+                      {t('common.phone')}: {invoice.patient.phone}
                     </p>
                   )}
                 </div>
@@ -165,7 +167,7 @@ export function InvoiceDetailPage() {
           {/* Line Items */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Line Items</CardTitle>
+              <CardTitle className="text-base">{t('billing.lineItems')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="rounded-lg border overflow-hidden">
@@ -173,19 +175,19 @@ export function InvoiceDetailPage() {
                   <thead>
                     <tr className="border-b bg-muted/50">
                       <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">
-                        Description
+                        {t('billing.serviceDescription')}
                       </th>
                       <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">
-                        Category
+                        {t('common.category')}
                       </th>
                       <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground">
-                        Qty
+                        {t('billing.qty')}
                       </th>
                       <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground">
-                        Unit Price
+                        {t('billing.unitPrice')}
                       </th>
                       <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground">
-                        Total
+                        {t('billing.lineTotal')}
                       </th>
                     </tr>
                   </thead>
@@ -212,7 +214,7 @@ export function InvoiceDetailPage() {
                     {(!invoice.items || invoice.items.length === 0) && (
                       <tr>
                         <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">
-                          No line items
+                          {t('billing.noLineItems')}
                         </td>
                       </tr>
                     )}
@@ -225,7 +227,7 @@ export function InvoiceDetailPage() {
           {/* Payment History */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Payment History</CardTitle>
+              <CardTitle className="text-base">{t('billing.paymentHistory')}</CardTitle>
             </CardHeader>
             <CardContent>
               {invoice.payments && invoice.payments.length > 0 ? (
@@ -239,7 +241,7 @@ export function InvoiceDetailPage() {
                         <p className="text-sm font-medium">{formatCurrency(payment.amount)}</p>
                         <p className="text-xs text-muted-foreground">
                           {methodLabels[payment.method] ?? payment.method}
-                          {payment.reference && ` - Ref: ${payment.reference}`}
+                          {payment.reference && ` - ${t('common.ref')}: ${payment.reference}`}
                         </p>
                         {payment.notes && (
                           <p className="text-xs text-muted-foreground mt-0.5">{payment.notes}</p>
@@ -253,7 +255,7 @@ export function InvoiceDetailPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-6">
-                  No payments recorded yet
+                  {t('billing.noPayments')}
                 </p>
               )}
             </CardContent>
@@ -264,23 +266,23 @@ export function InvoiceDetailPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Summary</CardTitle>
+              <CardTitle className="text-base">{t('billing.invoiceSummary')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t('billing.subtotal')}</span>
                   <span className="font-medium">{formatCurrency(invoice.subtotal)}</span>
                 </div>
                 {invoice.tax > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tax</span>
+                    <span className="text-muted-foreground">{t('billing.tax')}</span>
                     <span className="font-medium">+{formatCurrency(invoice.tax)}</span>
                   </div>
                 )}
                 {invoice.discount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Discount</span>
+                    <span className="text-muted-foreground">{t('billing.discount')}</span>
                     <span className="font-medium text-green-600">-{formatCurrency(invoice.discount)}</span>
                   </div>
                 )}
@@ -288,18 +290,18 @@ export function InvoiceDetailPage() {
                 <Separator />
 
                 <div className="flex justify-between">
-                  <span className="font-medium">Total</span>
+                  <span className="font-medium">{t('billing.grandTotal')}</span>
                   <span className="text-lg font-bold">{formatCurrency(invoice.total)}</span>
                 </div>
 
                 <Separator />
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Paid</span>
+                  <span className="text-muted-foreground">{t('billing.paid')}</span>
                   <span className="font-medium text-green-600">{formatCurrency(paidAmount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Remaining</span>
+                  <span className="text-muted-foreground">{t('billing.balance')}</span>
                   <span className={cn('font-bold', remainingBalance > 0 ? 'text-red-600' : 'text-green-600')}>
                     {formatCurrency(remainingBalance)}
                   </span>
@@ -312,7 +314,7 @@ export function InvoiceDetailPage() {
                   onClick={() => setPaymentFormOpen(true)}
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
-                  Record Payment
+                  {t('billing.recordPayment')}
                 </Button>
               )}
             </CardContent>
@@ -321,7 +323,7 @@ export function InvoiceDetailPage() {
           {invoice.notes && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Notes</CardTitle>
+                <CardTitle className="text-base">{t('common.notes')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{invoice.notes}</p>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, XCircle, AlertOctagon, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,32 +20,34 @@ const severityConfig = {
     border: 'border-yellow-300 dark:border-yellow-700',
     text: 'text-yellow-800 dark:text-yellow-300',
     icon: Info,
-    label: 'Mild',
+    labelKey: 'prescriptions.interactionSeverity.MILD',
   },
   MODERATE: {
     bg: 'bg-orange-50 dark:bg-orange-950/30',
     border: 'border-orange-300 dark:border-orange-700',
     text: 'text-orange-800 dark:text-orange-300',
     icon: AlertTriangle,
-    label: 'Moderate',
+    labelKey: 'prescriptions.interactionSeverity.MODERATE',
   },
   SEVERE: {
     bg: 'bg-red-50 dark:bg-red-950/30',
     border: 'border-red-300 dark:border-red-700',
     text: 'text-red-800 dark:text-red-300',
     icon: AlertOctagon,
-    label: 'Severe',
+    labelKey: 'prescriptions.interactionSeverity.SEVERE',
   },
   CONTRAINDICATED: {
     bg: 'bg-red-100 dark:bg-red-950/50',
     border: 'border-red-500 dark:border-red-600',
     text: 'text-red-900 dark:text-red-200',
     icon: XCircle,
-    label: 'Contraindicated',
+    labelKey: 'prescriptions.interactionSeverity.CONTRAINDICATED',
   },
 };
 
 export function DrugInteractionAlert({ interactions }: DrugInteractionAlertProps) {
+  const { t } = useTranslation();
+
   if (!interactions || interactions.length === 0) {
     return null;
   }
@@ -58,7 +61,7 @@ export function DrugInteractionAlert({ interactions }: DrugInteractionAlertProps
     <div className="space-y-2">
       <h4 className="text-sm font-medium flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-amber-500" />
-        Drug Interactions ({interactions.length})
+        {t('prescriptions.drugInteractions')} ({interactions.length})
       </h4>
       {sorted.map((interaction, index) => {
         const config = severityConfig[interaction.severity];
@@ -77,7 +80,7 @@ export function DrugInteractionAlert({ interactions }: DrugInteractionAlertProps
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className={cn('text-xs font-semibold uppercase', config.text)}>
-                  {config.label}
+                  {t(config.labelKey)}
                 </span>
               </div>
               <p className={cn('text-sm font-medium', config.text)}>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   format,
   startOfMonth,
@@ -73,6 +74,7 @@ function navigate(date: Date, view: ViewMode, direction: 1 | -1): Date {
 }
 
 export function AppointmentCalendarPage() {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [view, setView] = useState<ViewMode>('month');
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -111,15 +113,15 @@ export function AppointmentCalendarPage() {
 
   return (
     <PageWrapper
-      title="Appointments"
+      title={t('appointments.title')}
       breadcrumbs={[
-        { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Appointments' },
+        { label: t('nav.dashboard'), path: '/dashboard' },
+        { label: t('nav.appointments') },
       ]}
       actions={
         <Button onClick={() => setBookingOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Book Appointment
+          {t('appointments.bookAppointment')}
         </Button>
       }
     >
@@ -136,7 +138,7 @@ export function AppointmentCalendarPage() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="sm" onClick={handleToday}>
-                Today
+                {t('common.today')}
               </Button>
               <h2 className="text-lg font-semibold text-foreground ml-2">
                 {getTitle(selectedDate, view)}
@@ -148,9 +150,9 @@ export function AppointmentCalendarPage() {
               onValueChange={(v) => setView(v as ViewMode)}
             >
               <TabsList>
-                <TabsTrigger value="day">Day</TabsTrigger>
-                <TabsTrigger value="week">Week</TabsTrigger>
-                <TabsTrigger value="month">Month</TabsTrigger>
+                <TabsTrigger value="day">{t('appointments.views.day')}</TabsTrigger>
+                <TabsTrigger value="week">{t('appointments.views.week')}</TabsTrigger>
+                <TabsTrigger value="month">{t('appointments.views.month')}</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -160,7 +162,7 @@ export function AppointmentCalendarPage() {
             <div className="flex items-center justify-center h-[500px] border rounded-lg bg-muted/30">
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <Calendar className="h-8 w-8 animate-pulse" />
-                <p className="text-sm">Loading appointments...</p>
+                <p className="text-sm">{t('appointments.loadingCalendar')}</p>
               </div>
             </div>
           ) : (

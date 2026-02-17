@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -37,12 +38,12 @@ interface NewCustomField {
 }
 
 const FIELD_TYPES = [
-  { value: 'TEXT', label: 'Text' },
-  { value: 'NUMBER', label: 'Number' },
-  { value: 'DATE', label: 'Date' },
-  { value: 'SELECT', label: 'Select / Dropdown' },
-  { value: 'TEXTAREA', label: 'Text Area' },
-  { value: 'BOOLEAN', label: 'Yes / No' },
+  { value: 'TEXT', labelKey: 'settings.specialties.fieldTypes.text' },
+  { value: 'NUMBER', labelKey: 'settings.specialties.fieldTypes.number' },
+  { value: 'DATE', labelKey: 'settings.specialties.fieldTypes.date' },
+  { value: 'SELECT', labelKey: 'settings.specialties.fieldTypes.select' },
+  { value: 'TEXTAREA', labelKey: 'settings.specialties.fieldTypes.textarea' },
+  { value: 'BOOLEAN', labelKey: 'settings.specialties.fieldTypes.boolean' },
 ];
 
 function useSpecialties() {
@@ -108,6 +109,7 @@ function useRemoveCustomField() {
 }
 
 export function SpecialtyManager() {
+  const { t } = useTranslation();
   const { data, isLoading } = useSpecialties();
   const createSpecialty = useCreateSpecialty();
   const updateSpecialty = useUpdateSpecialty();
@@ -144,21 +146,21 @@ export function SpecialtyManager() {
 
   const handleSaveSpecialty = async () => {
     if (!specialtyForm.name.trim()) {
-      toast.error('Specialty name is required');
+      toast.error(t('settings.specialties.nameRequired'));
       return;
     }
 
     try {
       if (editingSpecialty) {
         await updateSpecialty.mutateAsync({ id: editingSpecialty.id, ...specialtyForm });
-        toast.success('Specialty updated successfully');
+        toast.success(t('settings.specialties.updated'));
       } else {
         await createSpecialty.mutateAsync(specialtyForm);
-        toast.success('Specialty created successfully');
+        toast.success(t('settings.specialties.created'));
       }
       setShowAddDialog(false);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to save specialty');
+      toast.error(err.response?.data?.message || t('settings.specialties.saveFailed'));
     }
   };
 
@@ -166,16 +168,19 @@ export function SpecialtyManager() {
     try {
       await updateSpecialty.mutateAsync({ id: specialty.id, isActive: !specialty.isActive });
       toast.success(
-        `${specialty.name} ${specialty.isActive ? 'deactivated' : 'activated'} successfully`,
+        t('settings.specialties.toggledActive', {
+          name: specialty.name,
+          status: specialty.isActive ? t('settings.specialties.deactivated') : t('settings.specialties.activated'),
+        }),
       );
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update specialty');
+      toast.error(err.response?.data?.message || t('settings.specialties.updateFailed'));
     }
   };
 
   const handleAddField = async (specialtyId: string) => {
     if (!newField.fieldName.trim()) {
-      toast.error('Field name is required');
+      toast.error(t('settings.specialties.fieldNameRequired'));
       return;
     }
 
@@ -186,18 +191,18 @@ export function SpecialtyManager() {
         sortOrder: 0,
       });
       setNewField({ fieldName: '', fieldType: 'TEXT', isRequired: false });
-      toast.success('Custom field added successfully');
+      toast.success(t('settings.specialties.fieldAdded'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to add custom field');
+      toast.error(err.response?.data?.message || t('settings.specialties.fieldAddFailed'));
     }
   };
 
   const handleRemoveField = async (specialtyId: string, fieldId: string) => {
     try {
       await removeCustomField.mutateAsync({ specialtyId, fieldId });
-      toast.success('Custom field removed');
+      toast.success(t('settings.specialties.fieldRemoved'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to remove custom field');
+      toast.error(err.response?.data?.message || t('settings.specialties.fieldRemoveFailed'));
     }
   };
 
@@ -209,12 +214,12 @@ export function SpecialtyManager() {
     return (
       <EmptyState
         icon={Stethoscope}
-        title="No specialties configured"
-        description="Add your first medical specialty to organize doctors and consultations."
+        title={t('settings.specialties.noSpecialties')}
+        description={t('settings.specialties.noSpecialtiesDescription')}
         action={
           <Button onClick={handleOpenAddDialog}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Specialty
+            {t('settings.specialties.addSpecialty')}
           </Button>
         }
       />
@@ -226,7 +231,7 @@ export function SpecialtyManager() {
       <div className="flex justify-end">
         <Button onClick={handleOpenAddDialog}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Specialty
+          {t('settings.specialties.addSpecialty')}
         </Button>
       </div>
 
@@ -250,7 +255,7 @@ export function SpecialtyManager() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-foreground">{specialty.name}</span>
                       <Badge variant={specialty.isActive ? 'default' : 'secondary'}>
-                        {specialty.isActive ? 'Active' : 'Inactive'}
+                        {specialty.isActive ? t('common.active') : t('common.inactive')}
                       </Badge>
                     </div>
                     {specialty.description && (
@@ -278,7 +283,7 @@ export function SpecialtyManager() {
               {expandedId === specialty.id && (
                 <div className="border-t px-4 py-4 bg-muted/30 space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-foreground mb-3">Custom Fields</h4>
+                    <h4 className="text-sm font-medium text-foreground mb-3">{t('settings.specialties.customFields')}</h4>
                     {specialty.fields && specialty.fields.length > 0 ? (
                       <div className="space-y-2">
                         {specialty.fields.map((field: SpecialtyField) => (
@@ -298,7 +303,7 @@ export function SpecialtyManager() {
                                   </Badge>
                                   {field.isRequired && (
                                     <Badge variant="secondary" className="text-xs">
-                                      Required
+                                      {t('common.required')}
                                     </Badge>
                                   )}
                                 </div>
@@ -317,28 +322,28 @@ export function SpecialtyManager() {
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        No custom fields configured for this specialty.
+                        {t('settings.specialties.noCustomFields')}
                       </p>
                     )}
                   </div>
 
                   <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-foreground mb-3">Add Custom Field</h4>
+                    <h4 className="text-sm font-medium text-foreground mb-3">{t('settings.specialties.addCustomField')}</h4>
                     <div className="flex items-end gap-3">
                       <div className="flex-1">
-                        <Label htmlFor={`field-name-${specialty.id}`}>Field Name</Label>
+                        <Label htmlFor={`field-name-${specialty.id}`}>{t('settings.specialties.fieldName')}</Label>
                         <Input
                           id={`field-name-${specialty.id}`}
                           value={newField.fieldName}
                           onChange={(e) =>
                             setNewField((prev) => ({ ...prev, fieldName: e.target.value }))
                           }
-                          placeholder="e.g., Blood Pressure"
+                          placeholder={t('settings.specialties.fieldNamePlaceholder')}
                           className="mt-1"
                         />
                       </div>
                       <div className="w-40">
-                        <Label>Type</Label>
+                        <Label>{t('settings.specialties.fieldType')}</Label>
                         <Select
                           value={newField.fieldType}
                           onValueChange={(val) =>
@@ -351,7 +356,7 @@ export function SpecialtyManager() {
                           <SelectContent>
                             {FIELD_TYPES.map((type) => (
                               <SelectItem key={type.value} value={type.value}>
-                                {type.label}
+                                {t(type.labelKey)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -364,7 +369,7 @@ export function SpecialtyManager() {
                             setNewField((prev) => ({ ...prev, isRequired: checked }))
                           }
                         />
-                        <Label className="text-xs">Required</Label>
+                        <Label className="text-xs">{t('common.required')}</Label>
                       </div>
                       <Button
                         size="sm"
@@ -372,7 +377,7 @@ export function SpecialtyManager() {
                         disabled={addCustomField.isPending}
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        Add
+                        {t('common.add')}
                       </Button>
                     </div>
                   </div>
@@ -387,51 +392,51 @@ export function SpecialtyManager() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingSpecialty ? 'Edit Specialty' : 'Add New Specialty'}
+              {editingSpecialty ? t('settings.specialties.editSpecialty') : t('settings.specialties.addNewSpecialty')}
             </DialogTitle>
             <DialogDescription>
               {editingSpecialty
-                ? 'Update the specialty information.'
-                : 'Create a new medical specialty for your clinic.'}
+                ? t('settings.specialties.editDescription')
+                : t('settings.specialties.addDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="specialty-name">Specialty Name</Label>
+              <Label htmlFor="specialty-name">{t('settings.specialties.specialtyName')}</Label>
               <Input
                 id="specialty-name"
                 value={specialtyForm.name}
                 onChange={(e) => setSpecialtyForm((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., Cardiology"
+                placeholder={t('settings.specialties.specialtyNamePlaceholder')}
                 className="mt-1.5"
               />
             </div>
             <div>
-              <Label htmlFor="specialty-description">Description</Label>
+              <Label htmlFor="specialty-description">{t('settings.specialties.description')}</Label>
               <Input
                 id="specialty-description"
                 value={specialtyForm.description}
                 onChange={(e) =>
                   setSpecialtyForm((prev) => ({ ...prev, description: e.target.value }))
                 }
-                placeholder="Brief description of the specialty"
+                placeholder={t('settings.specialties.descriptionPlaceholder')}
                 className="mt-1.5"
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleSaveSpecialty}
               disabled={createSpecialty.isPending || updateSpecialty.isPending}
             >
               {createSpecialty.isPending || updateSpecialty.isPending
-                ? 'Saving...'
+                ? t('common.saving')
                 : editingSpecialty
-                  ? 'Update'
-                  : 'Create'}
+                  ? t('common.update')
+                  : t('common.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

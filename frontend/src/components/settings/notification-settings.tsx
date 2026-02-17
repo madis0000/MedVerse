@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSettings, useUpdateSettings } from '@/api/settings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsData = {
 };
 
 export function NotificationSettings() {
+  const { t } = useTranslation();
   const { data, isLoading } = useSettings();
   const updateSettings = useUpdateSettings();
   const [form, setForm] = useState<NotificationSettingsData>(DEFAULT_NOTIFICATION_SETTINGS);
@@ -40,9 +42,9 @@ export function NotificationSettings() {
     e.preventDefault();
     try {
       await updateSettings.mutateAsync(form);
-      toast.success('Notification settings updated successfully');
+      toast.success(t('settings.notifications.saved'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update notification settings');
+      toast.error(err.response?.data?.message || t('settings.notifications.saveFailed'));
     }
   };
 
@@ -56,10 +58,10 @@ export function NotificationSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <BellRing className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">Appointment Reminders</CardTitle>
+            <CardTitle className="text-lg">{t('settings.notifications.appointmentReminders')}</CardTitle>
           </div>
           <CardDescription>
-            Configure how and when patients receive appointment reminders.
+            {t('settings.notifications.appointmentRemindersDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -69,9 +71,9 @@ export function NotificationSettings() {
                 <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Email Reminders</p>
+                <p className="text-sm font-medium text-foreground">{t('settings.notifications.emailReminders')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Send appointment reminders via email to patients
+                  {t('settings.notifications.emailRemindersDescription')}
                 </p>
               </div>
             </div>
@@ -89,9 +91,9 @@ export function NotificationSettings() {
                 <MessageSquare className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">SMS Reminders</p>
+                <p className="text-sm font-medium text-foreground">{t('settings.notifications.smsReminders')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Send appointment reminders via SMS to patients
+                  {t('settings.notifications.smsRemindersDescription')}
                 </p>
               </div>
             </div>
@@ -109,14 +111,14 @@ export function NotificationSettings() {
                 <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Reminder Timing</p>
+                <p className="text-sm font-medium text-foreground">{t('settings.notifications.reminderTiming')}</p>
                 <p className="text-xs text-muted-foreground">
-                  How many hours before the appointment should the reminder be sent
+                  {t('settings.notifications.reminderTimingDescription')}
                 </p>
               </div>
             </div>
             <div className="ml-13">
-              <Label htmlFor="reminder_hours_before">Hours Before Appointment</Label>
+              <Label htmlFor="reminder_hours_before">{t('settings.notifications.hoursBeforeAppointment')}</Label>
               <Input
                 id="reminder_hours_before"
                 type="number"
@@ -132,7 +134,7 @@ export function NotificationSettings() {
                 className="mt-1.5 max-w-xs"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Common values: 1 hour, 24 hours (1 day), 48 hours (2 days)
+                {t('settings.notifications.commonValues')}
               </p>
             </div>
           </div>
@@ -142,7 +144,7 @@ export function NotificationSettings() {
       <div className="flex justify-end">
         <Button type="submit" disabled={updateSettings.isPending}>
           <Save className="w-4 h-4 mr-2" />
-          {updateSettings.isPending ? 'Saving...' : 'Save Changes'}
+          {updateSettings.isPending ? t('common.saving') : t('common.saveChanges')}
         </Button>
       </div>
     </form>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronRight, FileText, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn, formatDate } from '@/lib/utils';
@@ -16,6 +17,7 @@ const statusStyles: Record<PrescriptionStatus, string> = {
 };
 
 export function PrescriptionHistory({ patientId }: PrescriptionHistoryProps) {
+  const { t } = useTranslation();
   const { data, isLoading } = usePatientPrescriptions(patientId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -35,7 +37,7 @@ export function PrescriptionHistory({ patientId }: PrescriptionHistoryProps) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No previous prescriptions found</p>
+        <p className="text-sm">{t('prescriptions.noPrescriptions')}</p>
       </div>
     );
   }
@@ -44,7 +46,7 @@ export function PrescriptionHistory({ patientId }: PrescriptionHistoryProps) {
     <div className="space-y-2">
       <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
         <Clock className="h-4 w-4" />
-        Recent Prescriptions
+        {t('prescriptions.history')}
       </h4>
       {prescriptions.map((rx) => {
         const isExpanded = expandedId === rx.id;
@@ -66,11 +68,11 @@ export function PrescriptionHistory({ patientId }: PrescriptionHistoryProps) {
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-sm font-medium">{formatDate(rx.createdAt)}</span>
                   <Badge className={cn('text-xs', statusStyles[rx.status])}>
-                    {rx.status}
+                    {t(`prescriptions.status.${rx.status}`)}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">
-                  {rx.doctor ? `Dr. ${rx.doctor.firstName} ${rx.doctor.lastName}` : 'Unknown Doctor'}
+                  {rx.doctor ? `${t('common.dr')} ${rx.doctor.firstName} ${rx.doctor.lastName}` : t('common.unknownDoctor')}
                   {medicationNames && ` - ${medicationNames}`}
                 </p>
               </div>
@@ -94,7 +96,7 @@ export function PrescriptionHistory({ patientId }: PrescriptionHistoryProps) {
                   ))}
                   {rx.notes && (
                     <p className="text-xs text-muted-foreground pl-6 pt-1 border-t mt-2">
-                      Notes: {rx.notes}
+                      {t('common.notes')}: {rx.notes}
                     </p>
                   )}
                 </div>

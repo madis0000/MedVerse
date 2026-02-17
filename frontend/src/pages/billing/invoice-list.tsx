@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ColumnDef } from '@tanstack/react-table';
 import {
   Receipt,
@@ -29,16 +30,17 @@ const statusStyles: Record<InvoiceStatus, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500',
 };
 
-const STATUS_TABS: Array<{ label: string; value: string }> = [
-  { label: 'All', value: 'ALL' },
-  { label: 'Pending', value: 'PENDING' },
-  { label: 'Partial', value: 'PARTIAL' },
-  { label: 'Paid', value: 'PAID' },
-  { label: 'Overdue', value: 'OVERDUE' },
+const STATUS_TAB_KEYS = [
+  { key: 'billing.tabs.all', value: 'ALL' },
+  { key: 'billing.tabs.pending', value: 'PENDING' },
+  { key: 'billing.tabs.partial', value: 'PARTIAL' },
+  { key: 'billing.tabs.paid', value: 'PAID' },
+  { key: 'billing.tabs.overdue', value: 'OVERDUE' },
 ];
 
 export function InvoiceListPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
 
@@ -51,14 +53,14 @@ export function InvoiceListPage() {
   const columns: ColumnDef<Invoice, any>[] = [
     {
       accessorKey: 'invoiceNumber',
-      header: 'Invoice #',
+      header: t('billing.invoiceNumber'),
       cell: ({ row }) => (
         <span className="font-mono text-sm font-medium">{row.original.invoiceNumber}</span>
       ),
     },
     {
       accessorKey: 'patient',
-      header: 'Patient',
+      header: t('billing.patient'),
       cell: ({ row }) => {
         const p = row.original.patient;
         return p ? (
@@ -70,24 +72,24 @@ export function InvoiceListPage() {
     },
     {
       accessorKey: 'createdAt',
-      header: 'Date',
+      header: t('common.date'),
       cell: ({ row }) => (
         <span className="text-muted-foreground">{formatDate(row.original.createdAt)}</span>
       ),
     },
     {
       accessorKey: 'total',
-      header: 'Total',
+      header: t('billing.total'),
       cell: ({ row }) => (
         <span className="font-medium">{formatCurrency(row.original.total)}</span>
       ),
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('common.status'),
       cell: ({ row }) => (
         <Badge className={cn('text-xs', statusStyles[row.original.status])}>
-          {row.original.status}
+          {t(`billing.status.${row.original.status}`)}
         </Badge>
       ),
     },
@@ -113,12 +115,12 @@ export function InvoiceListPage() {
 
   return (
     <PageWrapper
-      title="Billing"
-      breadcrumbs={[{ label: 'Billing' }]}
+      title={t('nav.billing')}
+      breadcrumbs={[{ label: t('nav.billing') }]}
       actions={
         <Button onClick={() => setInvoiceFormOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Create Invoice
+          {t('billing.newInvoice')}
         </Button>
       }
     >
@@ -128,30 +130,30 @@ export function InvoiceListPage() {
         className="space-y-4"
       >
         <TabsList>
-          {STATUS_TABS.map((tab) => (
+          {STATUS_TAB_KEYS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
+              {t(tab.key)}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {STATUS_TABS.map((tab) => (
+        {STATUS_TAB_KEYS.map((tab) => (
           <TabsContent key={tab.value} value={tab.value}>
             {isLoading ? (
               <TableSkeleton rows={6} cols={6} />
             ) : invoices.length === 0 ? (
               <EmptyState
                 icon={Receipt}
-                title="No invoices"
+                title={t('billing.noInvoices')}
                 description={
                   statusFilter === 'ALL'
-                    ? 'No invoices have been created yet.'
-                    : `No ${tab.label.toLowerCase()} invoices found.`
+                    ? t('billing.noInvoicesDescription')
+                    : t('billing.noInvoicesDescription')
                 }
                 action={
                   <Button onClick={() => setInvoiceFormOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Invoice
+                    {t('billing.newInvoice')}
                   </Button>
                 }
               />

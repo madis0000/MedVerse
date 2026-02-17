@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Clock, User, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,28 +15,29 @@ const statusColors: Record<string, string> = {
   CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
-function formatTime(dateTime: string) {
-  return new Date(dateTime).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function AppointmentWidget() {
+  const { t, i18n } = useTranslation();
   const today = new Date().toISOString().split('T')[0];
   const { data, isLoading } = useAppointments({ date: today, limit: 5 });
 
   const appointments: Appointment[] = data?.data || [];
 
+  function formatTime(dateTime: string) {
+    return new Date(dateTime).toLocaleTimeString(i18n.language, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-semibold">Today's Appointments</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('dashboard.upcomingAppointments')}</CardTitle>
         <Link
           to="/appointments"
           className="text-sm text-primary hover:underline inline-flex items-center gap-1"
         >
-          View all
+          {t('dashboard.viewAll')}
           <ArrowRight className="h-3 w-3" />
         </Link>
       </CardHeader>
@@ -55,7 +57,7 @@ export function AppointmentWidget() {
         ) : appointments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Clock className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No appointments today</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.noUpcomingAppointments')}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -72,7 +74,7 @@ export function AppointmentWidget() {
                   <p className="text-sm font-medium text-foreground truncate">
                     {apt.patient
                       ? `${apt.patient.firstName} ${apt.patient.lastName}`
-                      : 'Unknown Patient'}
+                      : t('common.noData')}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {formatTime(apt.dateTime)} - {formatTime(apt.endTime)}
@@ -80,7 +82,7 @@ export function AppointmentWidget() {
                   </p>
                 </div>
                 <Badge className={statusColors[apt.status] || ''} variant="secondary">
-                  {apt.status.replace('_', ' ')}
+                  {t(`appointments.status.${apt.status}`, { defaultValue: apt.status.replace('_', ' ') })}
                 </Badge>
               </Link>
             ))}

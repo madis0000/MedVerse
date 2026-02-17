@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Stethoscope,
   FlaskConical,
@@ -55,6 +56,7 @@ const statusBadgeColors: Record<string, string> = {
 };
 
 export function VisitHistoryTimeline({ patientId }: VisitHistoryTimelineProps) {
+  const { t } = useTranslation();
   const { data, isLoading } = usePatientTimeline(patientId);
 
   const events: TimelineEvent[] = data?.data || [];
@@ -83,9 +85,9 @@ export function VisitHistoryTimeline({ patientId }: VisitHistoryTimelineProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Calendar className="h-10 w-10 text-muted-foreground mb-3" />
-        <h3 className="text-sm font-medium text-foreground mb-1">No visit history</h3>
+        <h3 className="text-sm font-medium text-foreground mb-1">{t('patients.noVisitHistory')}</h3>
         <p className="text-sm text-muted-foreground">
-          This patient does not have any recorded visits yet.
+          {t('patients.noVisitHistoryDescription')}
         </p>
       </div>
     );
@@ -143,7 +145,7 @@ export function VisitHistoryTimeline({ patientId }: VisitHistoryTimelineProps) {
                   </div>
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                     <span>{formatDateTime(event.dateTime)}</span>
-                    {event.doctorName && <span>Dr. {event.doctorName}</span>}
+                    {event.doctorName && <span>{t('patients.doctor', { name: event.doctorName })}</span>}
                   </div>
                 </div>
               </div>

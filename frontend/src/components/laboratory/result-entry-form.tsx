@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Save, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ interface ResultEntry {
 }
 
 export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
+  const { t } = useTranslation();
   const enterResult = useEnterLabResult();
   const items: LabOrderItem[] = order.items ?? [];
 
@@ -57,7 +59,7 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
   async function handleSubmitResult(item: LabOrderItem) {
     const entry = entries[item.id];
     if (!entry?.value.trim()) {
-      toast.error('Enter a value before submitting');
+      toast.error(t('laboratory.results.enterValueError', 'Enter a value before submitting'));
       return;
     }
 
@@ -69,9 +71,9 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
         notes: entry.notes || undefined,
       });
       setCompletedIds((prev) => new Set(prev).add(item.id));
-      toast.success(`Result saved for ${item.testName}`);
+      toast.success(t('laboratory.results.resultSavedFor', 'Result saved for {{testName}}', { testName: item.testName }));
     } catch {
-      toast.error(`Failed to save result for ${item.testName}`);
+      toast.error(t('laboratory.results.resultFailedFor', 'Failed to save result for {{testName}}', { testName: item.testName }));
     } finally {
       setSubmittingId(null);
     }
@@ -80,7 +82,7 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
   async function handleSubmitAll() {
     const pending = items.filter((item) => !completedIds.has(item.id) && entries[item.id]?.value.trim());
     if (pending.length === 0) {
-      toast.info('No new results to submit');
+      toast.info(t('laboratory.results.noNewResults', 'No new results to submit'));
       return;
     }
 
@@ -93,7 +95,7 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
   if (items.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <p className="text-sm">No test items in this order</p>
+        <p className="text-sm">{t('laboratory.results.noTestItems', 'No test items in this order')}</p>
       </div>
     );
   }
@@ -103,15 +105,15 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-medium">
-            Order for {order.patient?.firstName} {order.patient?.lastName}
+            {t('laboratory.results.orderFor', 'Order for')} {order.patient?.firstName} {order.patient?.lastName}
           </h3>
           <p className="text-xs text-muted-foreground">
-            {items.length} test(s) &middot; {completedIds.size} completed
+            {items.length} {t('laboratory.results.tests', 'test(s)')} &middot; {completedIds.size} {t('laboratory.results.completed', 'completed')}
           </p>
         </div>
         <Button size="sm" onClick={handleSubmitAll}>
           <Save className="h-4 w-4 mr-1" />
-          Save All
+          {t('laboratory.results.saveAll', 'Save All')}
         </Button>
       </div>
 
@@ -137,10 +139,10 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {item.result?.unit && `Unit: ${item.result.unit}`}
+                      {item.result?.unit && `${t('laboratory.results.unit')}: ${item.result.unit}`}
                       {item.result?.normalRangeMin !== undefined &&
                         item.result?.normalRangeMax !== undefined &&
-                        ` | Normal: ${item.result.normalRangeMin} - ${item.result.normalRangeMax}`}
+                        ` | ${t('laboratory.results.normal')}: ${item.result.normalRangeMin} - ${item.result.normalRangeMax}`}
                       {item.result?.normalRangeText && ` | ${item.result.normalRangeText}`}
                     </p>
                   </div>
@@ -155,11 +157,11 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-1">
-                    <Label className="text-xs">Value</Label>
+                    <Label className="text-xs">{t('laboratory.results.value')}</Label>
                     <Input
                       value={entry?.value ?? ''}
                       onChange={(e) => updateEntry(item.id, 'value', e.target.value)}
-                      placeholder="Enter result"
+                      placeholder={t('laboratory.results.enterResult', 'Enter result')}
                       className={cn(
                         hasValue &&
                           item.result?.normalRangeMin !== undefined &&
@@ -171,11 +173,11 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
                   </div>
 
                   <div className="sm:col-span-1">
-                    <Label className="text-xs">Notes</Label>
+                    <Label className="text-xs">{t('common.notes', 'Notes')}</Label>
                     <Input
                       value={entry?.notes ?? ''}
                       onChange={(e) => updateEntry(item.id, 'notes', e.target.value)}
-                      placeholder="Optional notes"
+                      placeholder={t('laboratory.results.optionalNotes', 'Optional notes')}
                     />
                   </div>
 
@@ -190,9 +192,9 @@ export function ResultEntryForm({ order, onComplete }: ResultEntryFormProps) {
                       {submittingId === item.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : isCompleted ? (
-                        'Update'
+                        t('common.update', 'Update')
                       ) : (
-                        'Save'
+                        t('common.save')
                       )}
                     </Button>
                   </div>

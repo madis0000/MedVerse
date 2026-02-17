@@ -8,6 +8,7 @@ import {
   Activity,
   Clock,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/auth-store';
 import { useAdminDashboard, useDoctorDashboard } from '@/api/dashboard';
 import { PageWrapper } from '@/components/layout/page-wrapper';
@@ -21,6 +22,7 @@ import { formatCurrency } from '@/lib/utils';
 import type { Role } from '@/types';
 
 function AdminDashboard() {
+  const { t } = useTranslation();
   const { data, isLoading } = useAdminDashboard();
 
   if (isLoading) {
@@ -33,28 +35,28 @@ function AdminDashboard() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="Total Patients"
+          title={t('dashboard.admin.totalPatients')}
           value={stats.totalPatients?.toLocaleString() || '0'}
           change={stats.patientGrowth}
           icon={Users}
           color="blue"
         />
         <StatsCard
-          title="Appointments Today"
+          title={t('dashboard.admin.appointmentsToday')}
           value={stats.appointmentsToday || 0}
           change={stats.appointmentGrowth}
           icon={CalendarCheck}
           color="green"
         />
         <StatsCard
-          title="Revenue (Month)"
+          title={t('dashboard.admin.revenueMonth')}
           value={formatCurrency(stats.monthlyRevenue || 0)}
           change={stats.revenueGrowth}
           icon={DollarSign}
           color="amber"
         />
         <StatsCard
-          title="Pending Labs"
+          title={t('dashboard.admin.pendingLabs')}
           value={stats.pendingLabs || 0}
           icon={FlaskConical}
           color="purple"
@@ -79,6 +81,7 @@ function AdminDashboard() {
 }
 
 function DoctorDashboard() {
+  const { t } = useTranslation();
   const { data, isLoading } = useDoctorDashboard();
 
   if (isLoading) {
@@ -91,25 +94,25 @@ function DoctorDashboard() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="Today's Patients"
+          title={t('dashboard.doctor.todaysPatients')}
           value={stats.todayPatients || 0}
           icon={Users}
           color="blue"
         />
         <StatsCard
-          title="Pending Consultations"
+          title={t('dashboard.doctor.pendingConsultations')}
           value={stats.pendingConsultations || 0}
           icon={Stethoscope}
           color="green"
         />
         <StatsCard
-          title="Pending Lab Results"
+          title={t('dashboard.doctor.pendingLabResults')}
           value={stats.pendingLabs || 0}
           icon={FlaskConical}
           color="amber"
         />
         <StatsCard
-          title="Completed Today"
+          title={t('dashboard.doctor.completedToday')}
           value={stats.completedToday || 0}
           icon={ClipboardList}
           color="purple"
@@ -130,10 +133,12 @@ function DoctorDashboard() {
 }
 
 function GenericDashboard({ role }: { role: Role }) {
+  const { t } = useTranslation();
+
   const roleLabels: Record<string, string> = {
-    NURSE: 'Nurse',
-    RECEPTIONIST: 'Receptionist',
-    LAB_TECH: 'Lab Technician',
+    NURSE: t('roles.NURSE'),
+    RECEPTIONIST: t('roles.RECEPTIONIST'),
+    LAB_TECH: t('roles.LAB_TECH'),
   };
 
   return (
@@ -145,36 +150,36 @@ function GenericDashboard({ role }: { role: Role }) {
           </div>
         </div>
         <h2 className="text-xl font-semibold text-foreground mb-2">
-          Welcome, {roleLabels[role] || 'Staff Member'}
+          {t('dashboard.generic.welcome', { role: roleLabels[role] || t('roles.staffMember') })}
         </h2>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Your dashboard is ready. Use the navigation to access your assigned modules and tasks.
+          {t('dashboard.generic.dashboardReady')}
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {role === 'NURSE' && (
           <>
-            <StatsCard title="Patients Waiting" value={0} icon={Users} color="blue" />
-            <StatsCard title="Vitals to Record" value={0} icon={Activity} color="green" />
-            <StatsCard title="Check-ins Today" value={0} icon={CalendarCheck} color="amber" />
-            <StatsCard title="Tasks Pending" value={0} icon={ClipboardList} color="purple" />
+            <StatsCard title={t('dashboard.nurse.patientsWaiting')} value={0} icon={Users} color="blue" />
+            <StatsCard title={t('dashboard.nurse.vitalsToRecord')} value={0} icon={Activity} color="green" />
+            <StatsCard title={t('dashboard.nurse.checkInsToday')} value={0} icon={CalendarCheck} color="amber" />
+            <StatsCard title={t('dashboard.nurse.tasksPending')} value={0} icon={ClipboardList} color="purple" />
           </>
         )}
         {role === 'RECEPTIONIST' && (
           <>
-            <StatsCard title="Today's Appointments" value={0} icon={CalendarCheck} color="blue" />
-            <StatsCard title="Checked In" value={0} icon={Users} color="green" />
-            <StatsCard title="Pending Payments" value={0} icon={DollarSign} color="amber" />
-            <StatsCard title="No Shows" value={0} icon={Clock} color="red" />
+            <StatsCard title={t('dashboard.receptionist.todaysAppointments')} value={0} icon={CalendarCheck} color="blue" />
+            <StatsCard title={t('dashboard.receptionist.checkedIn')} value={0} icon={Users} color="green" />
+            <StatsCard title={t('dashboard.receptionist.pendingPayments')} value={0} icon={DollarSign} color="amber" />
+            <StatsCard title={t('dashboard.receptionist.noShows')} value={0} icon={Clock} color="red" />
           </>
         )}
         {role === 'LAB_TECH' && (
           <>
-            <StatsCard title="Pending Orders" value={0} icon={FlaskConical} color="blue" />
-            <StatsCard title="In Processing" value={0} icon={Activity} color="green" />
-            <StatsCard title="Completed Today" value={0} icon={ClipboardList} color="amber" />
-            <StatsCard title="Urgent Orders" value={0} icon={Clock} color="red" />
+            <StatsCard title={t('dashboard.labTech.pendingOrders')} value={0} icon={FlaskConical} color="blue" />
+            <StatsCard title={t('dashboard.labTech.inProcessing')} value={0} icon={Activity} color="green" />
+            <StatsCard title={t('dashboard.labTech.completedToday')} value={0} icon={ClipboardList} color="amber" />
+            <StatsCard title={t('dashboard.labTech.urgentOrders')} value={0} icon={Clock} color="red" />
           </>
         )}
       </div>
@@ -194,16 +199,18 @@ interface RecentConsultation {
 }
 
 function RecentConsultationsCard({ consultations }: { consultations: RecentConsultation[] }) {
+  const { t, i18n } = useTranslation();
+
   return (
     <div className="rounded-lg border bg-card">
       <div className="p-6 pb-2">
-        <h3 className="text-base font-semibold text-foreground">Recent Consultations</h3>
+        <h3 className="text-base font-semibold text-foreground">{t('dashboard.recentConsultations')}</h3>
       </div>
       <div className="p-6 pt-2">
         {consultations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Stethoscope className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No recent consultations</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.noRecentConsultations')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -217,11 +224,11 @@ function RecentConsultationsCard({ consultations }: { consultations: RecentConsu
                     {consultation.patientName}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {consultation.diagnosis || 'No diagnosis recorded'}
+                    {consultation.diagnosis || t('dashboard.noDiagnosisRecorded')}
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(consultation.completedAt).toLocaleTimeString('en-US', {
+                  {new Date(consultation.completedAt).toLocaleTimeString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
@@ -244,6 +251,8 @@ interface PendingLab {
 }
 
 function PendingLabsCard({ labs }: { labs: PendingLab[] }) {
+  const { t } = useTranslation();
+
   const priorityColors: Record<string, string> = {
     STAT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     URGENT: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
@@ -253,13 +262,13 @@ function PendingLabsCard({ labs }: { labs: PendingLab[] }) {
   return (
     <div className="rounded-lg border bg-card">
       <div className="p-6 pb-2">
-        <h3 className="text-base font-semibold text-foreground">Pending Lab Results</h3>
+        <h3 className="text-base font-semibold text-foreground">{t('dashboard.pendingLabResults')}</h3>
       </div>
       <div className="p-6 pt-2">
         {labs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <FlaskConical className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No pending lab results</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.noPendingLabResults')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -277,7 +286,7 @@ function PendingLabsCard({ labs }: { labs: PendingLab[] }) {
                     priorityColors[lab.priority] || priorityColors.ROUTINE
                   }`}
                 >
-                  {lab.priority}
+                  {t(`laboratory.priority.${lab.priority}`, lab.priority)}
                 </span>
               </div>
             ))}
@@ -297,10 +306,12 @@ function RecentActivityCard({
   completedToday: number;
   newPatients: number;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-lg border bg-card">
       <div className="p-6 pb-2">
-        <h3 className="text-base font-semibold text-foreground">Quick Stats</h3>
+        <h3 className="text-base font-semibold text-foreground">{t('dashboard.quickStats')}</h3>
       </div>
       <div className="p-6 pt-2 space-y-4">
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
@@ -309,8 +320,8 @@ function RecentActivityCard({
               <ClipboardList className="h-4 w-4 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">Completed Today</p>
-              <p className="text-xs text-muted-foreground">Appointments finished</p>
+              <p className="text-sm font-medium text-foreground">{t('dashboard.completedToday')}</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.appointmentsFinished')}</p>
             </div>
           </div>
           <span className="text-lg font-bold text-foreground">{completedToday}</span>
@@ -322,8 +333,8 @@ function RecentActivityCard({
               <FlaskConical className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">Pending Labs</p>
-              <p className="text-xs text-muted-foreground">Awaiting results</p>
+              <p className="text-sm font-medium text-foreground">{t('dashboard.pendingLabs')}</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.awaitingResults')}</p>
             </div>
           </div>
           <span className="text-lg font-bold text-foreground">{pendingLabs}</span>
@@ -335,8 +346,8 @@ function RecentActivityCard({
               <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">New Patients</p>
-              <p className="text-xs text-muted-foreground">Registered today</p>
+              <p className="text-sm font-medium text-foreground">{t('dashboard.newPatients')}</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.registeredToday')}</p>
             </div>
           </div>
           <span className="text-lg font-bold text-foreground">{newPatients}</span>
@@ -347,11 +358,12 @@ function RecentActivityCard({
 }
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const role = user?.role || 'RECEPTIONIST';
 
-  const greeting = getGreeting();
-  const displayName = user ? `${user.firstName}` : 'there';
+  const greeting = getGreeting(t);
+  const displayName = user ? `${user.firstName}` : '';
 
   return (
     <PageWrapper title={`${greeting}, ${displayName}`}>
@@ -362,9 +374,9 @@ export function DashboardPage() {
   );
 }
 
-function getGreeting() {
+function getGreeting(t: (key: string) => string) {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return t('dashboard.greeting.morning');
+  if (hour < 17) return t('dashboard.greeting.afternoon');
+  return t('dashboard.greeting.evening');
 }

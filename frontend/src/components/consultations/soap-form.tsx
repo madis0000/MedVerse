@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   User,
   Eye,
@@ -26,43 +27,41 @@ interface SOAPFormProps {
 
 type SOAPField = 'subjective' | 'objective' | 'assessment' | 'plan';
 
-const SOAP_TABS: { value: SOAPField; label: string; icon: React.ReactNode; placeholder: string }[] = [
-  {
-    value: 'subjective',
-    label: 'Subjective',
-    icon: <User className="h-4 w-4" />,
-    placeholder:
-      'Chief complaint, history of present illness, review of systems, past medical history, social history...',
-  },
-  {
-    value: 'objective',
-    label: 'Objective',
-    icon: <Eye className="h-4 w-4" />,
-    placeholder:
-      'Physical examination findings, vital signs summary, lab results, imaging results...',
-  },
-  {
-    value: 'assessment',
-    label: 'Assessment',
-    icon: <ClipboardList className="h-4 w-4" />,
-    placeholder:
-      'Clinical impression, differential diagnoses, diagnosis reasoning...',
-  },
-  {
-    value: 'plan',
-    label: 'Plan',
-    icon: <ClipboardCheck className="h-4 w-4" />,
-    placeholder:
-      'Treatment plan, medications, procedures, referrals, follow-up instructions, patient education...',
-  },
-];
-
 export function SOAPForm({
   consultation,
   specialtyFields,
   onUpdate,
   readOnly,
 }: SOAPFormProps) {
+  const { t } = useTranslation();
+
+  const SOAP_TABS: { value: SOAPField; label: string; icon: React.ReactNode; placeholder: string }[] = [
+    {
+      value: 'subjective',
+      label: t('consultations.subjective'),
+      icon: <User className="h-4 w-4" />,
+      placeholder: t('consultations.subjectivePlaceholder'),
+    },
+    {
+      value: 'objective',
+      label: t('consultations.objective'),
+      icon: <Eye className="h-4 w-4" />,
+      placeholder: t('consultations.objectivePlaceholder'),
+    },
+    {
+      value: 'assessment',
+      label: t('consultations.assessment'),
+      icon: <ClipboardList className="h-4 w-4" />,
+      placeholder: t('consultations.assessmentPlaceholder'),
+    },
+    {
+      value: 'plan',
+      label: t('consultations.plan'),
+      icon: <ClipboardCheck className="h-4 w-4" />,
+      placeholder: t('consultations.planPlaceholder'),
+    },
+  ];
+
   const [activeTab, setActiveTab] = useState<string>('subjective');
   const [saving, setSaving] = useState<string | null>(null);
   const [values, setValues] = useState<Record<SOAPField, string>>({
@@ -95,12 +94,12 @@ export function SOAPForm({
         });
         onUpdate({ [field]: currentValue });
       } catch {
-        toast.error(`Failed to save ${field}`);
+        toast.error(t('consultations.saveFieldError', { field }));
       } finally {
         setSaving(null);
       }
     },
-    [consultation, values, onUpdate],
+    [consultation, values, onUpdate, t],
   );
 
   const handleFieldChange = useCallback(
@@ -119,10 +118,10 @@ export function SOAPForm({
         });
         onUpdate({ customFields: newCustomFields });
       } catch {
-        toast.error('Failed to save custom fields');
+        toast.error(t('consultations.saveCustomFieldsError'));
       }
     },
-    [consultation.id, onUpdate],
+    [consultation.id, onUpdate, t],
   );
 
   const handleTemplateApply = useCallback(
@@ -152,16 +151,16 @@ export function SOAPForm({
           onUpdate(newValues);
         })
         .catch(() => {
-          toast.error('Failed to save template content');
+          toast.error(t('consultations.saveTemplateError'));
         });
     },
-    [consultation.id, values, onUpdate],
+    [consultation.id, values, onUpdate, t],
   );
 
   const handleQuickTextInsert = useCallback(
     (text: string) => {
       const currentField = activeTab as SOAPField;
-      if (!SOAP_TABS.some((t) => t.value === currentField)) return;
+      if (!SOAP_TABS.some((tab) => tab.value === currentField)) return;
 
       const textarea = textareaRefs.current[currentField];
       if (textarea) {
@@ -233,7 +232,7 @@ export function SOAPForm({
               className="gap-1.5 data-[state=active]:shadow-sm"
             >
               <Settings2 className="h-4 w-4" />
-              Custom Fields
+              {t('consultations.specialtyFields.customFields')}
               {Object.keys(customFields).length > 0 && (
                 <span className="ml-1 h-1.5 w-1.5 rounded-full bg-green-500" />
               )}
@@ -247,7 +246,7 @@ export function SOAPForm({
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">{tab.label}</Label>
                 {saving === tab.value && (
-                  <span className="text-xs text-muted-foreground">Saving...</span>
+                  <span className="text-xs text-muted-foreground">{t('consultations.saving')}</span>
                 )}
               </div>
               <Textarea

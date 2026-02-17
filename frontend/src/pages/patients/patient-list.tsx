@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ColumnDef } from '@tanstack/react-table';
 import {
   Search,
@@ -41,19 +42,20 @@ const statusColors: Record<string, string> = {
   DISCHARGED: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
 };
 
-const statusOptions: { label: string; value: PatientStatus | 'ALL' }[] = [
-  { label: 'All Statuses', value: 'ALL' },
-  { label: 'New', value: 'NEW' },
-  { label: 'Active', value: 'ACTIVE' },
-  { label: 'Inactive', value: 'INACTIVE' },
-  { label: 'Referred', value: 'REFERRED' },
-  { label: 'Discharged', value: 'DISCHARGED' },
-];
-
 export function PatientListPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<PatientStatus | 'ALL'>('ALL');
+
+  const statusOptions: { label: string; value: PatientStatus | 'ALL' }[] = [
+    { label: t('patients.allStatuses'), value: 'ALL' },
+    { label: t('patients.status.NEW'), value: 'NEW' },
+    { label: t('patients.status.ACTIVE'), value: 'ACTIVE' },
+    { label: t('patients.status.INACTIVE'), value: 'INACTIVE' },
+    { label: t('patients.status.REFERRED'), value: 'REFERRED' },
+    { label: t('patients.status.DISCHARGED'), value: 'DISCHARGED' },
+  ];
 
   const filters = useMemo(() => {
     const params: Record<string, string> = {};
@@ -70,14 +72,14 @@ export function PatientListPage() {
     () => [
       {
         accessorKey: 'mrn',
-        header: 'MRN',
+        header: t('patients.mrn'),
         cell: ({ row }) => (
           <span className="font-mono text-sm font-medium">{row.original.mrn}</span>
         ),
       },
       {
         id: 'name',
-        header: 'Name',
+        header: t('common.name'),
         accessorFn: (row) => `${row.firstName} ${row.lastName}`,
         cell: ({ row }) => (
           <div>
@@ -92,14 +94,14 @@ export function PatientListPage() {
       },
       {
         accessorKey: 'phone',
-        header: 'Phone',
+        header: t('common.phone'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.phone || '--'}</span>
         ),
       },
       {
         accessorKey: 'gender',
-        header: 'Gender',
+        header: t('patients.gender'),
         cell: ({ row }) => (
           <span className="capitalize text-muted-foreground">
             {row.original.gender?.toLowerCase() || '--'}
@@ -108,16 +110,16 @@ export function PatientListPage() {
       },
       {
         accessorKey: 'status',
-        header: 'Status',
+        header: t('common.status'),
         cell: ({ row }) => (
           <Badge className={statusColors[row.original.status] || ''} variant="secondary">
-            {row.original.status}
+            {t(`patients.status.${row.original.status}`, row.original.status)}
           </Badge>
         ),
       },
       {
         accessorKey: 'updatedAt',
-        header: 'Last Visit',
+        header: t('patients.lastVisit'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">{formatDate(row.original.updatedAt)}</span>
         ),
@@ -136,32 +138,32 @@ export function PatientListPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigate(`/patients/${row.original.id}`)}>
                 <Eye className="h-4 w-4 mr-2" />
-                View Profile
+                {t('patients.viewProfile')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(`/patients/${row.original.id}/edit`)}>
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Patient
+                {t('patients.editPatient')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   return (
     <PageWrapper
-      title="Patients"
+      title={t('patients.title')}
       breadcrumbs={[
-        { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Patients' },
+        { label: t('nav.dashboard'), path: '/dashboard' },
+        { label: t('patients.title') },
       ]}
       actions={
         <Button asChild>
           <Link to="/patients/new">
             <Plus className="h-4 w-4 mr-2" />
-            Add Patient
+            {t('patients.addPatient')}
           </Link>
         </Button>
       }
@@ -171,7 +173,7 @@ export function PatientListPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, MRN, or phone..."
+              placeholder={t('patients.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -182,7 +184,7 @@ export function PatientListPage() {
             onValueChange={(val) => setStatusFilter(val as PatientStatus | 'ALL')}
           >
             <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder={t('patients.filterByStatus')} />
             </SelectTrigger>
             <SelectContent>
               {statusOptions.map((option) => (
@@ -199,18 +201,18 @@ export function PatientListPage() {
         ) : patients.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="No patients found"
+            title={t('patients.noPatients')}
             description={
               search || statusFilter !== 'ALL'
-                ? 'Try adjusting your search or filter criteria.'
-                : 'Get started by registering your first patient.'
+                ? t('patients.noPatientsSearch')
+                : t('patients.noPatientsEmpty')
             }
             action={
               !search && statusFilter === 'ALL' ? (
                 <Button asChild>
                   <Link to="/patients/new">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Patient
+                    {t('patients.addPatient')}
                   </Link>
                 </Button>
               ) : undefined

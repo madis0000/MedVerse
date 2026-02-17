@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ColumnDef } from '@tanstack/react-table';
 import {
   FlaskConical,
@@ -43,14 +44,6 @@ const priorityStyles: Record<LabPriority, string> = {
   STAT: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
-const STATUS_FILTERS: Array<{ label: string; value: string }> = [
-  { label: 'All', value: 'ALL' },
-  { label: 'Pending', value: 'PENDING' },
-  { label: 'Sample Collected', value: 'SAMPLE_COLLECTED' },
-  { label: 'Processing', value: 'PROCESSING' },
-  { label: 'Results Available', value: 'RESULTS_AVAILABLE' },
-];
-
 interface LabTestDef {
   id: string;
   name: string;
@@ -61,9 +54,18 @@ interface LabTestDef {
 }
 
 export function LabManagementPage() {
+  const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [orderFormOpen, setOrderFormOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
+
+  const STATUS_FILTERS: Array<{ label: string; value: string }> = [
+    { label: t('common.all'), value: 'ALL' },
+    { label: t('laboratory.status.PENDING'), value: 'PENDING' },
+    { label: t('laboratory.status.SAMPLE_COLLECTED'), value: 'SAMPLE_COLLECTED' },
+    { label: t('laboratory.status.PROCESSING'), value: 'PROCESSING' },
+    { label: t('laboratory.status.RESULTS_AVAILABLE'), value: 'RESULTS_AVAILABLE' },
+  ];
 
   const { data: ordersData, isLoading: ordersLoading } = useLabOrders(
     statusFilter !== 'ALL' ? { status: statusFilter } : undefined,
@@ -88,7 +90,7 @@ export function LabManagementPage() {
   const orderColumns: ColumnDef<LabOrder, any>[] = [
     {
       accessorKey: 'id',
-      header: 'Order ID',
+      header: t('common.orderId'),
       cell: ({ row }) => (
         <span className="font-mono text-xs">
           {row.original.id.slice(0, 8).toUpperCase()}
@@ -97,7 +99,7 @@ export function LabManagementPage() {
     },
     {
       accessorKey: 'patient',
-      header: 'Patient',
+      header: t('common.patient'),
       cell: ({ row }) => {
         const p = row.original.patient;
         return p ? (
@@ -109,7 +111,7 @@ export function LabManagementPage() {
     },
     {
       accessorKey: 'orderedBy',
-      header: 'Ordered By',
+      header: t('common.orderedBy'),
       cell: ({ row }) => {
         const doc = row.original.orderedBy;
         return doc ? (
@@ -121,25 +123,25 @@ export function LabManagementPage() {
     },
     {
       accessorKey: 'priority',
-      header: 'Priority',
+      header: t('common.priority'),
       cell: ({ row }) => (
         <Badge className={cn('text-xs', priorityStyles[row.original.priority])}>
-          {row.original.priority}
+          {t(`laboratory.priority.${row.original.priority}`)}
         </Badge>
       ),
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: t('common.status'),
       cell: ({ row }) => (
         <Badge className={cn('text-xs', statusStyles[row.original.status])}>
-          {row.original.status.replace(/_/g, ' ')}
+          {t(`laboratory.status.${row.original.status}`)}
         </Badge>
       ),
     },
     {
       accessorKey: 'createdAt',
-      header: 'Date',
+      header: t('common.date'),
       cell: ({ row }) => (
         <span className="text-muted-foreground">{formatDate(row.original.createdAt)}</span>
       ),
@@ -148,12 +150,12 @@ export function LabManagementPage() {
 
   return (
     <PageWrapper
-      title="Laboratory"
-      breadcrumbs={[{ label: 'Laboratory' }]}
+      title={t('laboratory.title')}
+      breadcrumbs={[{ label: t('nav.laboratory') }]}
       actions={
         <Button onClick={() => setOrderFormOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Lab Order
+          {t('laboratory.newOrder')}
         </Button>
       }
     >
@@ -161,15 +163,15 @@ export function LabManagementPage() {
         <TabsList>
           <TabsTrigger value="orders" className="flex items-center gap-1.5">
             <ClipboardList className="h-4 w-4" />
-            Orders
+            {t('laboratory.tabs.orders')}
           </TabsTrigger>
           <TabsTrigger value="results" className="flex items-center gap-1.5">
             <TestTube className="h-4 w-4" />
-            Results Entry
+            {t('laboratory.tabs.results')}
           </TabsTrigger>
           <TabsTrigger value="catalog" className="flex items-center gap-1.5">
             <BookOpen className="h-4 w-4" />
-            Test Catalog
+            {t('laboratory.tabs.catalog')}
           </TabsTrigger>
         </TabsList>
 
@@ -193,12 +195,12 @@ export function LabManagementPage() {
           ) : orders.length === 0 ? (
             <EmptyState
               icon={FlaskConical}
-              title="No lab orders"
-              description="No lab orders match the current filter."
+              title={t('laboratory.noOrders')}
+              description={t('laboratory.noOrdersDescription')}
               action={
                 <Button onClick={() => setOrderFormOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Lab Order
+                  {t('laboratory.createOrder')}
                 </Button>
               }
             />
@@ -213,7 +215,7 @@ export function LabManagementPage() {
             <div className="lg:col-span-1">
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Select Order</CardTitle>
+                  <CardTitle className="text-base">{t('laboratory.results.selectOrder')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Select
@@ -221,7 +223,7 @@ export function LabManagementPage() {
                     onValueChange={(v) => setSelectedOrderId(v)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose a lab order..." />
+                      <SelectValue placeholder={t('laboratory.results.chooseOrder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {orders
@@ -235,7 +237,7 @@ export function LabManagementPage() {
                               <span>
                                 {o.patient
                                   ? `${o.patient.firstName} ${o.patient.lastName}`
-                                  : 'Unknown'}
+                                  : t('common.unknown')}
                               </span>
                             </span>
                           </SelectItem>
@@ -255,8 +257,8 @@ export function LabManagementPage() {
               ) : (
                 <EmptyState
                   icon={TestTube}
-                  title="No order selected"
-                  description="Select a lab order from the left to enter results."
+                  title={t('laboratory.noResults')}
+                  description={t('laboratory.results.selectOrderDescription')}
                 />
               )}
             </div>
@@ -270,8 +272,8 @@ export function LabManagementPage() {
           ) : labTests.length === 0 ? (
             <EmptyState
               icon={BookOpen}
-              title="No test definitions"
-              description="The test catalog is empty."
+              title={t('laboratory.catalog.noTests')}
+              description={t('laboratory.catalog.emptyDescription')}
             />
           ) : (
             <div className="space-y-6">
@@ -292,13 +294,13 @@ export function LabManagementPage() {
                         <thead>
                           <tr className="border-b bg-muted/50">
                             <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">
-                              Test Name
+                              {t('laboratory.catalog.testName')}
                             </th>
                             <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">
-                              Unit
+                              {t('laboratory.results.unit')}
                             </th>
                             <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">
-                              Normal Range
+                              {t('laboratory.results.referenceRange')}
                             </th>
                           </tr>
                         </thead>

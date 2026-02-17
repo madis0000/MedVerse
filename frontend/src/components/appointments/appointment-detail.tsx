@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, User } from 'lucide-react';
@@ -8,12 +9,12 @@ import { StatusBadge } from './status-badge';
 import { useUpdateAppointmentStatus, useCheckIn } from '@/api/appointments';
 import type { Appointment } from '@/types';
 
-const VISIT_TYPE_LABELS: Record<string, string> = {
-  FIRST_VISIT: 'First Visit',
-  FOLLOW_UP: 'Follow-up',
-  EMERGENCY: 'Emergency',
-  PROCEDURE: 'Procedure',
-  TELECONSULTATION: 'Teleconsultation',
+const VISIT_TYPE_KEYS: Record<string, string> = {
+  FIRST_VISIT: 'appointments.types.NEW_VISIT',
+  FOLLOW_UP: 'appointments.types.FOLLOW_UP',
+  EMERGENCY: 'appointments.types.URGENT',
+  PROCEDURE: 'appointments.types.PROCEDURE',
+  TELECONSULTATION: 'appointments.types.CONSULTATION',
 };
 
 interface AppointmentDetailProps {
@@ -22,19 +23,20 @@ interface AppointmentDetailProps {
 }
 
 export function AppointmentDetail({ appointment, onClose }: AppointmentDetailProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const updateStatus = useUpdateAppointmentStatus();
   const checkIn = useCheckIn();
 
   const patientName = appointment.patient
     ? `${appointment.patient.firstName} ${appointment.patient.lastName}`
-    : 'Unknown Patient';
+    : t('appointments.unknownPatient', 'Unknown Patient');
 
   const doctorName = appointment.doctor
     ? `Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}`
-    : 'Unknown Doctor';
+    : t('appointments.unknownDoctor', 'Unknown Doctor');
 
-  const specialtyName = appointment.specialty?.name || 'General';
+  const specialtyName = appointment.specialty?.name || t('appointments.general', 'General');
 
   const handleCheckIn = () => {
     checkIn.mutate(appointment.id, {
@@ -66,7 +68,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Appointment Details</CardTitle>
+          <CardTitle className="text-lg">{t('appointments.details', 'Appointment Details')}</CardTitle>
           <StatusBadge status={appointment.status} />
         </div>
       </CardHeader>
@@ -81,7 +83,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
             <p className="text-sm font-semibold text-foreground">{patientName}</p>
             {appointment.patient?.mrn && (
               <p className="text-xs text-muted-foreground">
-                MRN: {appointment.patient.mrn}
+                {t('common.mrn', 'MRN')}: {appointment.patient.mrn}
               </p>
             )}
           </div>
@@ -92,11 +94,11 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
         {/* Doctor & Specialty */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-muted-foreground">Doctor</p>
+            <p className="text-xs text-muted-foreground">{t('appointments.doctor', 'Doctor')}</p>
             <p className="text-sm font-medium">{doctorName}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Specialty</p>
+            <p className="text-xs text-muted-foreground">{t('appointments.specialty', 'Specialty')}</p>
             <p className="text-sm font-medium">{specialtyName}</p>
           </div>
         </div>
@@ -106,7 +108,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Date</p>
+              <p className="text-xs text-muted-foreground">{t('common.date', 'Date')}</p>
               <p className="text-sm font-medium">
                 {format(parseISO(appointment.dateTime), 'MMM d, yyyy')}
               </p>
@@ -115,7 +117,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Time</p>
+              <p className="text-xs text-muted-foreground">{t('common.time', 'Time')}</p>
               <p className="text-sm font-medium">
                 {format(parseISO(appointment.dateTime), 'h:mm a')} -{' '}
                 {format(parseISO(appointment.endTime), 'h:mm a')}
@@ -126,16 +128,18 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
 
         {/* Visit Type */}
         <div>
-          <p className="text-xs text-muted-foreground">Visit Type</p>
+          <p className="text-xs text-muted-foreground">{t('appointments.visitType', 'Visit Type')}</p>
           <p className="text-sm font-medium">
-            {VISIT_TYPE_LABELS[appointment.visitType] || appointment.visitType}
+            {VISIT_TYPE_KEYS[appointment.visitType]
+              ? t(VISIT_TYPE_KEYS[appointment.visitType])
+              : appointment.visitType}
           </p>
         </div>
 
         {/* Notes */}
         {appointment.notes && (
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Notes</p>
+            <p className="text-xs text-muted-foreground mb-1">{t('appointments.notes', 'Notes')}</p>
             <p className="text-sm text-foreground bg-muted rounded-md p-2.5">
               {appointment.notes}
             </p>
@@ -153,7 +157,9 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
                 onClick={handleCheckIn}
                 disabled={isLoading}
               >
-                {checkIn.isPending ? 'Checking In...' : 'Check In'}
+                {checkIn.isPending
+                  ? t('appointments.checkingIn', 'Checking In...')
+                  : t('appointments.checkIn', 'Check In')}
               </Button>
               <Button
                 size="sm"
@@ -161,7 +167,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
                 onClick={handleCancel}
                 disabled={isLoading}
               >
-                Cancel
+                {t('appointments.cancelAppointment', 'Cancel')}
               </Button>
               <Button
                 size="sm"
@@ -169,7 +175,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
                 onClick={handleMarkNoShow}
                 disabled={isLoading}
               >
-                Mark No Show
+                {t('appointments.markNoShow', 'Mark No Show')}
               </Button>
             </>
           )}
@@ -181,7 +187,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
                 onClick={handleStartConsultation}
                 disabled={isLoading}
               >
-                Start Consultation
+                {t('appointments.queue.startConsultation', 'Start Consultation')}
               </Button>
               <Button
                 size="sm"
@@ -189,7 +195,7 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
                 onClick={handleMarkNoShow}
                 disabled={isLoading}
               >
-                Mark No Show
+                {t('appointments.markNoShow', 'Mark No Show')}
               </Button>
             </>
           )}
@@ -199,13 +205,13 @@ export function AppointmentDetail({ appointment, onClose }: AppointmentDetailPro
               size="sm"
               onClick={handleStartConsultation}
             >
-              Continue Consultation
+              {t('appointments.continueConsultation', 'Continue Consultation')}
             </Button>
           )}
 
           {onClose && (
             <Button size="sm" variant="ghost" onClick={onClose}>
-              Close
+              {t('common.close', 'Close')}
             </Button>
           )}
         </div>

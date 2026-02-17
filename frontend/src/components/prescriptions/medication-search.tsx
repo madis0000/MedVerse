@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Pill, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -11,7 +12,8 @@ interface MedicationSearchProps {
   placeholder?: string;
 }
 
-export function MedicationSearch({ value, onSelect, placeholder = 'Search medications...' }: MedicationSearchProps) {
+export function MedicationSearch({ value, onSelect, placeholder }: MedicationSearchProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<Medication[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -77,7 +79,7 @@ export function MedicationSearch({ value, onSelect, placeholder = 'Search medica
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => results.length > 0 && setIsOpen(true)}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t('prescriptions.medicationSearch')}
           className="pl-9 pr-8"
         />
         {isLoading && (
@@ -111,7 +113,7 @@ export function MedicationSearch({ value, onSelect, placeholder = 'Search medica
 
       {isOpen && query.length >= 2 && results.length === 0 && !isLoading && (
         <div className="absolute z-50 top-full mt-1 w-full rounded-md border bg-popover shadow-lg p-4 text-center text-sm text-muted-foreground">
-          No medications found
+          {t('prescriptions.noMedications')}
         </div>
       )}
     </div>

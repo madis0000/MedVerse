@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { Clock, User } from 'lucide-react';
@@ -9,6 +10,7 @@ import { useWaitingQueue } from '@/api/appointments';
 import type { Appointment } from '@/types';
 
 export function WaitingQueue() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, isLoading } = useWaitingQueue();
 
@@ -25,7 +27,7 @@ export function WaitingQueue() {
     <Card className="h-full">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Waiting Queue</CardTitle>
+          <CardTitle className="text-base">{t('appointments.queue.title', 'Waiting Queue')}</CardTitle>
           <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-yellow-100 px-1.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
             {queue.length}
           </span>
@@ -45,7 +47,7 @@ export function WaitingQueue() {
         ) : queue.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Clock className="h-8 w-8 text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground">No patients waiting</p>
+            <p className="text-sm text-muted-foreground">{t('appointments.queue.empty', 'No patients waiting')}</p>
           </div>
         ) : (
           <ScrollArea className="h-[calc(100vh-280px)]">
@@ -53,7 +55,7 @@ export function WaitingQueue() {
               {queue.map((appointment) => {
                 const patientName = appointment.patient
                   ? `${appointment.patient.firstName} ${appointment.patient.lastName}`
-                  : 'Unknown Patient';
+                  : t('appointments.unknownPatient', 'Unknown Patient');
 
                 const checkInTime = format(parseISO(appointment.dateTime), 'h:mm a');
                 const waitingDuration = formatDistanceToNow(
@@ -76,7 +78,7 @@ export function WaitingQueue() {
                         </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-muted-foreground">
-                            Checked in: {checkInTime}
+                            {t('appointments.queue.checkInTime', 'Checked in')}: {checkInTime}
                           </span>
                           <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
                             {waitingDuration}
@@ -90,7 +92,7 @@ export function WaitingQueue() {
                       className="w-full mt-2"
                       onClick={() => handleStartConsultation(appointment.id)}
                     >
-                      Start Consultation
+                      {t('appointments.queue.startConsultation', 'Start Consultation')}
                     </Button>
                   </div>
                 );

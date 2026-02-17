@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FileText, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +43,7 @@ export function TemplateSelector({
   onApply,
   disabled,
 }: TemplateSelectorProps) {
+  const { t } = useTranslation();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -57,11 +59,11 @@ export function TemplateSelector({
       });
       setTemplates(Array.isArray(data) ? data : data.data ?? []);
     } catch {
-      toast.error('Failed to load templates');
+      toast.error(t('consultations.templates.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [specialtyId]);
+  }, [specialtyId, t]);
 
   useEffect(() => {
     if (open && templates.length === 0) {
@@ -86,7 +88,7 @@ export function TemplateSelector({
       assessment: template.assessment,
       plan: template.plan,
     });
-    toast.success(`Template "${template.name}" applied`);
+    toast.success(t('consultations.templates.applied', { name: template.name }));
   }
 
   function handleConfirm() {
@@ -107,21 +109,21 @@ export function TemplateSelector({
             className="gap-1.5"
           >
             <FileText className="h-4 w-4" />
-            Templates
+            {t('consultations.templates')}
             <ChevronDown className="h-3 w-3 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72 max-h-80 overflow-y-auto">
-          <DropdownMenuLabel>SOAP Templates</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('consultations.templates.soapTemplates')}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {loading && (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              Loading templates...
+              {t('consultations.templates.loading')}
             </div>
           )}
           {!loading && templates.length === 0 && (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No templates available for this specialty.
+              {t('consultations.noTemplates')}
             </div>
           )}
           {!loading &&
@@ -149,10 +151,10 @@ export function TemplateSelector({
           setPendingTemplate(null);
         }}
         onConfirm={handleConfirm}
-        title="Apply Template?"
-        description="Applying this template will overwrite the current SOAP note content. This action cannot be undone."
-        confirmText="Apply Template"
-        cancelText="Cancel"
+        title={t('consultations.templates.applyTitle')}
+        description={t('consultations.templates.applyDescription')}
+        confirmText={t('consultations.templates.applyConfirm')}
+        cancelText={t('common.cancel')}
       />
     </>
   );

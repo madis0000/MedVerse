@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuditLogs } from '@/api/settings';
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { DataTable } from '@/components/ui/data-table';
@@ -26,17 +27,17 @@ interface AuditLogEntry {
   createdAt: string;
 }
 
-const ENTITY_TYPES = [
-  { value: 'ALL', label: 'All Entities' },
-  { value: 'USER', label: 'User' },
-  { value: 'PATIENT', label: 'Patient' },
-  { value: 'APPOINTMENT', label: 'Appointment' },
-  { value: 'CONSULTATION', label: 'Consultation' },
-  { value: 'PRESCRIPTION', label: 'Prescription' },
-  { value: 'LAB_ORDER', label: 'Lab Order' },
-  { value: 'INVOICE', label: 'Invoice' },
-  { value: 'DOCUMENT', label: 'Document' },
-  { value: 'SETTINGS', label: 'Settings' },
+const ENTITY_TYPE_KEYS = [
+  { value: 'ALL', key: 'audit.entityTypes.ALL' },
+  { value: 'USER', key: 'audit.entityTypes.USER' },
+  { value: 'PATIENT', key: 'audit.entityTypes.PATIENT' },
+  { value: 'APPOINTMENT', key: 'audit.entityTypes.APPOINTMENT' },
+  { value: 'CONSULTATION', key: 'audit.entityTypes.CONSULTATION' },
+  { value: 'PRESCRIPTION', key: 'audit.entityTypes.PRESCRIPTION' },
+  { value: 'LAB_ORDER', key: 'audit.entityTypes.LAB_ORDER' },
+  { value: 'INVOICE', key: 'audit.entityTypes.INVOICE' },
+  { value: 'DOCUMENT', key: 'audit.entityTypes.DOCUMENT' },
+  { value: 'SETTINGS', key: 'audit.entityTypes.SETTINGS' },
 ];
 
 const ACTION_COLORS: Record<string, string> = {
@@ -62,6 +63,7 @@ function JsonDiff({ label, data }: { label: string; data: any }) {
 }
 
 export function AuditLogPage() {
+  const { t } = useTranslation();
   const [entityTypeFilter, setEntityTypeFilter] = useState('ALL');
   const [userFilter, setUserFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -126,7 +128,7 @@ export function AuditLogPage() {
     },
     {
       accessorKey: 'createdAt',
-      header: 'Timestamp',
+      header: t('audit.timestamp'),
       cell: ({ row }) => (
         <span className="text-xs text-muted-foreground whitespace-nowrap">
           {formatDateTime(row.original.createdAt)}
@@ -135,7 +137,7 @@ export function AuditLogPage() {
     },
     {
       accessorKey: 'userName',
-      header: 'User',
+      header: t('audit.user'),
       cell: ({ row }) => (
         <span className="text-sm font-medium text-foreground">
           {row.original.userName}
@@ -144,31 +146,31 @@ export function AuditLogPage() {
     },
     {
       accessorKey: 'action',
-      header: 'Action',
+      header: t('audit.action'),
       cell: ({ row }) => (
         <span
           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
             ACTION_COLORS[row.original.action] || ACTION_COLORS.VIEW
           }`}
         >
-          {row.original.action}
+          {t(`audit.actions.${row.original.action}`, row.original.action)}
         </span>
       ),
     },
     {
       accessorKey: 'entityType',
-      header: 'Entity',
+      header: t('audit.entity'),
       cell: ({ row }) => (
         <div>
           <Badge variant="outline" className="text-xs">
-            {row.original.entityType}
+            {t(`audit.entityTypes.${row.original.entityType}`, row.original.entityType)}
           </Badge>
         </div>
       ),
     },
     {
       accessorKey: 'details',
-      header: 'Details',
+      header: t('audit.details'),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground line-clamp-1 max-w-xs">
           {row.original.details || '-'}
@@ -179,10 +181,10 @@ export function AuditLogPage() {
 
   return (
     <PageWrapper
-      title="Audit Log"
+      title={t('audit.title')}
       breadcrumbs={[
-        { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Audit Log' },
+        { label: t('nav.dashboard'), path: '/dashboard' },
+        { label: t('audit.title') },
       ]}
     >
       <div className="space-y-4">
@@ -190,17 +192,17 @@ export function AuditLogPage() {
         <div className="flex flex-wrap items-end gap-4 p-4 rounded-lg border bg-card">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Filter className="w-4 h-4" />
-            Filters
+            {t('common.filters')}
           </div>
           <div className="w-44">
             <Select value={entityTypeFilter} onValueChange={setEntityTypeFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Entity type" />
+                <SelectValue placeholder={t('audit.entityType')} />
               </SelectTrigger>
               <SelectContent>
-                {ENTITY_TYPES.map((type) => (
+                {ENTITY_TYPE_KEYS.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
-                    {type.label}
+                    {t(type.key)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -212,7 +214,7 @@ export function AuditLogPage() {
               <Input
                 value={userFilter}
                 onChange={(e) => setUserFilter(e.target.value)}
-                placeholder="Search by user..."
+                placeholder={t('audit.searchByUser')}
                 className="pl-9"
               />
             </div>
@@ -222,7 +224,7 @@ export function AuditLogPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              placeholder="From date"
+              placeholder={t('audit.fromDate')}
             />
           </div>
           <div className="w-40">
@@ -230,12 +232,12 @@ export function AuditLogPage() {
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              placeholder="To date"
+              placeholder={t('audit.toDate')}
             />
           </div>
           <Button variant="outline" size="sm" onClick={handleReset}>
             <RotateCcw className="w-4 h-4 mr-1" />
-            Reset
+            {t('common.reset')}
           </Button>
         </div>
 
@@ -245,8 +247,8 @@ export function AuditLogPage() {
         ) : logs.length === 0 ? (
           <EmptyState
             icon={Shield}
-            title="No audit logs found"
-            description="No activity logs match the current filters. Try adjusting your filter criteria."
+            title={t('audit.noLogs')}
+            description={t('audit.noLogsDescription')}
           />
         ) : (
           <div>
@@ -263,14 +265,14 @@ export function AuditLogPage() {
                   className="mt-2 mb-4 mx-4 p-4 rounded-lg border bg-muted/20 space-y-3"
                 >
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <span>Changes for {log.entityType} #{log.entityId?.slice(0, 8)}</span>
+                    <span>{t('audit.changesFor', { entity: t(`audit.entityTypes.${log.entityType}`, log.entityType), id: log.entityId?.slice(0, 8) })}</span>
                     <span className="text-xs text-muted-foreground">
                       ({formatDateTime(log.createdAt)})
                     </span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <JsonDiff label="Previous Values" data={log.oldValues} />
-                    <JsonDiff label="New Values" data={log.newValues} />
+                    <JsonDiff label={t('audit.previousValues')} data={log.oldValues} />
+                    <JsonDiff label={t('audit.newValues')} data={log.newValues} />
                   </div>
                 </div>
               );

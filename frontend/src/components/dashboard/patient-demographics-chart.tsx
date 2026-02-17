@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const COLORS = ['#2563EB', '#0D9488', '#D97706', '#DC2626', '#7C3AED'];
@@ -7,17 +8,19 @@ interface PatientDemographicsChartProps {
 }
 
 export function PatientDemographicsChart({ data }: PatientDemographicsChartProps) {
+  const { t } = useTranslation();
+
   const defaultData = [
-    { name: 'Male', value: 0 },
-    { name: 'Female', value: 0 },
-    { name: 'Other', value: 0 },
+    { name: t('common.male'), value: 0 },
+    { name: t('common.female'), value: 0 },
+    { name: t('common.other'), value: 0 },
   ];
 
   const chartData = data || defaultData;
 
   return (
     <div className="bg-card border rounded-lg p-6">
-      <h3 className="font-medium mb-4">Patient Demographics</h3>
+      <h3 className="font-medium mb-4">{t('dashboard.patientDemographics')}</h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>

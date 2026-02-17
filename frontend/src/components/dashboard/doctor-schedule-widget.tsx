@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Clock, ArrowRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,14 +32,8 @@ const statusIconColors: Record<string, string> = {
   CHECKED_IN: 'text-amber-500',
 };
 
-function formatTime(dateTime: string) {
-  return new Date(dateTime).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function DoctorScheduleWidget() {
+  const { t, i18n } = useTranslation();
   const today = new Date().toISOString().split('T')[0];
 
   const { data, isLoading } = useQuery({
@@ -53,15 +48,22 @@ export function DoctorScheduleWidget() {
 
   const schedule: ScheduleItem[] = data?.data || [];
 
+  function formatTime(dateTime: string) {
+    return new Date(dateTime).toLocaleTimeString(i18n.language, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-semibold">Today's Schedule</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('dashboard.todaysSchedule')}</CardTitle>
         <Link
           to="/appointments"
           className="text-sm text-primary hover:underline inline-flex items-center gap-1"
         >
-          Full schedule
+          {t('dashboard.viewAll')}
           <ArrowRight className="h-3 w-3" />
         </Link>
       </CardHeader>
@@ -84,7 +86,7 @@ export function DoctorScheduleWidget() {
         ) : schedule.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Clock className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No appointments scheduled for today</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.noAppointmentsToday')}</p>
           </div>
         ) : (
           <div className="space-y-0">
@@ -109,10 +111,12 @@ export function DoctorScheduleWidget() {
                         <p className="text-sm font-medium text-foreground">
                           {item.patient
                             ? `${item.patient.firstName} ${item.patient.lastName}`
-                            : 'Unknown Patient'}
+                            : t('common.noData')}
                         </p>
                         <Badge variant="outline" className="text-xs">
-                          {item.visitType?.replace('_', ' ') || 'Consultation'}
+                          {item.visitType
+                            ? t(`appointments.types.${item.visitType}`, { defaultValue: item.visitType.replace('_', ' ') })
+                            : t('appointments.types.CONSULTATION')}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">

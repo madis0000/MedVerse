@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import {
@@ -39,12 +40,12 @@ import apiClient from '@/lib/api-client';
 import { useCreateAppointment } from '@/api/appointments';
 import type { Patient, User, Specialty, VisitType } from '@/types';
 
-const VISIT_TYPES: { value: VisitType; label: string }[] = [
-  { value: 'FIRST_VISIT', label: 'First Visit' },
-  { value: 'FOLLOW_UP', label: 'Follow-up' },
-  { value: 'EMERGENCY', label: 'Emergency' },
-  { value: 'PROCEDURE', label: 'Procedure' },
-  { value: 'TELECONSULTATION', label: 'Teleconsultation' },
+const VISIT_TYPE_KEYS: { value: VisitType; key: string }[] = [
+  { value: 'FIRST_VISIT', key: 'appointments.types.NEW_VISIT' },
+  { value: 'FOLLOW_UP', key: 'appointments.types.FOLLOW_UP' },
+  { value: 'EMERGENCY', key: 'appointments.types.URGENT' },
+  { value: 'PROCEDURE', key: 'appointments.types.PROCEDURE' },
+  { value: 'TELECONSULTATION', key: 'appointments.types.CONSULTATION' },
 ];
 
 const TIME_SLOTS = Array.from({ length: 20 }, (_, i) => {
@@ -65,6 +66,7 @@ interface BookingDialogProps {
 }
 
 export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialogProps) {
+  const { t } = useTranslation();
   const createAppointment = useCreateAppointment();
 
   // Form state
@@ -150,12 +152,12 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
         });
         setConflictWarning(
           conflict
-            ? 'This doctor already has an appointment at the selected time.'
+            ? t('appointments.conflictWarning', 'This doctor already has an appointment at the selected time.')
             : '',
         );
       })
       .catch(() => {});
-  }, [doctorId, date, timeSlot]);
+  }, [doctorId, date, timeSlot, t]);
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -186,7 +188,7 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
     setError('');
 
     if (!patientId || !doctorId || !date || !timeSlot || !visitType) {
-      setError('Please fill in all required fields.');
+      setError(t('appointments.fillRequiredFields', 'Please fill in all required fields.'));
       return;
     }
 
@@ -213,7 +215,7 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
       onOpenChange(false);
     } catch (err: any) {
       setError(
-        err.response?.data?.message || 'Failed to create appointment. Please try again.',
+        err.response?.data?.message || t('appointments.createFailed', 'Failed to create appointment. Please try again.'),
       );
     }
   };
@@ -226,16 +228,16 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Book Appointment</DialogTitle>
+          <DialogTitle>{t('appointments.bookAppointment', 'Book Appointment')}</DialogTitle>
           <DialogDescription>
-            Schedule a new appointment for a patient.
+            {t('appointments.bookDescription', 'Schedule a new appointment for a patient.')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           {/* Patient Search */}
           <div className="space-y-2">
-            <Label>Patient *</Label>
+            <Label>{t('appointments.patient', 'Patient')} *</Label>
             <Popover open={patientPopoverOpen} onOpenChange={setPatientPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -246,21 +248,21 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
                 >
                   {selectedPatient
                     ? `${selectedPatient.firstName} ${selectedPatient.lastName} (${selectedPatient.mrn})`
-                    : 'Search patient by name or MRN...'}
+                    : t('appointments.searchPatient', 'Search patient by name or MRN...')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[400px] p-0" align="start">
                 <Command shouldFilter={false}>
                   <CommandInput
-                    placeholder="Type patient name or MRN..."
+                    placeholder={t('appointments.typePatientSearch', 'Type patient name or MRN...')}
                     value={patientSearch}
                     onValueChange={setPatientSearch}
                   />
                   <CommandList>
                     <CommandEmpty>
                       {patientSearch.length < 2
-                        ? 'Type at least 2 characters to search...'
-                        : 'No patients found.'}
+                        ? t('appointments.minSearchChars', 'Type at least 2 characters to search...')
+                        : t('appointments.noPatients', 'No patients found.')}
                     </CommandEmpty>
                     <CommandGroup>
                       {patientResults.map((patient) => (
@@ -274,7 +276,7 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
                               {patient.firstName} {patient.lastName}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              MRN: {patient.mrn}
+                              {t('common.mrn', 'MRN')}: {patient.mrn}
                               {patient.phone ? ` | ${patient.phone}` : ''}
                             </span>
                           </div>
@@ -289,10 +291,10 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
 
           {/* Specialty */}
           <div className="space-y-2">
-            <Label>Specialty</Label>
+            <Label>{t('appointments.specialty', 'Specialty')}</Label>
             <Select value={specialtyId} onValueChange={setSpecialtyId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select specialty" />
+                <SelectValue placeholder={t('appointments.selectSpecialty', 'Select specialty')} />
               </SelectTrigger>
               <SelectContent>
                 {specialties.map((spec) => (
@@ -306,10 +308,10 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
 
           {/* Doctor */}
           <div className="space-y-2">
-            <Label>Doctor *</Label>
+            <Label>{t('appointments.doctor', 'Doctor')} *</Label>
             <Select value={doctorId} onValueChange={setDoctorId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select doctor" />
+                <SelectValue placeholder={t('appointments.selectDoctor', 'Select doctor')} />
               </SelectTrigger>
               <SelectContent>
                 {filteredDoctors.map((doc) => (
@@ -324,7 +326,7 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
 
           {/* Date Picker */}
           <div className="space-y-2">
-            <Label>Date *</Label>
+            <Label>{t('appointments.selectDate', 'Date')} *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -335,7 +337,7 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, 'PPP') : 'Pick a date'}
+                  {date ? format(date, 'PPP') : t('appointments.pickDate', 'Pick a date')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -351,10 +353,10 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
 
           {/* Time Slot */}
           <div className="space-y-2">
-            <Label>Time *</Label>
+            <Label>{t('appointments.selectTime', 'Time')} *</Label>
             <Select value={timeSlot} onValueChange={setTimeSlot}>
               <SelectTrigger>
-                <SelectValue placeholder="Select time slot" />
+                <SelectValue placeholder={t('appointments.selectTimeSlot', 'Select time slot')} />
               </SelectTrigger>
               <SelectContent>
                 {TIME_SLOTS.map((slot) => (
@@ -368,15 +370,15 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
 
           {/* Visit Type */}
           <div className="space-y-2">
-            <Label>Visit Type *</Label>
+            <Label>{t('appointments.visitType', 'Visit Type')} *</Label>
             <Select value={visitType} onValueChange={(v) => setVisitType(v as VisitType)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select visit type" />
+                <SelectValue placeholder={t('appointments.selectType', 'Select visit type')} />
               </SelectTrigger>
               <SelectContent>
-                {VISIT_TYPES.map((vt) => (
+                {VISIT_TYPE_KEYS.map((vt) => (
                   <SelectItem key={vt.value} value={vt.value}>
-                    {vt.label}
+                    {t(vt.key)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -385,9 +387,9 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t('appointments.notes', 'Notes')}</Label>
             <Textarea
-              placeholder="Add any additional notes..."
+              placeholder={t('appointments.addNotes', 'Add any additional notes...')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -411,13 +413,15 @@ export function BookingDialog({ open, onOpenChange, defaultDate }: BookingDialog
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel', 'Cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={createAppointment.isPending}
           >
-            {createAppointment.isPending ? 'Booking...' : 'Book Appointment'}
+            {createAppointment.isPending
+              ? t('appointments.booking', 'Booking...')
+              : t('appointments.bookAppointment', 'Book Appointment')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Receipt, Plus, Edit, Trash2, CheckCircle, XCircle,
   RotateCcw, FolderOpen,
@@ -36,6 +37,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export function FinanceExpensesPage() {
+  const { t } = useTranslation();
   const [expenseDialog, setExpenseDialog] = useState(false);
   const [categoryDialog, setCategoryDialog] = useState(false);
   const [recurringDialog, setRecurringDialog] = useState(false);
@@ -63,31 +65,31 @@ export function FinanceExpensesPage() {
       await createExpense.mutateAsync(expenseForm);
       setExpenseDialog(false);
       setExpenseForm({ categoryId: '', description: '', amount: 0, vendor: '', reference: '', expenseDate: new Date().toISOString().split('T')[0], notes: '' });
-      toast.success('Expense recorded');
+      toast.success(t('finance.expenses.expenseCreated'));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to create expense');
+      toast.error(err?.response?.data?.message || t('finance.expenses.failedToCreateExpense'));
     }
   };
 
   const handleApprove = async (id: string) => {
     try {
       await updateExpense.mutateAsync({ id, data: { status: 'APPROVED' } });
-      toast.success('Expense approved');
-    } catch { toast.error('Failed to approve expense'); }
+      toast.success(t('finance.expenses.expenseApproved'));
+    } catch { toast.error(t('finance.expenses.failedToApproveExpense')); }
   };
 
   const handleReject = async (id: string) => {
     try {
       await updateExpense.mutateAsync({ id, data: { status: 'REJECTED' } });
-      toast.success('Expense rejected');
-    } catch { toast.error('Failed to reject expense'); }
+      toast.success(t('finance.expenses.expenseRejected'));
+    } catch { toast.error(t('finance.expenses.failedToRejectExpense')); }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteExpense.mutateAsync(id);
-      toast.success('Expense deleted');
-    } catch { toast.error('Failed to delete expense'); }
+      toast.success(t('finance.expenses.expenseDeleted'));
+    } catch { toast.error(t('finance.expenses.failedToDeleteExpense')); }
   };
 
   const handleCreateCategory = async () => {
@@ -95,9 +97,9 @@ export function FinanceExpensesPage() {
       await createCategory.mutateAsync(categoryForm);
       setCategoryDialog(false);
       setCategoryForm({ name: '', description: '', icon: '', color: '' });
-      toast.success('Category created');
+      toast.success(t('finance.expenses.categoryCreated'));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to create category');
+      toast.error(err?.response?.data?.message || t('finance.expenses.failedToCreateCategory'));
     }
   };
 
@@ -105,9 +107,9 @@ export function FinanceExpensesPage() {
     try {
       await createRecurring.mutateAsync(recurringForm);
       setRecurringDialog(false);
-      toast.success('Recurring expense created');
+      toast.success(t('finance.expenses.recurringExpenseCreated'));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to create recurring expense');
+      toast.error(err?.response?.data?.message || t('finance.expenses.failedToCreateRecurringExpense'));
     }
   };
 
@@ -119,30 +121,30 @@ export function FinanceExpensesPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Expense Management">
+      <PageWrapper title={t('finance.expenses.title')}>
         <TableSkeleton rows={6} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper title="Expense Management">
+    <PageWrapper title={t('finance.expenses.title')}>
       <div className="space-y-6">
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
           <Dialog open={expenseDialog} onOpenChange={setExpenseDialog}>
             <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" /> Record Expense</Button>
+              <Button><Plus className="w-4 h-4 mr-2" /> {t('finance.expenses.recordExpense')}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Record Expense</DialogTitle>
+                <DialogTitle>{t('finance.expenses.recordExpense')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Category</Label>
+                  <Label>{t('finance.expenses.category')}</Label>
                   <Select value={expenseForm.categoryId} onValueChange={(v) => setExpenseForm({ ...expenseForm, categoryId: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t('finance.expenses.selectCategory')} /></SelectTrigger>
                     <SelectContent>
                       {(categories || []).map((c: any) => (
                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
@@ -151,32 +153,32 @@ export function FinanceExpensesPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Description</Label>
+                  <Label>{t('common.description')}</Label>
                   <Input value={expenseForm.description} onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Amount</Label>
+                    <Label>{t('common.amount')}</Label>
                     <Input type="number" step="0.01" value={expenseForm.amount} onChange={(e) => setExpenseForm({ ...expenseForm, amount: parseFloat(e.target.value) || 0 })} />
                   </div>
                   <div>
-                    <Label>Date</Label>
+                    <Label>{t('common.date')}</Label>
                     <Input type="date" value={expenseForm.expenseDate} onChange={(e) => setExpenseForm({ ...expenseForm, expenseDate: e.target.value })} />
                   </div>
                 </div>
                 <div>
-                  <Label>Vendor</Label>
+                  <Label>{t('finance.expenses.vendor')}</Label>
                   <Input value={expenseForm.vendor} onChange={(e) => setExpenseForm({ ...expenseForm, vendor: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Notes</Label>
+                  <Label>{t('common.notes')}</Label>
                   <Textarea value={expenseForm.notes} onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })} />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setExpenseDialog(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setExpenseDialog(false)}>{t('common.cancel')}</Button>
                 <Button onClick={handleCreateExpense} disabled={createExpense.isPending}>
-                  {createExpense.isPending ? 'Saving...' : 'Save Expense'}
+                  {createExpense.isPending ? t('common.saving') : t('common.save')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -184,39 +186,39 @@ export function FinanceExpensesPage() {
 
           <Dialog open={categoryDialog} onOpenChange={setCategoryDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline"><FolderOpen className="w-4 h-4 mr-2" /> Manage Categories</Button>
+              <Button variant="outline"><FolderOpen className="w-4 h-4 mr-2" /> {t('finance.expenses.manageCategories')}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Category</DialogTitle>
+                <DialogTitle>{t('finance.expenses.addCategory')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Name</Label>
+                  <Label>{t('common.name')}</Label>
                   <Input value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Description</Label>
+                  <Label>{t('common.description')}</Label>
                   <Input value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Icon</Label>
-                    <Input value={categoryForm.icon} onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })} placeholder="e.g. building" />
+                    <Label>{t('common.icon')}</Label>
+                    <Input value={categoryForm.icon} onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })} placeholder={t('finance.expenses.iconPlaceholder')} />
                   </div>
                   <div>
-                    <Label>Color</Label>
-                    <Input value={categoryForm.color} onChange={(e) => setCategoryForm({ ...categoryForm, color: e.target.value })} placeholder="e.g. #3b82f6" />
+                    <Label>{t('common.color')}</Label>
+                    <Input value={categoryForm.color} onChange={(e) => setCategoryForm({ ...categoryForm, color: e.target.value })} placeholder={t('finance.expenses.colorPlaceholder')} />
                   </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setCategoryDialog(false)}>Cancel</Button>
-                <Button onClick={handleCreateCategory} disabled={createCategory.isPending}>Save</Button>
+                <Button variant="outline" onClick={() => setCategoryDialog(false)}>{t('common.cancel')}</Button>
+                <Button onClick={handleCreateCategory} disabled={createCategory.isPending}>{t('common.save')}</Button>
               </DialogFooter>
               {/* Show existing categories */}
               <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-medium mb-2">Existing Categories</p>
+                <p className="text-sm font-medium mb-2">{t('finance.expenses.existingCategories')}</p>
                 <div className="flex flex-wrap gap-2">
                   {(categories || []).map((c: any) => (
                     <Badge key={c.id} variant="outline">{c.name} ({c._count?.expenses || 0})</Badge>
@@ -231,25 +233,25 @@ export function FinanceExpensesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground">Monthly Total</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('finance.expenses.monthlyTotal')}</p>
               <p className="text-2xl font-bold mt-1">{formatCurrency(monthlyTotal)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground">Pending Approval</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('finance.expenses.pendingApproval')}</p>
               <p className="text-2xl font-bold mt-1">{pendingCount}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground">Recurring Monthly</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('finance.expenses.recurringMonthly')}</p>
               <p className="text-2xl font-bold mt-1">{formatCurrency(recurringMonthly)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-muted-foreground">Categories</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('finance.expenses.categories')}</p>
               <p className="text-2xl font-bold mt-1">{(categories || []).length}</p>
             </CardContent>
           </Card>
@@ -258,28 +260,28 @@ export function FinanceExpensesPage() {
         {/* Tabs */}
         <Tabs defaultValue="all">
           <TabsList>
-            <TabsTrigger value="all">All Expenses</TabsTrigger>
-            <TabsTrigger value="recurring">Recurring</TabsTrigger>
-            <TabsTrigger value="categories">By Category</TabsTrigger>
+            <TabsTrigger value="all">{t('finance.expenses.allExpenses')}</TabsTrigger>
+            <TabsTrigger value="recurring">{t('finance.expenses.recurring')}</TabsTrigger>
+            <TabsTrigger value="categories">{t('finance.expenses.byCategory')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
             <Card>
               <CardContent className="pt-6">
                 {!expenses.length ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">No expenses recorded</p>
+                  <p className="text-sm text-muted-foreground text-center py-8">{t('finance.expenses.noExpenses')}</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-2 font-medium">Date</th>
-                          <th className="text-left py-2 font-medium">Description</th>
-                          <th className="text-left py-2 font-medium">Category</th>
-                          <th className="text-left py-2 font-medium">Vendor</th>
-                          <th className="text-right py-2 font-medium">Amount</th>
-                          <th className="text-left py-2 font-medium">Status</th>
-                          <th className="text-right py-2 font-medium">Actions</th>
+                          <th className="text-left py-2 font-medium">{t('common.date')}</th>
+                          <th className="text-left py-2 font-medium">{t('common.description')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.expenses.category')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.expenses.vendor')}</th>
+                          <th className="text-right py-2 font-medium">{t('common.amount')}</th>
+                          <th className="text-left py-2 font-medium">{t('common.status')}</th>
+                          <th className="text-right py-2 font-medium">{t('common.actions')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -291,7 +293,7 @@ export function FinanceExpensesPage() {
                             <td className="py-2">{e.vendor || '-'}</td>
                             <td className="py-2 text-right font-medium">{formatCurrency(e.amount)}</td>
                             <td className="py-2">
-                              <Badge className={cn('text-xs', statusStyles[e.status])}>{e.status}</Badge>
+                              <Badge className={cn('text-xs', statusStyles[e.status])}>{t(`finance.expenses.status.${e.status}`)}</Badge>
                             </td>
                             <td className="py-2 text-right">
                               <div className="flex items-center justify-end gap-1">
@@ -323,20 +325,20 @@ export function FinanceExpensesPage() {
           <TabsContent value="recurring">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Recurring Expenses</CardTitle>
+                <CardTitle className="text-base">{t('finance.expenses.recurringExpenses')}</CardTitle>
                 <Dialog open={recurringDialog} onOpenChange={setRecurringDialog}>
                   <DialogTrigger asChild>
-                    <Button size="sm"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+                    <Button size="sm"><Plus className="w-4 h-4 mr-1" /> {t('common.add')}</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add Recurring Expense</DialogTitle>
+                      <DialogTitle>{t('finance.expenses.addRecurringExpense')}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label>Category</Label>
+                        <Label>{t('finance.expenses.category')}</Label>
                         <Select value={recurringForm.categoryId} onValueChange={(v) => setRecurringForm({ ...recurringForm, categoryId: v })}>
-                          <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('finance.expenses.selectCategory')} /></SelectTrigger>
                           <SelectContent>
                             {(categories || []).map((c: any) => (
                               <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
@@ -345,54 +347,54 @@ export function FinanceExpensesPage() {
                         </Select>
                       </div>
                       <div>
-                        <Label>Description</Label>
+                        <Label>{t('common.description')}</Label>
                         <Input value={recurringForm.description} onChange={(e) => setRecurringForm({ ...recurringForm, description: e.target.value })} />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label>Amount</Label>
+                          <Label>{t('common.amount')}</Label>
                           <Input type="number" step="0.01" value={recurringForm.amount} onChange={(e) => setRecurringForm({ ...recurringForm, amount: parseFloat(e.target.value) || 0 })} />
                         </div>
                         <div>
-                          <Label>Frequency</Label>
+                          <Label>{t('finance.expenses.frequency')}</Label>
                           <Select value={recurringForm.frequency} onValueChange={(v) => setRecurringForm({ ...recurringForm, frequency: v })}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="WEEKLY">Weekly</SelectItem>
-                              <SelectItem value="BIWEEKLY">Biweekly</SelectItem>
-                              <SelectItem value="MONTHLY">Monthly</SelectItem>
-                              <SelectItem value="QUARTERLY">Quarterly</SelectItem>
-                              <SelectItem value="YEARLY">Yearly</SelectItem>
+                              <SelectItem value="WEEKLY">{t('finance.expenses.frequencies.WEEKLY')}</SelectItem>
+                              <SelectItem value="BIWEEKLY">{t('finance.expenses.frequencies.BIWEEKLY')}</SelectItem>
+                              <SelectItem value="MONTHLY">{t('finance.expenses.frequencies.MONTHLY')}</SelectItem>
+                              <SelectItem value="QUARTERLY">{t('finance.expenses.frequencies.QUARTERLY')}</SelectItem>
+                              <SelectItem value="YEARLY">{t('finance.expenses.frequencies.YEARLY')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                       </div>
                       <div>
-                        <Label>Start Date</Label>
+                        <Label>{t('finance.expenses.startDate')}</Label>
                         <Input type="date" value={recurringForm.startDate} onChange={(e) => setRecurringForm({ ...recurringForm, startDate: e.target.value })} />
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setRecurringDialog(false)}>Cancel</Button>
-                      <Button onClick={handleCreateRecurring} disabled={createRecurring.isPending}>Save</Button>
+                      <Button variant="outline" onClick={() => setRecurringDialog(false)}>{t('common.cancel')}</Button>
+                      <Button onClick={handleCreateRecurring} disabled={createRecurring.isPending}>{t('common.save')}</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </CardHeader>
               <CardContent>
                 {!(recurring || []).length ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No recurring expenses</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('finance.expenses.noRecurringExpenses')}</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-2 font-medium">Description</th>
-                          <th className="text-left py-2 font-medium">Category</th>
-                          <th className="text-left py-2 font-medium">Frequency</th>
-                          <th className="text-right py-2 font-medium">Amount</th>
-                          <th className="text-left py-2 font-medium">Next Due</th>
-                          <th className="text-left py-2 font-medium">Status</th>
+                          <th className="text-left py-2 font-medium">{t('common.description')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.expenses.category')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.expenses.frequency')}</th>
+                          <th className="text-right py-2 font-medium">{t('common.amount')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.expenses.nextDue')}</th>
+                          <th className="text-left py-2 font-medium">{t('common.status')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -400,12 +402,12 @@ export function FinanceExpensesPage() {
                           <tr key={r.id} className="border-b last:border-0">
                             <td className="py-2">{r.description}</td>
                             <td className="py-2">{r.category?.name}</td>
-                            <td className="py-2">{r.frequency}</td>
+                            <td className="py-2">{t(`finance.expenses.frequencies.${r.frequency}`)}</td>
                             <td className="py-2 text-right font-medium">{formatCurrency(r.amount)}</td>
                             <td className="py-2">{r.nextDueDate ? formatDate(r.nextDueDate) : '-'}</td>
                             <td className="py-2">
                               <Badge variant={r.isActive ? 'default' : 'secondary'}>
-                                {r.isActive ? 'Active' : 'Inactive'}
+                                {r.isActive ? t('common.active') : t('common.inactive')}
                               </Badge>
                             </td>
                           </tr>
@@ -425,7 +427,7 @@ export function FinanceExpensesPage() {
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-medium">{c.name}</h3>
-                      <Badge variant="outline">{c._count?.expenses || 0} expenses</Badge>
+                      <Badge variant="outline">{t('finance.expenses.expenseCount', { count: c._count?.expenses || 0 })}</Badge>
                     </div>
                     {c.description && <p className="text-sm text-muted-foreground">{c.description}</p>}
                   </CardContent>

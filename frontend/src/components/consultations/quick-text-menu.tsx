@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MessageSquarePlus, Settings, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +26,7 @@ interface QuickTextMenuProps {
 }
 
 export function QuickTextMenu({ onInsert, disabled }: QuickTextMenuProps) {
+  const { t } = useTranslation();
   const [quickTexts, setQuickTexts] = useState<QuickText[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -36,11 +38,11 @@ export function QuickTextMenu({ onInsert, disabled }: QuickTextMenuProps) {
       const { data } = await apiClient.get('/quick-texts');
       setQuickTexts(data);
     } catch {
-      toast.error('Failed to load quick texts');
+      toast.error(t('consultations.quickText.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [quickTexts.length]);
+  }, [quickTexts.length, t]);
 
   useEffect(() => {
     if (open && quickTexts.length === 0) {
@@ -50,7 +52,7 @@ export function QuickTextMenu({ onInsert, disabled }: QuickTextMenuProps) {
 
   const groupedTexts = quickTexts.reduce<Record<string, QuickText[]>>(
     (acc, qt) => {
-      const cat = qt.category || 'General';
+      const cat = qt.category || t('consultations.quickText.general');
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(qt);
       return acc;
@@ -75,19 +77,19 @@ export function QuickTextMenu({ onInsert, disabled }: QuickTextMenuProps) {
           className="gap-1.5"
         >
           <MessageSquarePlus className="h-4 w-4" />
-          Quick Text
+          {t('consultations.quickText')}
           <ChevronDown className="h-3 w-3 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72 max-h-80 overflow-y-auto">
         {loading && (
           <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-            Loading quick texts...
+            {t('consultations.quickText.loading')}
           </div>
         )}
         {!loading && categories.length === 0 && (
           <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-            No quick texts found. Add some in settings.
+            {t('consultations.quickText.noQuickTexts')}
           </div>
         )}
         {!loading &&
@@ -119,7 +121,7 @@ export function QuickTextMenu({ onInsert, disabled }: QuickTextMenuProps) {
               className="gap-2 text-muted-foreground cursor-pointer"
             >
               <Settings className="h-3.5 w-3.5" />
-              Manage Quick Texts
+              {t('consultations.quickText.manage')}
             </DropdownMenuItem>
           </>
         )}

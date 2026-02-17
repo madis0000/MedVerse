@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -9,6 +10,8 @@ interface AbnormalBadgeProps {
 }
 
 export function AbnormalBadge({ value, normalRangeMin, normalRangeMax, className }: AbnormalBadgeProps) {
+  const { t } = useTranslation();
+
   if (normalRangeMin === undefined && normalRangeMax === undefined) {
     return null;
   }
@@ -27,9 +30,15 @@ export function AbnormalBadge({ value, normalRangeMin, normalRangeMax, className
     NORMAL: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   };
 
+  const labelMap = {
+    HIGH: t('laboratory.results.high'),
+    LOW: t('laboratory.results.low'),
+    NORMAL: t('laboratory.results.normal'),
+  };
+
   return (
     <Badge className={cn('text-xs font-medium', styleMap[status], className)}>
-      {status}
+      {labelMap[status]}
     </Badge>
   );
 }

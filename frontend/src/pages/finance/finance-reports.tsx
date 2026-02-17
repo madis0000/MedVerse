@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FileBarChart, Download, AlertTriangle,
 } from 'lucide-react';
@@ -27,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export function FinanceReportsPage() {
+  const { t } = useTranslation();
   const now = new Date();
   const [startDate, setStartDate] = useState(
     new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
@@ -49,9 +51,9 @@ export function FinanceReportsPage() {
       await createWriteOff.mutateAsync(writeOffForm);
       setWriteOffDialog(false);
       setWriteOffForm({ invoiceId: '', amount: 0, reason: 'BAD_DEBT', description: '' });
-      toast.success('Write-off recorded');
+      toast.success(t('finance.reports.writeOffRecorded'));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to create write-off');
+      toast.error(err?.response?.data?.message || t('finance.reports.writeOffFailed'));
     }
   };
 
@@ -73,23 +75,30 @@ export function FinanceReportsPage() {
     setEndDate(today.toISOString().split('T')[0]);
   };
 
+  const presetLabels: Record<string, string> = {
+    month: t('finance.reports.presetMonth'),
+    lastMonth: t('finance.reports.presetLastMonth'),
+    quarter: t('finance.reports.presetQuarter'),
+    year: t('finance.reports.presetYear'),
+  };
+
   return (
-    <PageWrapper title="Financial Reports">
+    <PageWrapper title={t('finance.reports.title')}>
       <div className="space-y-6">
         {/* Date range */}
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <Label>Start Date</Label>
+            <Label>{t('finance.reports.startDate')}</Label>
             <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-auto" />
           </div>
           <div>
-            <Label>End Date</Label>
+            <Label>{t('finance.reports.endDate')}</Label>
             <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-auto" />
           </div>
           <div className="flex gap-1">
             {['month', 'lastMonth', 'quarter', 'year'].map((p) => (
               <Button key={p} variant="outline" size="sm" onClick={() => setPreset(p)}>
-                {p === 'lastMonth' ? 'Last Month' : p.charAt(0).toUpperCase() + p.slice(1)}
+                {presetLabels[p]}
               </Button>
             ))}
           </div>
@@ -97,27 +106,27 @@ export function FinanceReportsPage() {
 
         <Tabs defaultValue="pl">
           <TabsList>
-            <TabsTrigger value="pl">Profit & Loss</TabsTrigger>
-            <TabsTrigger value="ar">AR Aging</TabsTrigger>
-            <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
-            <TabsTrigger value="writeoffs">Write-Offs</TabsTrigger>
+            <TabsTrigger value="pl">{t('finance.reports.profitAndLoss')}</TabsTrigger>
+            <TabsTrigger value="ar">{t('finance.reports.arAging')}</TabsTrigger>
+            <TabsTrigger value="cashflow">{t('finance.reports.cashFlow')}</TabsTrigger>
+            <TabsTrigger value="writeoffs">{t('finance.reports.writeOffs')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pl">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Profit & Loss Statement</CardTitle>
+                <CardTitle className="text-base">{t('finance.reports.profitAndLossStatement')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {plLoading ? (
                   <TableSkeleton rows={6} />
                 ) : !pl ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
                 ) : (
                   <div className="space-y-6">
                     {/* Revenue */}
                     <div>
-                      <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">Revenue</h3>
+                      <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">{t('finance.reports.revenue')}</h3>
                       <div className="space-y-1">
                         {pl.revenue.items.map((item: any) => (
                           <div key={item.category} className="flex justify-between text-sm py-1 border-b border-dashed">
@@ -126,7 +135,7 @@ export function FinanceReportsPage() {
                           </div>
                         ))}
                         <div className="flex justify-between font-bold pt-2 border-t-2 text-green-700 dark:text-green-400">
-                          <span>Total Revenue</span>
+                          <span>{t('finance.reports.totalRevenue')}</span>
                           <span>{formatCurrency(pl.revenue.total)}</span>
                         </div>
                       </div>
@@ -134,7 +143,7 @@ export function FinanceReportsPage() {
 
                     {/* Expenses */}
                     <div>
-                      <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">Expenses</h3>
+                      <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">{t('finance.reports.expenses')}</h3>
                       <div className="space-y-1">
                         {pl.expenses.items.map((item: any) => (
                           <div key={item.category} className="flex justify-between text-sm py-1 border-b border-dashed">
@@ -143,7 +152,7 @@ export function FinanceReportsPage() {
                           </div>
                         ))}
                         <div className="flex justify-between font-bold pt-2 border-t-2 text-red-700 dark:text-red-400">
-                          <span>Total Expenses</span>
+                          <span>{t('finance.reports.totalExpenses')}</span>
                           <span>{formatCurrency(pl.expenses.total)}</span>
                         </div>
                       </div>
@@ -152,12 +161,12 @@ export function FinanceReportsPage() {
                     {/* Net */}
                     <div className={cn('p-4 rounded-lg', pl.netIncome >= 0 ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20')}>
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold">Net Income</span>
+                        <span className="text-lg font-bold">{t('finance.reports.netIncome')}</span>
                         <div className="text-right">
                           <p className={cn('text-2xl font-bold', pl.netIncome >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400')}>
                             {formatCurrency(pl.netIncome)}
                           </p>
-                          <p className="text-sm text-muted-foreground">{pl.profitMargin}% margin</p>
+                          <p className="text-sm text-muted-foreground">{pl.profitMargin}% {t('finance.reports.margin')}</p>
                         </div>
                       </div>
                     </div>
@@ -170,15 +179,15 @@ export function FinanceReportsPage() {
           <TabsContent value="ar">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Accounts Receivable Aging</CardTitle>
+                <CardTitle className="text-base">{t('finance.reports.accountsReceivableAging')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {!ar ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
                 ) : (
                   <div className="space-y-6">
                     <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                      <p className="text-sm text-muted-foreground">Total Outstanding</p>
+                      <p className="text-sm text-muted-foreground">{t('finance.reports.totalOutstanding')}</p>
                       <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">
                         {formatCurrency(ar.totalOutstanding)}
                       </p>
@@ -193,7 +202,7 @@ export function FinanceReportsPage() {
                           <div key={bucket.label}>
                             <div className="flex items-center justify-between text-sm mb-1">
                               <span className="font-medium">{bucket.label}</span>
-                              <span>{formatCurrency(bucket.total)} ({bucket.count} invoices)</span>
+                              <span>{formatCurrency(bucket.total)} ({bucket.count} {t('finance.reports.invoices')})</span>
                             </div>
                             <div className="h-4 bg-muted rounded-full overflow-hidden">
                               <div
@@ -223,7 +232,7 @@ export function FinanceReportsPage() {
                                           setWriteOffDialog(true);
                                         }}
                                       >
-                                        Write Off
+                                        {t('finance.reports.writeOff')}
                                       </Button>
                                     </div>
                                   </div>
@@ -243,25 +252,25 @@ export function FinanceReportsPage() {
           <TabsContent value="cashflow">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Cash Flow Statement</CardTitle>
+                <CardTitle className="text-base">{t('finance.reports.cashFlowStatement')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {!cashFlow ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
                 ) : (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h3 className="font-semibold">Operating Activities</h3>
+                      <h3 className="font-semibold">{t('finance.reports.operatingActivities')}</h3>
                       <div className="flex justify-between text-sm py-2 border-b">
-                        <span>Cash received from patients</span>
+                        <span>{t('finance.reports.cashFromPatients')}</span>
                         <span className="text-green-600 font-medium">{formatCurrency(cashFlow.operating.cashFromPatients)}</span>
                       </div>
                       <div className="flex justify-between text-sm py-2 border-b">
-                        <span>Cash paid to suppliers/expenses</span>
+                        <span>{t('finance.reports.cashToSuppliers')}</span>
                         <span className="text-red-600 font-medium">({formatCurrency(cashFlow.operating.cashToSuppliers)})</span>
                       </div>
                       <div className="flex justify-between font-bold pt-2 border-t-2">
-                        <span>Net Operating Cash Flow</span>
+                        <span>{t('finance.reports.netOperatingCashFlow')}</span>
                         <span className={cashFlow.operating.net >= 0 ? 'text-green-600' : 'text-red-600'}>
                           {formatCurrency(cashFlow.operating.net)}
                         </span>
@@ -270,7 +279,7 @@ export function FinanceReportsPage() {
 
                     <div className={cn('p-4 rounded-lg', cashFlow.closingBalance >= 0 ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20')}>
                       <div className="flex justify-between items-center">
-                        <span className="font-bold">Net Cash Position</span>
+                        <span className="font-bold">{t('finance.reports.netCashPosition')}</span>
                         <span className={cn('text-xl font-bold', cashFlow.closingBalance >= 0 ? 'text-green-700' : 'text-red-700')}>
                           {formatCurrency(cashFlow.closingBalance)}
                         </span>
@@ -285,27 +294,27 @@ export function FinanceReportsPage() {
           <TabsContent value="writeoffs">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Write-Offs</CardTitle>
+                <CardTitle className="text-base">{t('finance.reports.writeOffs')}</CardTitle>
                 {writeOffsData && (
                   <Badge variant="outline">
-                    Total: {formatCurrency(writeOffsData.totalWrittenOff || 0)}
+                    {t('common.total')}: {formatCurrency(writeOffsData.totalWrittenOff || 0)}
                   </Badge>
                 )}
               </CardHeader>
               <CardContent>
                 {!writeOffsData?.data?.length ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">No write-offs recorded</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">{t('finance.reports.noWriteOffs')}</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-2 font-medium">Date</th>
-                          <th className="text-left py-2 font-medium">Invoice</th>
-                          <th className="text-left py-2 font-medium">Patient</th>
-                          <th className="text-left py-2 font-medium">Reason</th>
-                          <th className="text-right py-2 font-medium">Amount</th>
-                          <th className="text-left py-2 font-medium">Approved By</th>
+                          <th className="text-left py-2 font-medium">{t('finance.reports.date')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.reports.invoice')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.reports.patient')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.reports.reason')}</th>
+                          <th className="text-right py-2 font-medium">{t('finance.reports.amount')}</th>
+                          <th className="text-left py-2 font-medium">{t('finance.reports.approvedBy')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -334,12 +343,12 @@ export function FinanceReportsPage() {
         <Dialog open={writeOffDialog} onOpenChange={setWriteOffDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Record Write-Off</DialogTitle>
-              <DialogDescription>Write off an unpaid balance from an invoice</DialogDescription>
+              <DialogTitle>{t('finance.reports.recordWriteOff')}</DialogTitle>
+              <DialogDescription>{t('finance.reports.writeOffDescription')}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Amount</Label>
+                <Label>{t('finance.reports.amount')}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -348,31 +357,31 @@ export function FinanceReportsPage() {
                 />
               </div>
               <div>
-                <Label>Reason</Label>
+                <Label>{t('finance.reports.reason')}</Label>
                 <Select value={writeOffForm.reason} onValueChange={(v) => setWriteOffForm({ ...writeOffForm, reason: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="BAD_DEBT">Bad Debt</SelectItem>
-                    <SelectItem value="CHARITY_CARE">Charity Care</SelectItem>
-                    <SelectItem value="INSURANCE_ADJUSTMENT">Insurance Adjustment</SelectItem>
-                    <SelectItem value="ADMINISTRATIVE">Administrative</SelectItem>
-                    <SelectItem value="OTHER">Other</SelectItem>
+                    <SelectItem value="BAD_DEBT">{t('finance.reports.reasonBadDebt')}</SelectItem>
+                    <SelectItem value="CHARITY_CARE">{t('finance.reports.reasonCharityCare')}</SelectItem>
+                    <SelectItem value="INSURANCE_ADJUSTMENT">{t('finance.reports.reasonInsuranceAdjustment')}</SelectItem>
+                    <SelectItem value="ADMINISTRATIVE">{t('finance.reports.reasonAdministrative')}</SelectItem>
+                    <SelectItem value="OTHER">{t('finance.reports.reasonOther')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Description</Label>
+                <Label>{t('finance.reports.description')}</Label>
                 <Textarea
                   value={writeOffForm.description}
                   onChange={(e) => setWriteOffForm({ ...writeOffForm, description: e.target.value })}
-                  placeholder="Optional description..."
+                  placeholder={t('finance.reports.descriptionPlaceholder')}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setWriteOffDialog(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setWriteOffDialog(false)}>{t('common.cancel')}</Button>
               <Button onClick={handleWriteOff} disabled={createWriteOff.isPending} variant="destructive">
-                {createWriteOff.isPending ? 'Processing...' : 'Confirm Write-Off'}
+                {createWriteOff.isPending ? t('common.processing') : t('finance.reports.confirmWriteOff')}
               </Button>
             </DialogFooter>
           </DialogContent>

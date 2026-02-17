@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUploadDocument } from '@/api/documents';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -20,21 +21,13 @@ const ACCEPTED_EXTENSIONS = '.pdf,.jpg,.jpeg,.png,.gif,.webp,.dcm';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-const CATEGORIES = [
-  { value: 'LAB_REPORT', label: 'Lab Report' },
-  { value: 'IMAGING', label: 'Imaging' },
-  { value: 'REFERRAL', label: 'Referral' },
-  { value: 'CONSENT', label: 'Consent Form' },
-  { value: 'INSURANCE', label: 'Insurance' },
-  { value: 'OTHER', label: 'Other' },
-];
-
 interface FileUploadProps {
   patientId: string;
   onUploadComplete?: () => void;
 }
 
 export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
+  const { t } = useTranslation();
   const uploadDocument = useUploadDocument();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -43,16 +36,25 @@ export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
 
+  const CATEGORIES = [
+    { value: 'LAB_REPORT', label: t('documents.categories.labReport', 'Lab Report') },
+    { value: 'IMAGING', label: t('documents.categories.imaging', 'Imaging') },
+    { value: 'REFERRAL', label: t('documents.categories.referral', 'Referral') },
+    { value: 'CONSENT', label: t('documents.categories.consent', 'Consent Form') },
+    { value: 'INSURANCE', label: t('documents.categories.insurance', 'Insurance') },
+    { value: 'OTHER', label: t('documents.categories.other', 'Other') },
+  ];
+
   const validateFile = (file: File): string | null => {
     if (file.size > MAX_FILE_SIZE) {
-      return `File size exceeds 10MB limit. Current size: ${(file.size / (1024 * 1024)).toFixed(1)}MB`;
+      return t('documents.fileSizeExceeded', 'File size exceeds 10MB limit. Current size: {{size}}MB', { size: (file.size / (1024 * 1024)).toFixed(1) });
     }
 
     const isAcceptedType = ACCEPTED_TYPES.includes(file.type) ||
       file.name.toLowerCase().endsWith('.dcm');
 
     if (!isAcceptedType) {
-      return 'Invalid file type. Accepted formats: PDF, JPEG, PNG, GIF, WebP, DICOM';
+      return t('documents.invalidFileType', 'Invalid file type. Accepted formats: PDF, JPEG, PNG, GIF, WebP, DICOM');
     }
 
     return null;
@@ -126,7 +128,7 @@ export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
       clearInterval(progressInterval);
       setUploadProgress(100);
       setUploadStatus('success');
-      toast.success('Document uploaded successfully');
+      toast.success(t('documents.uploadSuccess', 'Document uploaded successfully'));
       onUploadComplete?.();
 
       // Reset after a brief delay
@@ -143,7 +145,7 @@ export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
       clearInterval(progressInterval);
       setUploadStatus('error');
       setUploadProgress(0);
-      toast.error(err.response?.data?.message || 'Failed to upload document');
+      toast.error(err.response?.data?.message || t('documents.uploadFailed', 'Failed to upload document'));
     }
   };
 
@@ -192,10 +194,10 @@ export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">
-                Drag and drop a file here, or click to browse
+                {t('documents.dragAndDrop', 'Drag and drop a file here, or click to browse')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                PDF, Images, or DICOM files up to 10MB
+                {t('documents.supportedFormats', 'PDF, Images, or DICOM files up to 10MB')}
               </p>
             </div>
           </div>
@@ -228,7 +230,7 @@ export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
       {uploadStatus === 'uploading' && (
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Uploading...</span>
+            <span>{t('documents.uploading', 'Uploading...')}</span>
             <span>{uploadProgress}%</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -243,10 +245,10 @@ export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
       {selectedFile && uploadStatus !== 'success' && (
         <div className="flex items-end gap-4">
           <div className="flex-1">
-            <Label>Category</Label>
+            <Label>{t('documents.category', 'Category')}</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger className="mt-1.5">
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder={t('documents.selectCategory', 'Select category')} />
               </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((cat) => (
@@ -259,7 +261,7 @@ export function FileUpload({ patientId, onUploadComplete }: FileUploadProps) {
           </div>
           <Button onClick={handleUpload} disabled={uploadStatus === 'uploading'}>
             <Upload className="w-4 h-4 mr-2" />
-            {uploadStatus === 'uploading' ? 'Uploading...' : 'Upload'}
+            {uploadStatus === 'uploading' ? t('documents.uploading', 'Uploading...') : t('documents.upload', 'Upload')}
           </Button>
         </div>
       )}

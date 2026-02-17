@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Heart, Thermometer, Wind, Activity, Scale, Ruler, Droplets, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,10 +50,10 @@ function calculateBMI(weightKg: number, heightCm: number): number | null {
 }
 
 function getBMICategory(bmi: number): { label: string; color: string } {
-  if (bmi < 18.5) return { label: 'Underweight', color: 'text-yellow-600' };
-  if (bmi < 25) return { label: 'Normal', color: 'text-green-600' };
-  if (bmi < 30) return { label: 'Overweight', color: 'text-orange-600' };
-  return { label: 'Obese', color: 'text-red-600' };
+  if (bmi < 18.5) return { label: 'underweight', color: 'text-yellow-600' };
+  if (bmi < 25) return { label: 'normal', color: 'text-green-600' };
+  if (bmi < 30) return { label: 'overweight', color: 'text-orange-600' };
+  return { label: 'obese', color: 'text-red-600' };
 }
 
 export function VitalsForm({
@@ -61,6 +62,7 @@ export function VitalsForm({
   readOnly,
   onSaved,
 }: VitalsFormProps) {
+  const { t } = useTranslation();
   const [vitals, setVitals] = useState<VitalsData>(INITIAL_VITALS);
   const [submitting, setSubmitting] = useState(false);
 
@@ -120,10 +122,10 @@ export function VitalsForm({
         `/consultations/${consultationId}/vitals`,
         payload,
       );
-      toast.success('Vitals saved successfully');
+      toast.success(t('consultations.vitalsForm.saveSuccess'));
       onSaved?.(data);
     } catch {
-      toast.error('Failed to save vitals');
+      toast.error(t('consultations.vitalsForm.saveError'));
     } finally {
       setSubmitting(false);
     }
@@ -134,7 +136,7 @@ export function VitalsForm({
       <CardHeader className="pb-4">
         <CardTitle className="text-base flex items-center gap-2">
           <Activity className="h-4 w-4" />
-          Vital Signs
+          {t('consultations.vitals')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -143,12 +145,12 @@ export function VitalsForm({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               <Droplets className="h-3.5 w-3.5 text-red-500" />
-              Blood Pressure (mmHg)
+              {t('consultations.vitalsForm.bloodPressure')} ({t('consultations.vitalsForm.mmHg')})
             </Label>
             <div className="flex items-center gap-2">
               <Input
                 type="number"
-                placeholder="Systolic"
+                placeholder={t('consultations.vitalsForm.systolic')}
                 value={vitals.bloodPressureSystolic}
                 onChange={handleChange('bloodPressureSystolic')}
                 disabled={readOnly}
@@ -158,7 +160,7 @@ export function VitalsForm({
               <span className="text-muted-foreground font-medium">/</span>
               <Input
                 type="number"
-                placeholder="Diastolic"
+                placeholder={t('consultations.vitalsForm.diastolic')}
                 value={vitals.bloodPressureDiastolic}
                 onChange={handleChange('bloodPressureDiastolic')}
                 disabled={readOnly}
@@ -172,11 +174,11 @@ export function VitalsForm({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               <Heart className="h-3.5 w-3.5 text-red-500" />
-              Heart Rate (bpm)
+              {t('consultations.vitalsForm.heartRate')} ({t('consultations.vitalsForm.bpm')})
             </Label>
             <Input
               type="number"
-              placeholder="Heart rate"
+              placeholder={t('consultations.vitalsForm.heartRate')}
               value={vitals.heartRate}
               onChange={handleChange('heartRate')}
               disabled={readOnly}
@@ -189,12 +191,12 @@ export function VitalsForm({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               <Thermometer className="h-3.5 w-3.5 text-orange-500" />
-              Temperature (C)
+              {t('consultations.vitalsForm.temperature')} ({t('consultations.vitalsForm.celsius')})
             </Label>
             <Input
               type="number"
               step="0.1"
-              placeholder="Temperature"
+              placeholder={t('consultations.vitalsForm.temperature')}
               value={vitals.temperature}
               onChange={handleChange('temperature')}
               disabled={readOnly}
@@ -207,11 +209,11 @@ export function VitalsForm({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               <Wind className="h-3.5 w-3.5 text-blue-500" />
-              SpO2 (%)
+              {t('consultations.vitalsForm.oxygenSaturation')} (%)
             </Label>
             <Input
               type="number"
-              placeholder="Oxygen saturation"
+              placeholder={t('consultations.vitalsForm.oxygenSaturation')}
               value={vitals.spO2}
               onChange={handleChange('spO2')}
               disabled={readOnly}
@@ -224,11 +226,11 @@ export function VitalsForm({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               <Wind className="h-3.5 w-3.5 text-teal-500" />
-              Respiratory Rate (breaths/min)
+              {t('consultations.vitalsForm.respiratoryRate')} ({t('consultations.vitalsForm.breathsPerMin')})
             </Label>
             <Input
               type="number"
-              placeholder="Respiratory rate"
+              placeholder={t('consultations.vitalsForm.respiratoryRate')}
               value={vitals.respiratoryRate}
               onChange={handleChange('respiratoryRate')}
               disabled={readOnly}
@@ -241,12 +243,12 @@ export function VitalsForm({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               <Scale className="h-3.5 w-3.5 text-purple-500" />
-              Weight (kg)
+              {t('consultations.vitalsForm.weight')} ({t('consultations.vitalsForm.kg')})
             </Label>
             <Input
               type="number"
               step="0.1"
-              placeholder="Weight"
+              placeholder={t('consultations.vitalsForm.weight')}
               value={vitals.weight}
               onChange={handleChange('weight')}
               disabled={readOnly}
@@ -259,12 +261,12 @@ export function VitalsForm({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5">
               <Ruler className="h-3.5 w-3.5 text-indigo-500" />
-              Height (cm)
+              {t('consultations.vitalsForm.height')} ({t('consultations.vitalsForm.cm')})
             </Label>
             <Input
               type="number"
               step="0.1"
-              placeholder="Height"
+              placeholder={t('consultations.vitalsForm.height')}
               value={vitals.height}
               onChange={handleChange('height')}
               disabled={readOnly}
@@ -277,14 +279,14 @@ export function VitalsForm({
           {bmi !== null && (
             <div className="rounded-md border bg-muted/50 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">BMI</span>
+                <span className="text-sm font-medium">{t('consultations.vitalsForm.bmi')}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold">
                     {bmi.toFixed(1)}
                   </span>
                   {bmiCategory && (
                     <Badge variant="outline" className={cn('text-xs', bmiCategory.color)}>
-                      {bmiCategory.label}
+                      {t(`consultations.vitalsForm.bmiCategory.${bmiCategory.label}`)}
                     </Badge>
                   )}
                 </div>
@@ -294,9 +296,9 @@ export function VitalsForm({
 
           {/* Notes */}
           <div className="space-y-1.5">
-            <Label>Notes</Label>
+            <Label>{t('consultations.vitalsForm.notes')}</Label>
             <Textarea
-              placeholder="Additional notes about vitals..."
+              placeholder={t('consultations.vitalsForm.notesPlaceholder')}
               value={vitals.notes}
               onChange={handleChange('notes')}
               disabled={readOnly}
@@ -307,7 +309,7 @@ export function VitalsForm({
           {!readOnly && (
             <Button type="submit" className="w-full gap-2" disabled={submitting}>
               <Save className="h-4 w-4" />
-              {submitting ? 'Saving...' : 'Save Vitals'}
+              {submitting ? t('consultations.vitalsForm.saving') : t('consultations.vitalsForm.saveVitals')}
             </Button>
           )}
         </form>

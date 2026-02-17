@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, ChevronsUpDown, Search, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -28,9 +29,10 @@ interface PatientSearchProps {
 export function PatientSearch({
   value,
   onSelect,
-  placeholder = 'Search patient...',
+  placeholder,
   disabled = false,
 }: PatientSearchProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -41,6 +43,8 @@ export function PatientSearch({
 
   const patients: Patient[] = data?.data || [];
   const selectedPatient = patients.find((p) => p.id === value);
+
+  const displayPlaceholder = placeholder || t('patients.searchPatient');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,7 +65,7 @@ export function PatientSearch({
           ) : (
             <span className="flex items-center gap-2 text-muted-foreground">
               <Search className="h-4 w-4 shrink-0" />
-              {placeholder}
+              {displayPlaceholder}
             </span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -70,16 +74,16 @@ export function PatientSearch({
       <PopoverContent className="w-[400px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Search by name, MRN, or phone..."
+            placeholder={t('patients.searchByNameMrnPhone')}
             value={search}
             onValueChange={setSearch}
           />
           <CommandList>
             {isLoading ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">Searching...</div>
+              <div className="py-6 text-center text-sm text-muted-foreground">{t('common.searching')}</div>
             ) : (
               <>
-                <CommandEmpty>No patients found.</CommandEmpty>
+                <CommandEmpty>{t('patients.noPatientsFound')}</CommandEmpty>
                 <CommandGroup>
                   {patients.map((patient) => (
                     <CommandItem
@@ -101,7 +105,7 @@ export function PatientSearch({
                           {patient.firstName} {patient.lastName}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          MRN: {patient.mrn}
+                          {t('patients.mrn')}: {patient.mrn}
                           {patient.phone && ` | ${patient.phone}`}
                         </p>
                       </div>

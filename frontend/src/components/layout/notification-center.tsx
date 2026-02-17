@@ -1,15 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useNotifications as useNotificationsApi, useMarkAsRead, useMarkAllAsRead } from '@/api/notifications';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import {
   Bell,
-  Check,
   CheckCheck,
   Calendar,
   FlaskConical,
@@ -38,16 +37,20 @@ const TYPE_COLORS: Record<string, string> = {
   USER: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400',
 };
 
-function getTimeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+function useTimeAgo() {
+  const { t, i18n } = useTranslation();
 
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return (dateStr: string): string => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return t('notifications.timeAgo.justNow');
+    if (seconds < 3600) return t('notifications.timeAgo.minutesAgo', { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t('notifications.timeAgo.hoursAgo', { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t('notifications.timeAgo.daysAgo', { count: Math.floor(seconds / 86400) });
+    return date.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' });
+  };
 }
 
 function getEntityPath(referenceType?: string, referenceId?: string): string | null {
@@ -67,6 +70,8 @@ function getEntityPath(referenceType?: string, referenceId?: string): string | n
 
 export function NotificationCenter() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const getTimeAgo = useTimeAgo();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -130,7 +135,7 @@ export function NotificationCenter() {
       {isOpen && (
         <div className="absolute right-0 top-12 w-96 bg-card border rounded-lg shadow-lg z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b">
-            <h3 className="font-semibold text-foreground">Notifications</h3>
+            <h3 className="font-semibold text-foreground">{t('notifications.title')}</h3>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
@@ -139,7 +144,7 @@ export function NotificationCenter() {
                 className="text-xs"
               >
                 <CheckCheck className="w-3.5 h-3.5 mr-1" />
-                Mark all as read
+                {t('notifications.markAllAsRead')}
               </Button>
             )}
           </div>
@@ -148,7 +153,7 @@ export function NotificationCenter() {
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center px-4">
                 <Bell className="h-8 w-8 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">No notifications yet</p>
+                <p className="text-sm text-muted-foreground">{t('notifications.noNotifications')}</p>
               </div>
             ) : (
               <div>
@@ -216,7 +221,7 @@ export function NotificationCenter() {
                   setIsOpen(false);
                 }}
               >
-                View all notifications
+                {t('notifications.viewAll')}
               </Button>
             </div>
           )}

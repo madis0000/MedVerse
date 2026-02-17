@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import { PageWrapper } from '@/components/layout/page-wrapper';
@@ -14,14 +15,6 @@ import { Plus, Users, Pencil, UserX, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { ColumnDef } from '@tanstack/react-table';
 import type { User, Role } from '@/types';
-
-const ROLE_LABELS: Record<Role, string> = {
-  SUPER_ADMIN: 'Super Admin',
-  DOCTOR: 'Doctor',
-  NURSE: 'Nurse',
-  RECEPTIONIST: 'Receptionist',
-  LAB_TECH: 'Lab Tech',
-};
 
 const ROLE_COLORS: Record<Role, string> = {
   SUPER_ADMIN: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
@@ -55,6 +48,7 @@ function useToggleUserStatus() {
 }
 
 export function UserManagementPage() {
+  const { t } = useTranslation();
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -79,17 +73,17 @@ export function UserManagementPage() {
     try {
       await toggleStatus.mutateAsync({ id: user.id, isActive: !user.isActive });
       toast.success(
-        `${user.firstName} ${user.lastName} ${user.isActive ? 'deactivated' : 'activated'} successfully`,
+        `${user.firstName} ${user.lastName} ${user.isActive ? t('common.deactivated') : t('common.activated')} ${t('common.successfully')}`,
       );
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update user status');
+      toast.error(err.response?.data?.message || t('common.errorUpdatingStatus'));
     }
   };
 
   const columns: ColumnDef<User, any>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: t('users.firstName') + ' / ' + t('users.lastName'),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-medium">
@@ -106,27 +100,27 @@ export function UserManagementPage() {
     },
     {
       accessorKey: 'email',
-      header: 'Email',
+      header: t('users.email'),
       cell: ({ row }) => (
         <span className="text-muted-foreground">{row.original.email}</span>
       ),
     },
     {
       accessorKey: 'role',
-      header: 'Role',
+      header: t('users.role'),
       cell: ({ row }) => (
         <span
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
             ROLE_COLORS[row.original.role] || ''
           }`}
         >
-          {ROLE_LABELS[row.original.role] || row.original.role}
+          {t(`roles.${row.original.role}`)}
         </span>
       ),
     },
     {
       accessorKey: 'specialty',
-      header: 'Specialty',
+      header: t('users.specialty'),
       cell: ({ row }) => (
         <span className="text-muted-foreground">
           {row.original.specialty?.name || '-'}
@@ -135,25 +129,25 @@ export function UserManagementPage() {
     },
     {
       accessorKey: 'isActive',
-      header: 'Status',
+      header: t('users.status'),
       cell: ({ row }) => (
         <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-          {row.original.isActive ? 'Active' : 'Inactive'}
+          {row.original.isActive ? t('users.active') : t('users.inactive')}
         </Badge>
       ),
     },
     {
       accessorKey: 'lastLogin',
-      header: 'Last Login',
+      header: t('users.lastLogin'),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-xs">
-          {row.original.lastLogin ? formatDateTime(row.original.lastLogin) : 'Never'}
+          {row.original.lastLogin ? formatDateTime(row.original.lastLogin) : t('common.never')}
         </span>
       ),
     },
     {
       id: 'actions',
-      header: 'Actions',
+      header: t('common.actions'),
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
           <Button
@@ -189,15 +183,15 @@ export function UserManagementPage() {
 
   return (
     <PageWrapper
-      title="User Management"
+      title={t('users.title')}
       breadcrumbs={[
-        { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Users' },
+        { label: t('nav.dashboard'), path: '/dashboard' },
+        { label: t('nav.users') },
       ]}
       actions={
         <Button onClick={handleAddNew}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Staff
+          {t('users.addUser')}
         </Button>
       }
     >
@@ -206,15 +200,15 @@ export function UserManagementPage() {
           <div className="w-48">
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by role" />
+                <SelectValue placeholder={t('common.filter')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All Roles</SelectItem>
-                <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                <SelectItem value="DOCTOR">Doctor</SelectItem>
-                <SelectItem value="NURSE">Nurse</SelectItem>
-                <SelectItem value="RECEPTIONIST">Receptionist</SelectItem>
-                <SelectItem value="LAB_TECH">Lab Technician</SelectItem>
+                <SelectItem value="ALL">{t('users.allRoles')}</SelectItem>
+                <SelectItem value="SUPER_ADMIN">{t('roles.SUPER_ADMIN')}</SelectItem>
+                <SelectItem value="DOCTOR">{t('roles.DOCTOR')}</SelectItem>
+                <SelectItem value="NURSE">{t('roles.NURSE')}</SelectItem>
+                <SelectItem value="RECEPTIONIST">{t('roles.RECEPTIONIST')}</SelectItem>
+                <SelectItem value="LAB_TECH">{t('roles.LAB_TECH')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -225,16 +219,16 @@ export function UserManagementPage() {
         ) : users.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="No staff members found"
+            title={t('users.noUsers')}
             description={
               roleFilter !== 'ALL'
-                ? 'No users found matching the selected role filter.'
-                : 'Add your first staff member to get started.'
+                ? t('users.noUsersFilterDescription')
+                : t('users.noUsersDescription')
             }
             action={
               <Button onClick={handleAddNew}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Staff
+                {t('users.addUser')}
               </Button>
             }
           />

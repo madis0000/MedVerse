@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Edit,
@@ -84,6 +85,7 @@ function usePatientInvoices(id: string) {
 // ----- Overview Tab -----
 
 function OverviewTab({ patientId }: { patientId: string }) {
+  const { t } = useTranslation();
   const { data, isLoading } = usePatientOverview(patientId);
 
   if (isLoading) {
@@ -108,14 +110,14 @@ function OverviewTab({ patientId }: { patientId: string }) {
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
-            Recent Vitals
+            {t('patients.recentVitals')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {recentVitals ? (
             <div className="grid grid-cols-2 gap-4">
               <VitalItem
-                label="Blood Pressure"
+                label={t('patients.vitals.bloodPressure')}
                 value={
                   recentVitals.bloodPressureSystolic && recentVitals.bloodPressureDiastolic
                     ? `${recentVitals.bloodPressureSystolic}/${recentVitals.bloodPressureDiastolic}`
@@ -124,39 +126,39 @@ function OverviewTab({ patientId }: { patientId: string }) {
                 unit="mmHg"
               />
               <VitalItem
-                label="Heart Rate"
+                label={t('patients.vitals.heartRate')}
                 value={recentVitals.heartRate?.toString() || '--'}
                 unit="bpm"
               />
               <VitalItem
-                label="Temperature"
+                label={t('patients.vitals.temperature')}
                 value={recentVitals.temperature?.toString() || '--'}
                 unit="°F"
               />
               <VitalItem
-                label="SpO2"
+                label={t('patients.vitals.spO2')}
                 value={recentVitals.spO2?.toString() || '--'}
                 unit="%"
               />
               <VitalItem
-                label="Weight"
+                label={t('patients.vitals.weight')}
                 value={recentVitals.weight?.toString() || '--'}
                 unit="kg"
               />
               <VitalItem
-                label="BMI"
+                label={t('patients.vitals.bmi')}
                 value={recentVitals.bmi?.toFixed(1) || '--'}
                 unit=""
               />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground py-4 text-center">
-              No vital signs recorded yet.
+              {t('patients.noVitalsRecorded')}
             </p>
           )}
           {recentVitals && (
             <p className="text-xs text-muted-foreground mt-4 pt-3 border-t">
-              Recorded on {formatDate(recentVitals.createdAt)}
+              {t('patients.recordedOn', { date: formatDate(recentVitals.createdAt) })}
             </p>
           )}
         </CardContent>
@@ -167,7 +169,7 @@ function OverviewTab({ patientId }: { patientId: string }) {
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Stethoscope className="h-4 w-4 text-primary" />
-            Active Diagnoses
+            {t('patients.activeDiagnoses')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -188,7 +190,7 @@ function OverviewTab({ patientId }: { patientId: string }) {
                   </div>
                   {diagnosis.isPrimary && (
                     <Badge variant="secondary" className="text-[10px]">
-                      Primary
+                      {t('patients.primary')}
                     </Badge>
                   )}
                 </div>
@@ -196,7 +198,7 @@ function OverviewTab({ patientId }: { patientId: string }) {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground py-4 text-center">
-              No active diagnoses recorded.
+              {t('patients.noActiveDiagnoses')}
             </p>
           )}
         </CardContent>
@@ -207,7 +209,7 @@ function OverviewTab({ patientId }: { patientId: string }) {
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Pill className="h-4 w-4 text-primary" />
-            Active Prescriptions
+            {t('patients.activePrescriptions')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -220,7 +222,7 @@ function OverviewTab({ patientId }: { patientId: string }) {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium text-foreground">
-                      Prescribed by Dr. {prescription.doctor?.lastName || 'Unknown'}
+                      {t('patients.prescribedByDoctor', { name: prescription.doctor?.lastName || t('common.unknown') })}
                     </p>
                     <Badge
                       variant="secondary"
@@ -247,15 +249,15 @@ function OverviewTab({ patientId }: { patientId: string }) {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground mt-2">
-                    Issued {formatDate(prescription.createdAt)}
-                    {prescription.validUntil && ` | Valid until ${formatDate(prescription.validUntil)}`}
+                    {t('patients.issued', { date: formatDate(prescription.createdAt) })}
+                    {prescription.validUntil && ` | ${t('patients.validUntil', { date: formatDate(prescription.validUntil) })}`}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground py-4 text-center">
-              No active prescriptions.
+              {t('patients.noActivePrescriptions')}
             </p>
           )}
         </CardContent>
@@ -279,12 +281,14 @@ function VitalItem({ label, value, unit }: { label: string; value: string; unit:
 // ----- Visits Tab -----
 
 function VisitsTab({ patientId }: { patientId: string }) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <Calendar className="h-4 w-4 text-primary" />
-          Visit History
+          {t('patients.visitHistory')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -297,6 +301,7 @@ function VisitsTab({ patientId }: { patientId: string }) {
 // ----- Lab Results Tab -----
 
 function LabResultsTab({ patientId }: { patientId: string }) {
+  const { t } = useTranslation();
   const { data, isLoading } = usePatientLabOrders(patientId);
   const labOrders: LabOrder[] = data?.data || [];
 
@@ -317,13 +322,13 @@ function LabResultsTab({ patientId }: { patientId: string }) {
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <FlaskConical className="h-4 w-4 text-primary" />
-          Lab Results
+          {t('patients.tabs.labResults')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {labOrders.length === 0 ? (
           <p className="text-sm text-muted-foreground py-8 text-center">
-            No lab orders found for this patient.
+            {t('patients.noLabOrders')}
           </p>
         ) : (
           <div className="space-y-4">
@@ -367,7 +372,7 @@ function LabResultsTab({ patientId }: { patientId: string }) {
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Pending</span>
+                          <span className="text-xs text-muted-foreground">{t('patients.status.PENDING')}</span>
                         )}
                       </div>
                     ))}
@@ -390,6 +395,7 @@ function LabResultsTab({ patientId }: { patientId: string }) {
 // ----- Prescriptions Tab -----
 
 function PrescriptionsTab({ patientId }: { patientId: string }) {
+  const { t } = useTranslation();
   const { data, isLoading } = usePatientPrescriptions(patientId);
   const prescriptions: Prescription[] = data?.data || [];
 
@@ -408,13 +414,13 @@ function PrescriptionsTab({ patientId }: { patientId: string }) {
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <Pill className="h-4 w-4 text-primary" />
-          Prescriptions
+          {t('patients.tabs.prescriptions')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {prescriptions.length === 0 ? (
           <p className="text-sm text-muted-foreground py-8 text-center">
-            No prescriptions found for this patient.
+            {t('patients.noPrescriptions')}
           </p>
         ) : (
           <div className="space-y-4">
@@ -423,7 +429,7 @@ function PrescriptionsTab({ patientId }: { patientId: string }) {
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <p className="text-sm font-medium text-foreground">
-                      Dr. {rx.doctor?.firstName} {rx.doctor?.lastName}
+                      {t('common.dr')} {rx.doctor?.firstName} {rx.doctor?.lastName}
                     </p>
                     <p className="text-xs text-muted-foreground">{formatDate(rx.createdAt)}</p>
                   </div>
@@ -450,7 +456,7 @@ function PrescriptionsTab({ patientId }: { patientId: string }) {
                           )}
                         </div>
                         {item.quantity && (
-                          <span className="text-xs text-muted-foreground">Qty: {item.quantity}</span>
+                          <span className="text-xs text-muted-foreground">{t('patients.qty')}: {item.quantity}</span>
                         )}
                       </div>
                     ))}
@@ -471,6 +477,7 @@ function PrescriptionsTab({ patientId }: { patientId: string }) {
 // ----- Documents Tab -----
 
 function DocumentsTab({ patientId }: { patientId: string }) {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['patients', patientId, 'documents'],
     queryFn: async () => {
@@ -491,13 +498,13 @@ function DocumentsTab({ patientId }: { patientId: string }) {
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />
-          Documents
+          {t('patients.tabs.documents')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {documents.length === 0 ? (
           <p className="text-sm text-muted-foreground py-8 text-center">
-            No documents uploaded for this patient.
+            {t('patients.noDocuments')}
           </p>
         ) : (
           <div className="space-y-2">
@@ -513,12 +520,12 @@ function DocumentsTab({ patientId }: { patientId: string }) {
                   <div>
                     <p className="text-sm font-medium text-foreground">{doc.name || doc.fileName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {doc.type || 'Document'} | {formatDate(doc.createdAt || doc.uploadedAt)}
+                      {doc.type || t('patients.document')} | {formatDate(doc.createdAt || doc.uploadedAt)}
                     </p>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm">
-                  View
+                  {t('common.view')}
                 </Button>
               </div>
             ))}
@@ -532,6 +539,7 @@ function DocumentsTab({ patientId }: { patientId: string }) {
 // ----- Billing Tab -----
 
 function BillingTab({ patientId }: { patientId: string }) {
+  const { t } = useTranslation();
   const { data, isLoading } = usePatientInvoices(patientId);
   const invoices: Invoice[] = data?.data || [];
 
@@ -553,13 +561,13 @@ function BillingTab({ patientId }: { patientId: string }) {
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold flex items-center gap-2">
           <Receipt className="h-4 w-4 text-primary" />
-          Billing History
+          {t('patients.billingHistory')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {invoices.length === 0 ? (
           <p className="text-sm text-muted-foreground py-8 text-center">
-            No invoices found for this patient.
+            {t('patients.noInvoices')}
           </p>
         ) : (
           <div className="space-y-3">
@@ -572,7 +580,7 @@ function BillingTab({ patientId }: { patientId: string }) {
                   <p className="text-sm font-medium text-foreground">{invoice.invoiceNumber}</p>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(invoice.createdAt)}
-                    {invoice.dueDate && ` | Due: ${formatDate(invoice.dueDate)}`}
+                    {invoice.dueDate && ` | ${t('patients.due')}: ${formatDate(invoice.dueDate)}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -595,6 +603,7 @@ function BillingTab({ patientId }: { patientId: string }) {
 // ----- Main Profile Page -----
 
 export function PatientProfilePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading } = usePatient(id!);
@@ -604,11 +613,11 @@ export function PatientProfilePage() {
   if (isLoading) {
     return (
       <PageWrapper
-        title="Patient Profile"
+        title={t('patients.patientProfile')}
         breadcrumbs={[
-          { label: 'Dashboard', path: '/dashboard' },
-          { label: 'Patients', path: '/patients' },
-          { label: 'Loading...' },
+          { label: t('nav.dashboard'), path: '/dashboard' },
+          { label: t('nav.patients'), path: '/patients' },
+          { label: t('common.loading') },
         ]}
       >
         <div className="space-y-6">
@@ -622,20 +631,20 @@ export function PatientProfilePage() {
   if (!patient) {
     return (
       <PageWrapper
-        title="Patient Not Found"
+        title={t('patients.patientNotFound')}
         breadcrumbs={[
-          { label: 'Dashboard', path: '/dashboard' },
-          { label: 'Patients', path: '/patients' },
-          { label: 'Not Found' },
+          { label: t('nav.dashboard'), path: '/dashboard' },
+          { label: t('nav.patients'), path: '/patients' },
+          { label: t('common.notFound') },
         ]}
       >
         <div className="flex flex-col items-center justify-center py-16">
           <p className="text-muted-foreground mb-4">
-            The patient you are looking for does not exist or has been removed.
+            {t('patients.patientNotFoundMessage')}
           </p>
           <Button onClick={() => navigate('/patients')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Patients
+            {t('patients.backToPatients')}
           </Button>
         </div>
       </PageWrapper>
@@ -644,21 +653,21 @@ export function PatientProfilePage() {
 
   return (
     <PageWrapper
-      title="Patient Profile"
+      title={t('patients.patientProfile')}
       breadcrumbs={[
-        { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Patients', path: '/patients' },
+        { label: t('nav.dashboard'), path: '/dashboard' },
+        { label: t('nav.patients'), path: '/patients' },
         { label: `${patient.firstName} ${patient.lastName}` },
       ]}
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => navigate('/patients')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {t('common.back')}
           </Button>
           <Button onClick={() => navigate(`/patients/${id}/edit`)}>
             <Edit className="h-4 w-4 mr-2" />
-            Edit Patient
+            {t('patients.editPatient')}
           </Button>
         </div>
       }
@@ -670,27 +679,27 @@ export function PatientProfilePage() {
           <TabsList className="w-full justify-start">
             <TabsTrigger value="overview" className="gap-1.5">
               <Activity className="h-3.5 w-3.5" />
-              Overview
+              {t('patients.tabs.overview')}
             </TabsTrigger>
             <TabsTrigger value="visits" className="gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
-              Visits
+              {t('patients.tabs.visits')}
             </TabsTrigger>
             <TabsTrigger value="lab-results" className="gap-1.5">
               <FlaskConical className="h-3.5 w-3.5" />
-              Lab Results
+              {t('patients.tabs.labResults')}
             </TabsTrigger>
             <TabsTrigger value="prescriptions" className="gap-1.5">
               <Pill className="h-3.5 w-3.5" />
-              Prescriptions
+              {t('patients.tabs.prescriptions')}
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-1.5">
               <FileText className="h-3.5 w-3.5" />
-              Documents
+              {t('patients.tabs.documents')}
             </TabsTrigger>
             <TabsTrigger value="billing" className="gap-1.5">
               <Receipt className="h-3.5 w-3.5" />
-              Billing
+              {t('patients.tabs.billing')}
             </TabsTrigger>
           </TabsList>
 

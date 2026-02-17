@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   X,
@@ -35,6 +36,7 @@ export function DiagnosisSearch({
   onDiagnosesChange,
   readOnly,
 }: DiagnosisSearchProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<ICD10Result[]>([]);
   const [searching, setSearching] = useState(false);
@@ -69,12 +71,12 @@ export function DiagnosisSearch({
       setResults(Array.isArray(data) ? data : data.data ?? []);
       setShowDropdown(true);
     } catch {
-      toast.error('Failed to search ICD-10 codes');
+      toast.error(t('consultations.diagnosisSearch.searchError'));
       setResults([]);
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [t]);
 
   function handleQueryChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
@@ -92,7 +94,7 @@ export function DiagnosisSearch({
   async function handleAddDiagnosis(result: ICD10Result) {
     const alreadyAdded = diagnoses.some((d) => d.icd10Code === result.code);
     if (alreadyAdded) {
-      toast.info('This diagnosis has already been added');
+      toast.info(t('consultations.diagnosisSearch.alreadyAdded'));
       return;
     }
 
@@ -110,9 +112,9 @@ export function DiagnosisSearch({
       setQuery('');
       setResults([]);
       setShowDropdown(false);
-      toast.success('Diagnosis added');
+      toast.success(t('consultations.diagnosisSearch.addSuccess'));
     } catch {
-      toast.error('Failed to add diagnosis');
+      toast.error(t('consultations.diagnosisSearch.addError'));
     } finally {
       setAdding(null);
     }
@@ -131,7 +133,7 @@ export function DiagnosisSearch({
       );
       onDiagnosesChange(updated);
     } catch {
-      toast.error('Failed to update primary diagnosis');
+      toast.error(t('consultations.diagnosisSearch.updatePrimaryError'));
     }
   }
 
@@ -141,9 +143,9 @@ export function DiagnosisSearch({
         `/consultations/${consultationId}/diagnoses/${diagnosis.id}`,
       );
       onDiagnosesChange(diagnoses.filter((d) => d.id !== diagnosis.id));
-      toast.success('Diagnosis removed');
+      toast.success(t('consultations.diagnosisSearch.removeSuccess'));
     } catch {
-      toast.error('Failed to remove diagnosis');
+      toast.error(t('consultations.diagnosisSearch.removeError'));
     }
   }
 
@@ -152,7 +154,7 @@ export function DiagnosisSearch({
       <CardHeader className="pb-4">
         <CardTitle className="text-base flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Diagnoses (ICD-10)
+          {t('consultations.diagnosisSearch.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -162,7 +164,7 @@ export function DiagnosisSearch({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search ICD-10 codes or descriptions..."
+                placeholder={t('consultations.diagnosisSearch.searchPlaceholder')}
                 value={query}
                 onChange={handleQueryChange}
                 onFocus={() => {
@@ -202,7 +204,7 @@ export function DiagnosisSearch({
                       )}
                       {alreadyAdded && (
                         <span className="text-xs text-muted-foreground shrink-0 mt-0.5">
-                          Added
+                          {t('consultations.diagnosisSearch.added')}
                         </span>
                       )}
                     </button>
@@ -213,7 +215,7 @@ export function DiagnosisSearch({
 
             {showDropdown && !searching && query.trim().length >= 2 && results.length === 0 && (
               <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg p-4 text-center text-sm text-muted-foreground">
-                No matching ICD-10 codes found.
+                {t('consultations.diagnosisSearch.noResults')}
               </div>
             )}
           </div>
@@ -222,7 +224,7 @@ export function DiagnosisSearch({
         {/* Current Diagnoses List */}
         {diagnoses.length === 0 ? (
           <div className="text-center py-4 text-sm text-muted-foreground">
-            No diagnoses added yet.
+            {t('consultations.diagnosisSearch.noDiagnoses')}
           </div>
         ) : (
           <div className="space-y-2">
@@ -242,8 +244,8 @@ export function DiagnosisSearch({
                     className="shrink-0 text-muted-foreground hover:text-yellow-500 transition-colors"
                     title={
                       diagnosis.isPrimary
-                        ? 'Remove primary flag'
-                        : 'Set as primary diagnosis'
+                        ? t('consultations.diagnosisSearch.removePrimaryFlag')
+                        : t('consultations.diagnosisSearch.setAsPrimary')
                     }
                   >
                     {diagnosis.isPrimary ? (
@@ -263,7 +265,7 @@ export function DiagnosisSearch({
                 <span className="flex-1 text-sm">{diagnosis.icd10Description}</span>
                 {diagnosis.isPrimary && (
                   <Badge variant="secondary" className="text-xs shrink-0">
-                    Primary
+                    {t('consultations.diagnosisSearch.primary')}
                   </Badge>
                 )}
 
@@ -272,7 +274,7 @@ export function DiagnosisSearch({
                     type="button"
                     onClick={() => handleRemoveDiagnosis(diagnosis)}
                     className="shrink-0 text-muted-foreground hover:text-destructive transition-colors"
-                    title="Remove diagnosis"
+                    title={t('consultations.diagnosisSearch.removeDiagnosis')}
                   >
                     <X className="h-4 w-4" />
                   </button>

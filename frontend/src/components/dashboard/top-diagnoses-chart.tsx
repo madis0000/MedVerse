@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -28,6 +29,7 @@ const fallbackData: DiagnosisDataPoint[] = [
 ];
 
 export function TopDiagnosesChart() {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard', 'top-diagnoses'],
     queryFn: async () => {
@@ -41,7 +43,7 @@ export function TopDiagnosesChart() {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold">Top Diagnoses</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('dashboard.topDiagnoses')}</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -74,7 +76,7 @@ export function TopDiagnosesChart() {
                   className="text-muted-foreground"
                 />
                 <Tooltip
-                  formatter={(value: number) => [value, 'Cases']}
+                  formatter={(value: number) => [value, t('dashboard.topDiagnoses')]}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',

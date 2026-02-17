@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,7 @@ import { useAccountsReceivable } from '@/api/finance';
 import { formatCurrency } from '@/lib/utils';
 
 export function OutstandingReceivablesCard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data } = useAccountsReceivable();
 
@@ -18,14 +20,14 @@ export function OutstandingReceivablesCard() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">Top Overdue</CardTitle>
+        <CardTitle className="text-sm font-medium">{t('finance.receivables.topOverdue')}</CardTitle>
         <Button variant="ghost" size="sm" onClick={() => navigate('/finance/reports')}>
-          View All <ChevronRight className="w-4 h-4 ml-1" />
+          {t('common.viewAll')} <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </CardHeader>
       <CardContent>
         {overdueInvoices.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">No outstanding invoices</p>
+          <p className="text-sm text-muted-foreground text-center py-4">{t('finance.receivables.noOutstanding')}</p>
         ) : (
           <div className="space-y-3">
             {overdueInvoices.map((inv: any) => (
@@ -38,7 +40,7 @@ export function OutstandingReceivablesCard() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-red-600">{formatCurrency(inv.outstanding)}</p>
-                  <p className="text-xs text-muted-foreground">{inv.daysOld}d overdue</p>
+                  <p className="text-xs text-muted-foreground">{t('finance.receivables.daysOverdue', { days: inv.daysOld })}</p>
                 </div>
               </div>
             ))}

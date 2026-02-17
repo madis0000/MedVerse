@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Phone, Mail, MapPin, AlertCircle, Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +42,7 @@ function calculateAge(dob: string): number {
 }
 
 export function PatientSummaryCard({ patient }: PatientSummaryCardProps) {
+  const { t } = useTranslation();
   const age = calculateAge(patient.dob);
 
   return (
@@ -66,7 +68,7 @@ export function PatientSummaryCard({ patient }: PatientSummaryCardProps) {
                   {patient.firstName} {patient.lastName}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  MRN: {patient.mrn} | {patient.gender} | {age} years old
+                  {t('patients.mrn')}: {patient.mrn} | {patient.gender} | {t('patients.yearsOld', { age })}
                   {' '}({formatDate(patient.dob)})
                 </p>
               </div>
@@ -109,7 +111,7 @@ export function PatientSummaryCard({ patient }: PatientSummaryCardProps) {
                   <div className="flex items-start gap-2 text-sm">
                     <AlertCircle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
                     <div>
-                      <p className="font-medium text-foreground">Emergency Contact</p>
+                      <p className="font-medium text-foreground">{t('patients.emergencyContact')}</p>
                       <p className="text-muted-foreground">
                         {patient.emergencyContactName}
                         {patient.emergencyContactPhone && ` - ${patient.emergencyContactPhone}`}
@@ -123,7 +125,7 @@ export function PatientSummaryCard({ patient }: PatientSummaryCardProps) {
                       i
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">Insurance</p>
+                      <p className="font-medium text-foreground">{t('patients.insurance')}</p>
                       <p className="text-muted-foreground">
                         {patient.insuranceProvider}
                         {patient.insuranceNumber && ` (#${patient.insuranceNumber})`}

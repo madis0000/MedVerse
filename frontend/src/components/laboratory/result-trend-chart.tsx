@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   LineChart,
   Line,
@@ -24,21 +25,25 @@ interface ResultTrendChartProps {
 }
 
 export function ResultTrendChart({
-  title = 'Result Trend',
+  title,
   data,
   normalRangeMin,
   normalRangeMax,
   unit,
 }: ResultTrendChartProps) {
+  const { t } = useTranslation();
+
+  const displayTitle = title ?? t('laboratory.results.trendChart');
+
   if (!data || data.length === 0) {
     return (
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{title}</CardTitle>
+          <CardTitle className="text-base">{displayTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground text-center py-8">
-            No trend data available
+            {t('laboratory.results.noTrendData', 'No trend data available')}
           </p>
         </CardContent>
       </Card>
@@ -65,7 +70,7 @@ export function ResultTrendChart({
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">
-          {title}
+          {displayTitle}
           {unit && (
             <span className="text-sm font-normal text-muted-foreground ml-2">({unit})</span>
           )}
@@ -94,7 +99,7 @@ export function ResultTrendChart({
               }}
               formatter={(val: number) => [
                 `${val}${unit ? ` ${unit}` : ''}`,
-                'Value',
+                t('laboratory.results.value'),
               ]}
             />
 
@@ -124,7 +129,7 @@ export function ResultTrendChart({
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-primary/10 border border-primary/20" />
               <span>
-                Normal range: {normalRangeMin ?? '---'} - {normalRangeMax ?? '---'}
+                {t('laboratory.results.normalRange', 'Normal range')}: {normalRangeMin ?? '---'} - {normalRangeMax ?? '---'}
                 {unit ? ` ${unit}` : ''}
               </span>
             </div>

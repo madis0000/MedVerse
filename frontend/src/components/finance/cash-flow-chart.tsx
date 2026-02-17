@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface CashFlowData {
@@ -12,14 +13,16 @@ interface CashFlowChartProps {
 }
 
 export function CashFlowChart({ data }: CashFlowChartProps) {
+  const { t } = useTranslation();
+
   if (!data.length) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Cash Flow</CardTitle>
+          <CardTitle>{t('finance.cashFlow.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">No cash flow data available</p>
+          <p className="text-sm text-muted-foreground text-center py-8">{t('finance.cashFlow.noData')}</p>
         </CardContent>
       </Card>
     );
@@ -30,7 +33,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cash Flow Overview</CardTitle>
+        <CardTitle>{t('finance.cashFlow.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -39,12 +42,12 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">{item.month}</span>
                 <span className={item.net >= 0 ? 'text-green-600' : 'text-red-600'}>
-                  Net: ${item.net.toLocaleString()}
+                  {t('finance.cashFlow.net')}: ${item.net.toLocaleString()}
                 </span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground w-16">In</span>
+                  <span className="text-xs text-muted-foreground w-16">{t('finance.cashFlow.inflow')}</span>
                   <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-green-500 rounded-full"
@@ -54,7 +57,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                   <span className="text-xs w-20 text-right">${item.inflows.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground w-16">Out</span>
+                  <span className="text-xs text-muted-foreground w-16">{t('finance.cashFlow.outflow')}</span>
                   <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-red-500 rounded-full"
@@ -70,11 +73,11 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
         <div className="flex items-center gap-4 mt-4 pt-4 border-t">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="text-xs text-muted-foreground">Inflows</span>
+            <span className="text-xs text-muted-foreground">{t('finance.cashFlow.inflows')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="text-xs text-muted-foreground">Outflows</span>
+            <span className="text-xs text-muted-foreground">{t('finance.cashFlow.outflows')}</span>
           </div>
         </div>
       </CardContent>

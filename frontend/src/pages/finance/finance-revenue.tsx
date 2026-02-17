@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BarChart3, TrendingUp } from 'lucide-react';
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 export function FinanceRevenuePage() {
+  const { t } = useTranslation();
   const now = new Date();
   const [startDate, setStartDate] = useState(
     new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
@@ -32,7 +34,7 @@ export function FinanceRevenuePage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Revenue Analytics">
+      <PageWrapper title={t('finance.revenue.title')}>
         <TableSkeleton rows={8} />
       </PageWrapper>
     );
@@ -46,45 +48,45 @@ export function FinanceRevenuePage() {
   const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500', 'bg-pink-500', 'bg-cyan-500'];
 
   return (
-    <PageWrapper title="Revenue Analytics">
+    <PageWrapper title={t('finance.revenue.title')}>
       <div className="space-y-6">
         {/* Date range picker */}
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <Label>Start Date</Label>
+            <Label>{t('common.startDate')}</Label>
             <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-auto" />
           </div>
           <div>
-            <Label>End Date</Label>
+            <Label>{t('common.endDate')}</Label>
             <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-auto" />
           </div>
           <Badge variant="outline" className="h-10 px-4 flex items-center">
-            Total: {formatCurrency(analytics?.totalRevenue || 0)} ({analytics?.paymentCount || 0} payments)
+            {t('common.total')}: {formatCurrency(analytics?.totalRevenue || 0)} ({analytics?.paymentCount || 0} {t('common.payments')})
           </Badge>
         </div>
 
         {/* Revenue trends */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Revenue Trends</CardTitle>
+            <CardTitle className="text-base">{t('finance.revenue.trend')}</CardTitle>
           </CardHeader>
           <CardContent>
             {!trends?.length ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No trend data</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
             ) : (
               <div className="space-y-2">
-                {trends.map((t: any) => {
-                  const maxTrend = Math.max(...trends.map((t: any) => t.revenue), 1);
+                {trends.map((tr: any) => {
+                  const maxTrend = Math.max(...trends.map((tr: any) => tr.revenue), 1);
                   return (
-                    <div key={t.month} className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground w-16">{t.month}</span>
+                    <div key={tr.month} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-16">{tr.month}</span>
                       <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
                         <div
                           className="h-full bg-blue-500 rounded"
-                          style={{ width: `${(t.revenue / maxTrend) * 100}%` }}
+                          style={{ width: `${(tr.revenue / maxTrend) * 100}%` }}
                         />
                       </div>
-                      <span className="text-xs font-medium w-20 text-right">{formatCurrency(t.revenue)}</span>
+                      <span className="text-xs font-medium w-20 text-right">{formatCurrency(tr.revenue)}</span>
                     </div>
                   );
                 })}
@@ -97,11 +99,11 @@ export function FinanceRevenuePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Revenue by Doctor</CardTitle>
+              <CardTitle className="text-base">{t('finance.revenue.byDoctor')}</CardTitle>
             </CardHeader>
             <CardContent>
               {!byDoctor?.length ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
               ) : (
                 <div className="space-y-3">
                   {byDoctor.map((d: any) => (
@@ -116,7 +118,7 @@ export function FinanceRevenuePage() {
                           style={{ width: `${(d.revenue / maxDoctorRevenue) * 100}%` }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">{d.consultationCount} consultations</p>
+                      <p className="text-xs text-muted-foreground">{d.consultationCount} {t('common.consultations')}</p>
                     </div>
                   ))}
                 </div>
@@ -126,11 +128,11 @@ export function FinanceRevenuePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Revenue by Specialty</CardTitle>
+              <CardTitle className="text-base">{t('finance.revenue.bySpecialty')}</CardTitle>
             </CardHeader>
             <CardContent>
               {!bySpecialty?.length ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
               ) : (
                 <div className="space-y-3">
                   {bySpecialty.map((s: any, i: number) => (
@@ -142,7 +144,7 @@ export function FinanceRevenuePage() {
                           <span className="font-medium">{formatCurrency(s.revenue)}</span>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {((s.revenue / totalSpecialtyRevenue) * 100).toFixed(1)}% - {s.count} consultations
+                          {((s.revenue / totalSpecialtyRevenue) * 100).toFixed(1)}% - {s.count} {t('common.consultations')}
                         </p>
                       </div>
                     </div>
@@ -157,11 +159,11 @@ export function FinanceRevenuePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Revenue by Service</CardTitle>
+              <CardTitle className="text-base">{t('finance.revenue.byService')}</CardTitle>
             </CardHeader>
             <CardContent>
               {!byService?.length ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
               ) : (
                 <div className="space-y-3">
                   {byService.map((s: any, i: number) => (
@@ -185,11 +187,11 @@ export function FinanceRevenuePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Revenue by Payment Method</CardTitle>
+              <CardTitle className="text-base">{t('finance.revenue.byPaymentMethod')}</CardTitle>
             </CardHeader>
             <CardContent>
               {!byPaymentMethod?.length ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No data</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('common.noData')}</p>
               ) : (
                 <div className="space-y-3">
                   {byPaymentMethod.map((m: any, i: number) => (
@@ -216,12 +218,12 @@ export function FinanceRevenuePage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" /> Revenue Forecast (3-month projection)
+              <TrendingUp className="w-4 h-4" /> {t('finance.revenue.forecast')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {!forecast?.length ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Insufficient data for forecast</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t('finance.revenue.insufficientData')}</p>
             ) : (
               <div className="space-y-2">
                 {forecast.map((f: any) => {
@@ -243,7 +245,7 @@ export function FinanceRevenuePage() {
                     </div>
                   );
                 })}
-                <p className="text-xs text-muted-foreground mt-2">* Projected values based on linear regression</p>
+                <p className="text-xs text-muted-foreground mt-2">* {t('finance.revenue.projectedValues')}</p>
               </div>
             )}
           </CardContent>

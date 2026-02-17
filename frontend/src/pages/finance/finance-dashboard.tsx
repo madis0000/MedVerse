@@ -4,6 +4,7 @@ import {
   ArrowUpRight, ArrowDownRight, Wallet, Clock, Target,
   ChevronRight, Plus, FileText, BarChart3,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { OutstandingReceivablesCard } from '@/components/finance/outstanding-rec
 import { useNavigate } from 'react-router-dom';
 
 export function FinanceDashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: kpis, isLoading } = useFinanceDashboard();
   const { data: cashflow } = useFinanceCashflow();
@@ -25,19 +27,19 @@ export function FinanceDashboardPage() {
 
   if (isLoading) {
     return (
-      <PageWrapper title="Finance Dashboard">
+      <PageWrapper title={t('finance.dashboard.title')}>
         <TableSkeleton rows={8} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper title="Finance Dashboard">
+    <PageWrapper title={t('finance.dashboard.title')}>
       <div className="space-y-6">
         {/* Row 1: Main KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <FinanceKpiCard
-            title="Net Revenue"
+            title={t('finance.dashboard.totalRevenue')}
             value={formatCurrency(kpis?.totalRevenue || 0)}
             change={kpis?.revenueMoM || 0}
             sparklineData={sparklines?.revenue || []}
@@ -45,7 +47,7 @@ export function FinanceDashboardPage() {
             color="text-green-600"
           />
           <FinanceKpiCard
-            title="Total Expenses"
+            title={t('finance.dashboard.totalExpenses')}
             value={formatCurrency(kpis?.totalExpenses || 0)}
             change={kpis?.expenseMoM || 0}
             sparklineData={sparklines?.expenses || []}
@@ -56,24 +58,24 @@ export function FinanceDashboardPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Net Profit</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.dashboard.netProfit')}</p>
                 <TrendingUp className="w-4 h-4 text-blue-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(kpis?.netProfit || 0)}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {kpis?.profitMargin?.toFixed(1)}% margin
+                {kpis?.profitMargin?.toFixed(1)}% {t('finance.dashboard.profitMargin')}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Outstanding AR</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.dashboard.outstandingReceivables')}</p>
                 <Wallet className="w-4 h-4 text-orange-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(kpis?.outstandingAR || 0)}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {kpis?.outstandingCount || 0} invoices
+                {kpis?.outstandingCount || 0} {t('finance.dashboard.invoices')}
               </p>
             </CardContent>
           </Card>
@@ -84,7 +86,7 @@ export function FinanceDashboardPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Collection Rate</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.dashboard.collectionRate')}</p>
                 <Target className="w-4 h-4 text-green-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{kpis?.collectionRate?.toFixed(1) || 0}%</p>
@@ -99,16 +101,16 @@ export function FinanceDashboardPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Avg Days to Payment</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.dashboard.avgDaysToPayment')}</p>
                 <Clock className="w-4 h-4 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold mt-2">{kpis?.avgDaysToPayment || 0} days</p>
+              <p className="text-2xl font-bold mt-2">{kpis?.avgDaysToPayment || 0} {t('finance.dashboard.days')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Today's Revenue</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.dashboard.todayRevenue')}</p>
                 <ArrowUpRight className="w-4 h-4 text-green-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(kpis?.todayRevenue || 0)}</p>
@@ -117,7 +119,7 @@ export function FinanceDashboardPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Today's Expenses</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.dashboard.todayExpenses')}</p>
                 <ArrowDownRight className="w-4 h-4 text-red-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(kpis?.todayExpenses || 0)}</p>

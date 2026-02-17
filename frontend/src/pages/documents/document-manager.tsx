@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import apiClient from '@/lib/api-client';
 import { usePatientDocuments, useDeleteDocument } from '@/api/documents';
 import { PageWrapper } from '@/components/layout/page-wrapper';
@@ -27,14 +28,14 @@ import {
 import { toast } from 'sonner';
 import type { Patient } from '@/types';
 
-const CATEGORIES = [
-  { value: 'ALL', label: 'All Categories' },
-  { value: 'LAB_REPORT', label: 'Lab Report' },
-  { value: 'IMAGING', label: 'Imaging' },
-  { value: 'REFERRAL', label: 'Referral' },
-  { value: 'CONSENT', label: 'Consent Form' },
-  { value: 'INSURANCE', label: 'Insurance' },
-  { value: 'OTHER', label: 'Other' },
+const CATEGORY_KEYS = [
+  { value: 'ALL', labelKey: 'documents.categories.ALL' },
+  { value: 'LAB_REPORT', labelKey: 'documents.categories.LAB_REPORT' },
+  { value: 'IMAGING', labelKey: 'documents.categories.IMAGING' },
+  { value: 'REFERRAL', labelKey: 'documents.categories.REFERRAL' },
+  { value: 'CONSENT', labelKey: 'documents.categories.CONSENT' },
+  { value: 'INSURANCE', labelKey: 'documents.categories.INSURANCE' },
+  { value: 'OTHER', labelKey: 'documents.categories.OTHER' },
 ];
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -84,6 +85,7 @@ function usePatientSearch(query: string) {
 }
 
 export function DocumentManagerPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('ALL');
@@ -121,9 +123,9 @@ export function DocumentManagerPage() {
   const handleDeleteDocument = async (doc: DocumentRecord) => {
     try {
       await deleteDocument.mutateAsync(doc.id);
-      toast.success('Document deleted successfully');
+      toast.success(t('documents.documentDeleted'));
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to delete document');
+      toast.error(err.response?.data?.message || t('common.error'));
     }
   };
 
@@ -143,10 +145,10 @@ export function DocumentManagerPage() {
 
   return (
     <PageWrapper
-      title="Documents"
+      title={t('documents.title')}
       breadcrumbs={[
-        { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Documents' },
+        { label: t('nav.dashboard'), path: '/dashboard' },
+        { label: t('nav.documents') },
       ]}
     >
       <div className="space-y-6">
@@ -159,7 +161,7 @@ export function DocumentManagerPage() {
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search patients by name or MRN..."
+                  placeholder={t('documents.searchPlaceholder')}
                   className="pl-10"
                 />
                 {searchQuery.length >= 2 && patients.length > 0 && (
@@ -209,12 +211,12 @@ export function DocumentManagerPage() {
               <div className="w-48">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Filter by category" />
+                    <SelectValue placeholder={t('common.filter')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((cat) => (
+                    {CATEGORY_KEYS.map((cat) => (
                       <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
+                        {t(cat.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -222,7 +224,7 @@ export function DocumentManagerPage() {
               </div>
               <Button onClick={() => setShowUpload(!showUpload)}>
                 <Upload className="w-4 h-4 mr-2" />
-                {showUpload ? 'Hide Upload' : 'Upload Document'}
+                {showUpload ? t('documents.hideUpload') : t('documents.upload')}
               </Button>
             </div>
 
@@ -230,7 +232,7 @@ export function DocumentManagerPage() {
             {showUpload && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Upload Document</CardTitle>
+                  <CardTitle className="text-lg">{t('documents.uploadFile')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <FileUpload
@@ -251,17 +253,17 @@ export function DocumentManagerPage() {
             ) : documents.length === 0 ? (
               <EmptyState
                 icon={FolderOpen}
-                title="No documents found"
+                title={t('documents.noDocuments')}
                 description={
                   categoryFilter !== 'ALL'
-                    ? 'No documents found in this category. Try selecting a different filter.'
-                    : 'No documents uploaded for this patient yet.'
+                    ? t('documents.noDocumentsCategory')
+                    : t('documents.noDocumentsDescription')
                 }
                 action={
                   !showUpload ? (
                     <Button onClick={() => setShowUpload(true)}>
                       <Upload className="w-4 h-4 mr-2" />
-                      Upload Document
+                      {t('documents.upload')}
                     </Button>
                   ) : undefined
                 }
@@ -275,7 +277,7 @@ export function DocumentManagerPage() {
                       <div className="flex items-center gap-2 mb-3">
                         <CategoryIcon className="w-4 h-4 text-muted-foreground" />
                         <h3 className="text-sm font-semibold text-foreground">
-                          {category.replace('_', ' ')}
+                          {t(`documents.categories.${category}`)}
                         </h3>
                         <Badge variant="secondary" className="text-xs">
                           {docs.length}
@@ -307,7 +309,7 @@ export function DocumentManagerPage() {
                                     <>
                                       <span>-</span>
                                       <span>
-                                        by {doc.uploadedBy.firstName} {doc.uploadedBy.lastName}
+                                        {t('documents.uploadedBy')} {doc.uploadedBy.firstName} {doc.uploadedBy.lastName}
                                       </span>
                                     </>
                                   )}
@@ -350,8 +352,8 @@ export function DocumentManagerPage() {
         ) : (
           <EmptyState
             icon={Search}
-            title="Select a patient"
-            description="Search for a patient above to view and manage their documents."
+            title={t('documents.selectPatient')}
+            description={t('documents.selectPatientDescription')}
           />
         )}
       </div>

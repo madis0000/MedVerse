@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +26,7 @@ export function SpecialtyFields({
   onChange,
   readOnly,
 }: SpecialtyFieldsProps) {
+  const { t } = useTranslation();
   const sortedFields = [...fields].sort((a, b) => a.sortOrder - b.sortOrder);
 
   const handleChange = useCallback(
@@ -37,7 +39,7 @@ export function SpecialtyFields({
   if (sortedFields.length === 0) {
     return (
       <div className="text-center py-8 text-sm text-muted-foreground">
-        No custom fields configured for this specialty.
+        {t('consultations.specialtyFields.noFields')}
       </div>
     );
   }
@@ -70,6 +72,7 @@ function SpecialtyFieldInput({
   onChange,
   readOnly,
 }: SpecialtyFieldInputProps) {
+  const { t } = useTranslation();
   const fieldType = field.fieldType.toUpperCase();
 
   switch (fieldType) {
@@ -84,7 +87,7 @@ function SpecialtyFieldInput({
             value={(value as string) ?? ''}
             onChange={(e) => onChange(e.target.value)}
             disabled={readOnly}
-            placeholder={`Enter ${field.fieldName.toLowerCase()}`}
+            placeholder={t('consultations.specialtyFields.enterField', { field: field.fieldName.toLowerCase() })}
           />
         </div>
       );
@@ -103,7 +106,7 @@ function SpecialtyFieldInput({
               onChange(e.target.value === '' ? null : Number(e.target.value))
             }
             disabled={readOnly}
-            placeholder={`Enter ${field.fieldName.toLowerCase()}`}
+            placeholder={t('consultations.specialtyFields.enterField', { field: field.fieldName.toLowerCase() })}
           />
         </div>
       );
@@ -125,7 +128,7 @@ function SpecialtyFieldInput({
             disabled={readOnly}
           >
             <SelectTrigger>
-              <SelectValue placeholder={`Select ${field.fieldName.toLowerCase()}`} />
+              <SelectValue placeholder={t('consultations.specialtyFields.selectField', { field: field.fieldName.toLowerCase() })} />
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (
@@ -182,7 +185,7 @@ function SpecialtyFieldInput({
             value={(value as string) ?? ''}
             onChange={(e) => onChange(e.target.value)}
             disabled={readOnly}
-            placeholder={`Enter ${field.fieldName.toLowerCase()}`}
+            placeholder={t('consultations.specialtyFields.enterField', { field: field.fieldName.toLowerCase() })}
             rows={4}
           />
         </div>
@@ -199,7 +202,7 @@ function SpecialtyFieldInput({
             value={(value as string) ?? ''}
             onChange={(e) => onChange(e.target.value)}
             disabled={readOnly}
-            placeholder={`Enter ${field.fieldName.toLowerCase()}`}
+            placeholder={t('consultations.specialtyFields.enterField', { field: field.fieldName.toLowerCase() })}
           />
         </div>
       );

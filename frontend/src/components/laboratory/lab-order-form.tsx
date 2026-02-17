@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Loader2, FlaskConical } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ interface LabOrderFormProps {
 }
 
 export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
+  const { t } = useTranslation();
   const createLabOrder = useCreateLabOrder();
   const { data: testsData } = useLabTests();
   const labTests: LabTest[] = testsData?.data ?? testsData ?? [];
@@ -103,11 +105,11 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
 
   async function handleSubmit() {
     if (!selectedPatient) {
-      toast.error('Select a patient');
+      toast.error(t('laboratory.orderForm.selectPatientError', 'Select a patient'));
       return;
     }
     if (selectedTests.length === 0) {
-      toast.error('Select at least one lab test');
+      toast.error(t('laboratory.orderForm.selectTestError', 'Select at least one lab test'));
       return;
     }
 
@@ -118,11 +120,11 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
         notes: orderNotes || undefined,
         testIds: selectedTests,
       });
-      toast.success('Lab order created successfully');
+      toast.success(t('laboratory.orderForm.orderCreated', 'Lab order created successfully'));
       resetForm();
       onOpenChange(false);
     } catch {
-      toast.error('Failed to create lab order');
+      toast.error(t('laboratory.orderForm.orderFailed', 'Failed to create lab order'));
     }
   }
 
@@ -132,29 +134,35 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
     STAT: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   };
 
+  const priorityLabels: Record<LabPriority, string> = {
+    ROUTINE: t('laboratory.priority.routine', 'ROUTINE'),
+    URGENT: t('laboratory.priority.urgent', 'URGENT'),
+    STAT: t('laboratory.priority.stat', 'STAT'),
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FlaskConical className="h-5 w-5" />
-            Create Lab Order
+            {t('laboratory.orderForm.createLabOrder', 'Create Lab Order')}
           </DialogTitle>
           <DialogDescription>
-            Search for a patient, select lab tests, and set the priority.
+            {t('laboratory.orderForm.description', 'Search for a patient, select lab tests, and set the priority.')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
           {/* Patient Search */}
           <div className="space-y-2">
-            <Label>Patient</Label>
+            <Label>{t('common.patient', 'Patient')}</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={patientQuery}
                 onChange={(e) => searchPatients(e.target.value)}
-                placeholder="Search patient by name or MRN..."
+                placeholder={t('laboratory.orderForm.searchPatientPlaceholder', 'Search patient by name or MRN...')}
                 className="pl-9"
               />
               {patientSearchLoading && (
@@ -171,7 +179,7 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
                     >
                       <div>
                         <p className="font-medium">{p.firstName} {p.lastName}</p>
-                        <p className="text-xs text-muted-foreground">MRN: {p.mrn}</p>
+                        <p className="text-xs text-muted-foreground">{t('common.mrn', 'MRN')}: {p.mrn}</p>
                       </div>
                     </button>
                   ))}
@@ -181,14 +189,14 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
             {selectedPatient && (
               <div className="p-2 rounded-md bg-muted/50 text-sm">
                 <span className="font-medium">{selectedPatient.firstName} {selectedPatient.lastName}</span>
-                <span className="text-muted-foreground ml-2">MRN: {selectedPatient.mrn}</span>
+                <span className="text-muted-foreground ml-2">{t('common.mrn', 'MRN')}: {selectedPatient.mrn}</span>
               </div>
             )}
           </div>
 
           {/* Lab Tests Selection */}
           <div className="space-y-2">
-            <Label>Lab Tests ({selectedTests.length} selected)</Label>
+            <Label>{t('laboratory.orderForm.labTests', 'Lab Tests')} ({selectedTests.length} {t('laboratory.orderForm.selected', 'selected')})</Label>
             <div className="rounded-lg border max-h-56 overflow-y-auto">
               {Object.entries(testsByCategory).map(([category, tests]) => (
                 <div key={category}>
@@ -209,7 +217,7 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
                       >
                         <span className={cn(isSelected && 'font-medium')}>{test.name}</span>
                         {isSelected && (
-                          <Badge className="bg-primary/10 text-primary text-xs">Selected</Badge>
+                          <Badge className="bg-primary/10 text-primary text-xs">{t('laboratory.orderForm.selectedBadge', 'Selected')}</Badge>
                         )}
                       </button>
                     );
@@ -218,7 +226,7 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
               ))}
               {labTests.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-6">
-                  No lab tests available
+                  {t('laboratory.orderForm.noLabTests', 'No lab tests available')}
                 </p>
               )}
             </div>
@@ -226,7 +234,7 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
 
           {/* Priority */}
           <div className="space-y-2">
-            <Label>Priority</Label>
+            <Label>{t('laboratory.priority.label', 'Priority')}</Label>
             <Select value={priority} onValueChange={(v) => setPriority(v as LabPriority)}>
               <SelectTrigger>
                 <SelectValue />
@@ -235,7 +243,7 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
                 {(['ROUTINE', 'URGENT', 'STAT'] as LabPriority[]).map((p) => (
                   <SelectItem key={p} value={p}>
                     <span className="flex items-center gap-2">
-                      <Badge className={cn('text-xs', priorityColors[p])}>{p}</Badge>
+                      <Badge className={cn('text-xs', priorityColors[p])}>{priorityLabels[p]}</Badge>
                     </span>
                   </SelectItem>
                 ))}
@@ -245,11 +253,11 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t('common.notes', 'Notes')}</Label>
             <Textarea
               value={orderNotes}
               onChange={(e) => setOrderNotes(e.target.value)}
-              placeholder="Clinical notes or special instructions..."
+              placeholder={t('laboratory.orderForm.notesPlaceholder', 'Clinical notes or special instructions...')}
               rows={3}
             />
           </div>
@@ -259,14 +267,14 @@ export function LabOrderForm({ open, onOpenChange }: LabOrderFormProps) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={createLabOrder.isPending || !selectedPatient || selectedTests.length === 0}
           >
             {createLabOrder.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Create Order
+            {t('laboratory.orderForm.createOrder', 'Create Order')}
           </Button>
         </DialogFooter>
       </DialogContent>

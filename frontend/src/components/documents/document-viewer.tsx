@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,8 @@ function getFileIcon(fileType: string) {
 }
 
 export function DocumentViewer({ open, onOpenChange, document }: DocumentViewerProps) {
+  const { t } = useTranslation();
+
   if (!document) return null;
 
   const FileIcon = getFileIcon(document.fileType);
@@ -83,7 +86,7 @@ export function DocumentViewer({ open, onOpenChange, document }: DocumentViewerP
           </span>
           {document.uploadedBy && (
             <span className="text-xs text-muted-foreground">
-              Uploaded by {document.uploadedBy.firstName} {document.uploadedBy.lastName}
+              {t('documents.viewer.uploadedBy', 'Uploaded by')} {document.uploadedBy.firstName} {document.uploadedBy.lastName}
             </span>
           )}
           <span className="text-xs text-muted-foreground">
@@ -92,7 +95,7 @@ export function DocumentViewer({ open, onOpenChange, document }: DocumentViewerP
           <div className="ml-auto">
             <Button variant="outline" size="sm" onClick={handleDownload}>
               <Download className="w-4 h-4 mr-2" />
-              Download
+              {t('documents.viewer.download', 'Download')}
             </Button>
           </div>
         </div>
@@ -124,14 +127,14 @@ export function DocumentViewer({ open, onOpenChange, document }: DocumentViewerP
                 <File className="h-8 w-8 text-muted-foreground" />
               </div>
               <p className="text-sm font-medium text-foreground mb-1">
-                Preview not available for this file type
+                {t('documents.viewer.previewNotAvailable', 'Preview not available for this file type')}
               </p>
               <p className="text-xs text-muted-foreground mb-4">
-                {document.fileType || 'Unknown type'} - {formatFileSize(document.fileSize)}
+                {document.fileType || t('documents.viewer.unknownType', 'Unknown type')} - {formatFileSize(document.fileSize)}
               </p>
               <Button onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-2" />
-                Download File
+                {t('documents.viewer.downloadFile', 'Download File')}
               </Button>
             </div>
           )}

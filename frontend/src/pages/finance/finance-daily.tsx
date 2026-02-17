@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Calendar, Clock, CreditCard, Banknote, Building2,
   Shield, CheckCircle, AlertCircle, Plus,
@@ -27,6 +28,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export function FinanceDailyPage() {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
   const [closingForm, setClosingForm] = useState({
@@ -41,22 +43,22 @@ export function FinanceDailyPage() {
     try {
       await closeDay.mutateAsync({ date: selectedDate, ...closingForm });
       setCloseDialogOpen(false);
-      toast.success('Day closed successfully');
+      toast.success(t('finance.daily.closingCompleted'));
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Failed to close day');
+      toast.error(err?.response?.data?.message || t('finance.daily.closingFailed'));
     }
   };
 
   if (isLoading) {
     return (
-      <PageWrapper title="Daily Operations">
+      <PageWrapper title={t('finance.daily.title')}>
         <TableSkeleton rows={6} />
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper title="Daily Operations">
+    <PageWrapper title={t('finance.daily.title')}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-wrap items-center gap-4">
@@ -81,22 +83,22 @@ export function FinanceDailyPage() {
                     notes: '',
                   });
                 }}>
-                  <CheckCircle className="w-4 h-4 mr-2" /> Close Day
+                  <CheckCircle className="w-4 h-4 mr-2" /> {t('finance.daily.closeDay')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Close Day - {selectedDate}</DialogTitle>
-                  <DialogDescription>Enter actual amounts collected for reconciliation</DialogDescription>
+                  <DialogTitle>{t('finance.daily.closeDay')} - {selectedDate}</DialogTitle>
+                  <DialogDescription>{t('finance.daily.closingDescription')}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Expected Cash</Label>
+                      <Label>{t('finance.daily.expectedCash')}</Label>
                       <p className="text-sm font-medium">{formatCurrency(daily?.totals?.cash || 0)}</p>
                     </div>
                     <div>
-                      <Label>Actual Cash</Label>
+                      <Label>{t('finance.daily.actualCash')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -105,11 +107,11 @@ export function FinanceDailyPage() {
                       />
                     </div>
                     <div>
-                      <Label>Expected Card</Label>
+                      <Label>{t('finance.daily.expectedCard')}</Label>
                       <p className="text-sm font-medium">{formatCurrency(daily?.totals?.card || 0)}</p>
                     </div>
                     <div>
-                      <Label>Actual Card</Label>
+                      <Label>{t('finance.daily.actualCard')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -118,11 +120,11 @@ export function FinanceDailyPage() {
                       />
                     </div>
                     <div>
-                      <Label>Expected Insurance</Label>
+                      <Label>{t('finance.daily.expectedInsurance')}</Label>
                       <p className="text-sm font-medium">{formatCurrency(daily?.totals?.insurance || 0)}</p>
                     </div>
                     <div>
-                      <Label>Actual Insurance</Label>
+                      <Label>{t('finance.daily.actualInsurance')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -131,11 +133,11 @@ export function FinanceDailyPage() {
                       />
                     </div>
                     <div>
-                      <Label>Expected Transfer</Label>
+                      <Label>{t('finance.daily.expectedTransfer')}</Label>
                       <p className="text-sm font-medium">{formatCurrency(daily?.totals?.bankTransfer || 0)}</p>
                     </div>
                     <div>
-                      <Label>Actual Transfer</Label>
+                      <Label>{t('finance.daily.actualTransfer')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -145,18 +147,18 @@ export function FinanceDailyPage() {
                     </div>
                   </div>
                   <div>
-                    <Label>Notes</Label>
+                    <Label>{t('common.notes')}</Label>
                     <Textarea
                       value={closingForm.notes}
                       onChange={(e) => setClosingForm({ ...closingForm, notes: e.target.value })}
-                      placeholder="Optional closing notes..."
+                      placeholder={t('finance.daily.closingNotesPlaceholder')}
                     />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setCloseDialogOpen(false)}>Cancel</Button>
+                  <Button variant="outline" onClick={() => setCloseDialogOpen(false)}>{t('common.cancel')}</Button>
                   <Button onClick={handleCloseDay} disabled={closeDay.isPending}>
-                    {closeDay.isPending ? 'Closing...' : 'Confirm Close'}
+                    {closeDay.isPending ? t('finance.daily.closing') : t('finance.daily.confirmClose')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -169,7 +171,7 @@ export function FinanceDailyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Cash</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.daily.cashPayments')}</p>
                 <Banknote className="w-4 h-4 text-green-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(daily?.totals?.cash || 0)}</p>
@@ -178,7 +180,7 @@ export function FinanceDailyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Card</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.daily.cardPayments')}</p>
                 <CreditCard className="w-4 h-4 text-blue-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(daily?.totals?.card || 0)}</p>
@@ -187,7 +189,7 @@ export function FinanceDailyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Insurance</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.daily.insurance')}</p>
                 <Shield className="w-4 h-4 text-purple-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(daily?.totals?.insurance || 0)}</p>
@@ -196,7 +198,7 @@ export function FinanceDailyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">Bank Transfer</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('finance.daily.bankTransfer')}</p>
                 <Building2 className="w-4 h-4 text-orange-600" />
               </div>
               <p className="text-2xl font-bold mt-2">{formatCurrency(daily?.totals?.bankTransfer || 0)}</p>
@@ -208,11 +210,11 @@ export function FinanceDailyPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Payments ({daily?.counts?.payments || 0})</CardTitle>
+              <CardTitle className="text-base">{t('finance.daily.payments')} ({daily?.counts?.payments || 0})</CardTitle>
             </CardHeader>
             <CardContent>
               {!daily?.payments?.length ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No payments recorded</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('finance.daily.noPayments')}</p>
               ) : (
                 <div className="space-y-3 max-h-80 overflow-y-auto">
                   {daily.payments.map((p: any) => (
@@ -231,11 +233,11 @@ export function FinanceDailyPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Consultations ({daily?.counts?.consultations || 0})</CardTitle>
+              <CardTitle className="text-base">{t('finance.daily.consultations')} ({daily?.counts?.consultations || 0})</CardTitle>
             </CardHeader>
             <CardContent>
               {!daily?.consultations?.length ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No consultations today</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t('finance.daily.noConsultations')}</p>
               ) : (
                 <div className="space-y-3 max-h-80 overflow-y-auto">
                   {daily.consultations.map((c: any) => (
@@ -256,21 +258,21 @@ export function FinanceDailyPage() {
         {/* Daily closing history */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Closing History</CardTitle>
+            <CardTitle className="text-base">{t('finance.daily.closingHistory')}</CardTitle>
           </CardHeader>
           <CardContent>
             {!history?.length ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No closing history</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t('finance.daily.noClosingHistory')}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 font-medium">Date</th>
-                      <th className="text-left py-2 font-medium">Status</th>
-                      <th className="text-right py-2 font-medium">Total</th>
-                      <th className="text-right py-2 font-medium">Variance</th>
-                      <th className="text-left py-2 font-medium">Closed By</th>
+                      <th className="text-left py-2 font-medium">{t('common.date')}</th>
+                      <th className="text-left py-2 font-medium">{t('common.status')}</th>
+                      <th className="text-right py-2 font-medium">{t('finance.daily.totalCollected')}</th>
+                      <th className="text-right py-2 font-medium">{t('finance.daily.variance')}</th>
+                      <th className="text-left py-2 font-medium">{t('finance.daily.closedBy')}</th>
                     </tr>
                   </thead>
                   <tbody>

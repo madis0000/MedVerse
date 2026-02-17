@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapPin, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,6 +91,7 @@ function generateMarkerId(): string {
 }
 
 export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
+  const { t } = useTranslation();
   const [view, setView] = useState<BodyView>('front');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [noteInput, setNoteInput] = useState('');
@@ -147,7 +149,7 @@ export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            Body Map
+            {t('consultations.bodyMap')}
           </CardTitle>
           <div className="flex items-center gap-2">
             <div className="flex rounded-md border overflow-hidden">
@@ -161,7 +163,7 @@ export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
                     : 'bg-background hover:bg-muted',
                 )}
               >
-                Front
+                {t('consultations.bodyMap.front')}
               </button>
               <button
                 type="button"
@@ -173,7 +175,7 @@ export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
                     : 'bg-background hover:bg-muted',
                 )}
               >
-                Back
+                {t('consultations.bodyMap.back')}
               </button>
             </div>
             {!readOnly && markers.length > 0 && (
@@ -288,12 +290,12 @@ export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
         {selectedRegion && !readOnly && (
           <div className="rounded-md border bg-muted/30 p-3 space-y-2">
             <p className="text-sm font-medium">
-              Add note to{' '}
+              {t('consultations.bodyMap.addNoteTo')}{' '}
               <span className="text-primary">{regions[selectedRegion]?.label}</span>
             </p>
             <div className="flex gap-2">
               <Input
-                placeholder="Describe the finding..."
+                placeholder={t('consultations.bodyMap.describeFinding')}
                 value={noteInput}
                 onChange={(e) => setNoteInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -309,7 +311,7 @@ export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
                 onClick={handleAddMarker}
                 disabled={!noteInput.trim()}
               >
-                Add
+                {t('common.add')}
               </Button>
               <Button
                 size="sm"
@@ -326,7 +328,7 @@ export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
         {markers.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Annotations ({markers.length})
+              {t('consultations.bodyMap.annotations')} ({markers.length})
             </p>
             <div className="space-y-1">
               {markers.map((marker) => (
@@ -359,7 +361,7 @@ export function BodyMap({ markers, onChange, readOnly }: BodyMapProps) {
 
         {markers.length === 0 && (
           <p className="text-center text-sm text-muted-foreground py-2">
-            Click a body region to add annotations.
+            {t('consultations.bodyMap.clickToAnnotate')}
           </p>
         )}
       </CardContent>

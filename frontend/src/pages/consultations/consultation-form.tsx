@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Loader2,
   CheckCircle2,
@@ -41,6 +42,7 @@ interface BodyMarker {
 export function ConsultationFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [specialty, setSpecialty] = useState<Specialty | null>(null);
@@ -80,14 +82,14 @@ export function ConsultationFormPage() {
     } catch (err: any) {
       const message =
         err?.response?.status === 404
-          ? 'Consultation not found'
-          : 'Failed to load consultation';
+          ? t('consultations.notFound')
+          : t('consultations.loadFailed');
       setError(message);
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchConsultation();
@@ -142,10 +144,10 @@ export function ConsultationFormPage() {
           prev ? { ...prev, customFields: updatedCustomFields } : prev,
         );
       } catch {
-        toast.error('Failed to save body map annotations');
+        toast.error(t('consultations.bodyMapSaveFailed'));
       }
     },
-    [consultation],
+    [consultation, t],
   );
 
   async function handleCompleteConsultation() {
@@ -158,9 +160,9 @@ export function ConsultationFormPage() {
         { status: 'COMPLETED' },
       );
       setConsultation(data);
-      toast.success('Consultation completed successfully');
+      toast.success(t('consultations.consultationCompleted'));
     } catch {
-      toast.error('Failed to complete consultation');
+      toast.error(t('consultations.completeFailed'));
     } finally {
       setCompleting(false);
     }
@@ -172,7 +174,7 @@ export function ConsultationFormPage() {
       <div className="flex items-center justify-center h-[60vh]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading consultation...</p>
+          <p className="text-sm text-muted-foreground">{t('common.loading')}...</p>
         </div>
       </div>
     );
@@ -184,10 +186,10 @@ export function ConsultationFormPage() {
       <div className="flex items-center justify-center h-[60vh]">
         <div className="flex flex-col items-center gap-3 text-center">
           <AlertCircle className="h-10 w-10 text-destructive" />
-          <p className="font-medium">{error ?? 'Something went wrong'}</p>
+          <p className="font-medium">{error ?? t('common.somethingWentWrong')}</p>
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Go Back
+            {t('common.goBack')}
           </Button>
         </div>
       </div>
@@ -224,13 +226,13 @@ export function ConsultationFormPage() {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Consultation</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t('consultations.title')}</h1>
               <StatusBadge status={consultation.status} />
             </div>
             {consultation.completedAt && (
               <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Clock className="h-3.5 w-3.5" />
-                Completed {formatDate(consultation.completedAt)}
+                {t('consultations.completedAt')} {formatDate(consultation.completedAt)}
               </p>
             )}
           </div>
@@ -276,10 +278,10 @@ export function ConsultationFormPage() {
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                SOAP Notes
+                {t('consultations.soapNotes')}
                 {readOnly && (
                   <Badge variant="secondary" className="ml-2 text-xs">
-                    Read Only
+                    {t('common.readOnly')}
                   </Badge>
                 )}
               </CardTitle>
@@ -304,13 +306,12 @@ export function ConsultationFormPage() {
               {consultation.diagnoses && consultation.diagnoses.length > 0 ? (
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  {consultation.diagnoses.length} diagnosis
-                  {consultation.diagnoses.length !== 1 ? 'es' : ''} added
+                  {t('consultations.diagnosesCount', { count: consultation.diagnoses.length })}
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
                   <AlertCircle className="h-4 w-4 text-yellow-500" />
-                  No diagnoses added
+                  {t('consultations.noDiagnoses')}
                 </span>
               )}
             </div>
@@ -324,7 +325,7 @@ export function ConsultationFormPage() {
               ) : (
                 <CheckCircle2 className="h-4 w-4" />
               )}
-              Complete Consultation
+              {t('consultations.complete')}
             </Button>
           </div>
         </div>
@@ -335,10 +336,10 @@ export function ConsultationFormPage() {
         open={completeDialogOpen}
         onClose={() => setCompleteDialogOpen(false)}
         onConfirm={handleCompleteConsultation}
-        title="Complete Consultation?"
-        description="Once completed, this consultation will be locked and no further edits can be made. Ensure all notes, diagnoses, and prescriptions are finalized."
-        confirmText="Complete Consultation"
-        cancelText="Continue Editing"
+        title={t('consultations.completeConfirmTitle')}
+        description={t('consultations.completeConfirmMessage')}
+        confirmText={t('consultations.complete')}
+        cancelText={t('consultations.continueEditing')}
       />
     </div>
   );
@@ -347,23 +348,25 @@ export function ConsultationFormPage() {
 /* ---------- Sub-components ---------- */
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
+
   switch (status) {
     case 'IN_PROGRESS':
       return (
         <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
-          In Progress
+          {t('consultations.statusInProgress')}
         </Badge>
       );
     case 'COMPLETED':
       return (
         <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
-          Completed
+          {t('consultations.statusCompleted')}
         </Badge>
       );
     case 'AMENDED':
       return (
         <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-100">
-          Amended
+          {t('consultations.statusAmended')}
         </Badge>
       );
     default:
@@ -372,6 +375,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function PatientSummaryCard({ patient }: { patient: Patient }) {
+  const { t } = useTranslation();
   const age = getAge(patient.dob);
 
   return (
@@ -379,7 +383,7 @@ function PatientSummaryCard({ patient }: { patient: Patient }) {
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <User className="h-4 w-4" />
-          Patient Information
+          {t('consultations.patientInfo')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -401,7 +405,7 @@ function PatientSummaryCard({ patient }: { patient: Patient }) {
               {patient.firstName} {patient.lastName}
             </p>
             <p className="text-sm text-muted-foreground">
-              MRN: {patient.mrn}
+              {t('consultations.mrn')}: {patient.mrn}
             </p>
           </div>
         </div>
@@ -410,24 +414,24 @@ function PatientSummaryCard({ patient }: { patient: Patient }) {
 
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <p className="text-muted-foreground text-xs">Age / DOB</p>
+            <p className="text-muted-foreground text-xs">{t('consultations.ageDob')}</p>
             <p className="font-medium">
-              {age} yrs &middot; {formatDate(patient.dob)}
+              {age} {t('consultations.years')} &middot; {formatDate(patient.dob)}
             </p>
           </div>
           <div>
-            <p className="text-muted-foreground text-xs">Gender</p>
+            <p className="text-muted-foreground text-xs">{t('consultations.gender')}</p>
             <p className="font-medium capitalize">{patient.gender?.toLowerCase()}</p>
           </div>
           <div>
-            <p className="text-muted-foreground text-xs">Blood Type</p>
+            <p className="text-muted-foreground text-xs">{t('consultations.bloodType')}</p>
             <p className="font-medium">
               {formatBloodType(patient.bloodType)}
             </p>
           </div>
           {patient.phone && (
             <div>
-              <p className="text-muted-foreground text-xs">Phone</p>
+              <p className="text-muted-foreground text-xs">{t('consultations.phone')}</p>
               <p className="font-medium flex items-center gap-1">
                 <Phone className="h-3 w-3" />
                 {patient.phone}
@@ -440,7 +444,7 @@ function PatientSummaryCard({ patient }: { patient: Patient }) {
           <>
             <Separator />
             <div className="text-sm">
-              <p className="text-muted-foreground text-xs">Insurance</p>
+              <p className="text-muted-foreground text-xs">{t('consultations.insurance')}</p>
               <p className="font-medium">{patient.insuranceProvider}</p>
               {patient.insuranceNumber && (
                 <p className="text-xs text-muted-foreground">
@@ -455,7 +459,7 @@ function PatientSummaryCard({ patient }: { patient: Patient }) {
           <>
             <Separator />
             <div className="text-sm">
-              <p className="text-muted-foreground text-xs mb-1">Notes</p>
+              <p className="text-muted-foreground text-xs mb-1">{t('consultations.notes')}</p>
               <p className="text-sm bg-muted/50 rounded-md p-2">{patient.notes}</p>
             </div>
           </>

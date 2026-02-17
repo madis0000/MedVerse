@@ -1,15 +1,17 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/auth-store';
 import { useThemeStore } from '@/stores/theme-store';
 import { useSidebarStore } from '@/stores/sidebar-store';
 import { cn, getInitials } from '@/lib/utils';
 import {
-  Sun, Moon, Bell, LogOut, User, ChevronDown,
+  Sun, Moon, Bell, LogOut, User, ChevronDown, Globe,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 export function Header() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuthStore();
   const { isDark, toggle: toggleTheme } = useThemeStore();
   const isCollapsed = useSidebarStore((s) => s.isCollapsed);
@@ -31,6 +33,11 @@ export function Header() {
     navigate('/login');
   };
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'fr' : 'en';
+    i18n.changeLanguage(newLang);
+  };
+
   return (
     <header
       className={cn(
@@ -40,13 +47,22 @@ export function Header() {
     >
       <div className="flex items-center gap-2">
         <h2 className="text-lg font-semibold text-foreground">
-          {user?.role === 'SUPER_ADMIN' ? 'Admin Panel' :
+          {user?.role === 'SUPER_ADMIN' ? t('auth.adminPanel') :
            user?.role === 'DOCTOR' ? `Dr. ${user.lastName}` :
-           user?.firstName || 'MedPulse'}
+           user?.firstName || t('app.name')}
         </h2>
       </div>
 
       <div className="flex items-center gap-3">
+        <button
+          onClick={toggleLanguage}
+          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors text-sm"
+          title={t('language.switch')}
+        >
+          <Globe className="w-4 h-4" />
+          <span className="font-medium uppercase">{i18n.language}</span>
+        </button>
+
         <button
           onClick={toggleTheme}
           className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
@@ -78,20 +94,20 @@ export function Header() {
                 <p className="font-medium text-sm">{user?.firstName} {user?.lastName}</p>
                 <p className="text-xs text-muted-foreground">{user?.email}</p>
                 <span className="inline-block mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
-                  {user?.role?.replace('_', ' ')}
+                  {user?.role ? t(`roles.${user.role}`) : ''}
                 </span>
               </div>
               <button
                 onClick={() => { setShowUserMenu(false); navigate('/profile'); }}
                 className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-muted transition-colors"
               >
-                <User className="w-4 h-4" /> Profile
+                <User className="w-4 h-4" /> {t('auth.profile')}
               </button>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 w-full px-4 py-2 text-sm text-destructive hover:bg-muted transition-colors"
               >
-                <LogOut className="w-4 h-4" /> Logout
+                <LogOut className="w-4 h-4" /> {t('auth.logout')}
               </button>
             </div>
           )}

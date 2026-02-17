@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,7 @@ interface FinanceKpiCardProps {
 }
 
 export function FinanceKpiCard({ title, value, change, sparklineData, icon, color, invertChange }: FinanceKpiCardProps) {
+  const { t } = useTranslation();
   const isPositive = invertChange ? change < 0 : change > 0;
 
   return (
@@ -29,7 +31,7 @@ export function FinanceKpiCard({ title, value, change, sparklineData, icon, colo
             {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
             {Math.abs(change).toFixed(1)}%
           </span>
-          <span className="text-xs text-muted-foreground">vs last month</span>
+          <span className="text-xs text-muted-foreground">{t('finance.kpi.vsLastMonth')}</span>
         </div>
         {sparklineData.length > 0 && (
           <div className="mt-3 flex items-end gap-[2px] h-8">

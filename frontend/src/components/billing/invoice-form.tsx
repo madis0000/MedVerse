@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Plus, Trash2, Loader2, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ function createEmptyLineItem(): LineItem {
 }
 
 export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
+  const { t } = useTranslation();
   const createInvoice = useCreateInvoice();
 
   const [patientQuery, setPatientQuery] = useState('');
@@ -129,13 +131,13 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
 
   async function handleSubmit() {
     if (!selectedPatient) {
-      toast.error('Select a patient');
+      toast.error(t('billing.selectPatientError', 'Select a patient'));
       return;
     }
 
     const validItems = lineItems.filter((item) => item.description.trim() && item.unitPrice > 0);
     if (validItems.length === 0) {
-      toast.error('Add at least one valid line item');
+      toast.error(t('billing.addLineItemError', 'Add at least one valid line item'));
       return;
     }
 
@@ -150,11 +152,11 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
         discount,
         dueDate: dueDate || undefined,
       });
-      toast.success('Invoice created successfully');
+      toast.success(t('billing.invoiceCreated', 'Invoice created successfully'));
       resetForm();
       onOpenChange(false);
     } catch {
-      toast.error('Failed to create invoice');
+      toast.error(t('billing.invoiceFailed', 'Failed to create invoice'));
     }
   }
 
@@ -164,23 +166,23 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Create Invoice
+            {t('billing.createInvoice', 'Create Invoice')}
           </DialogTitle>
           <DialogDescription>
-            Create a new invoice for a patient with line items and pricing.
+            {t('billing.createInvoiceDescription', 'Create a new invoice for a patient with line items and pricing.')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">
           {/* Patient Search */}
           <div className="space-y-2">
-            <Label>Patient</Label>
+            <Label>{t('common.patient', 'Patient')}</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={patientQuery}
                 onChange={(e) => searchPatients(e.target.value)}
-                placeholder="Search patient..."
+                placeholder={t('billing.searchPatientPlaceholder', 'Search patient...')}
                 className="pl-9"
               />
               {patientSearchLoading && (
@@ -197,7 +199,7 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
                     >
                       <div>
                         <p className="font-medium">{p.firstName} {p.lastName}</p>
-                        <p className="text-xs text-muted-foreground">MRN: {p.mrn}</p>
+                        <p className="text-xs text-muted-foreground">{t('common.mrn', 'MRN')}: {p.mrn}</p>
                       </div>
                     </button>
                   ))}
@@ -207,14 +209,14 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
             {selectedPatient && (
               <div className="p-2 rounded-md bg-muted/50 text-sm">
                 <span className="font-medium">{selectedPatient.firstName} {selectedPatient.lastName}</span>
-                <span className="text-muted-foreground ml-2">MRN: {selectedPatient.mrn}</span>
+                <span className="text-muted-foreground ml-2">{t('common.mrn', 'MRN')}: {selectedPatient.mrn}</span>
               </div>
             )}
           </div>
 
           {/* Due Date */}
           <div className="space-y-2">
-            <Label>Due Date</Label>
+            <Label>{t('billing.dueDate', 'Due Date')}</Label>
             <Input
               type="date"
               value={dueDate}
@@ -225,25 +227,25 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
           {/* Line Items */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Line Items</Label>
+              <Label>{t('billing.lineItems', 'Line Items')}</Label>
               <Button variant="outline" size="sm" onClick={addLineItem}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Item
+                {t('billing.addItem', 'Add Item')}
               </Button>
             </div>
 
             {lineItems.map((item, index) => (
               <div key={item.tempId} className="grid grid-cols-12 gap-2 items-end p-3 rounded-lg border bg-muted/20">
                 <div className="col-span-4">
-                  <Label className="text-xs">Description</Label>
+                  <Label className="text-xs">{t('billing.serviceDescription', 'Description')}</Label>
                   <Input
                     value={item.description}
                     onChange={(e) => updateLineItem(item.tempId, 'description', e.target.value)}
-                    placeholder="Service description"
+                    placeholder={t('billing.serviceDescriptionPlaceholder', 'Service description')}
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-xs">Category</Label>
+                  <Label className="text-xs">{t('billing.category', 'Category')}</Label>
                   <Select
                     value={item.category}
                     onValueChange={(v) => updateLineItem(item.tempId, 'category', v)}
@@ -259,7 +261,7 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
                   </Select>
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-xs">Quantity</Label>
+                  <Label className="text-xs">{t('billing.qty', 'Quantity')}</Label>
                   <Input
                     type="number"
                     min={1}
@@ -268,7 +270,7 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-xs">Unit Price</Label>
+                  <Label className="text-xs">{t('billing.unitPrice', 'Unit Price')}</Label>
                   <Input
                     type="number"
                     min={0}
@@ -301,7 +303,7 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
           {/* Tax and Discount */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tax ($)</Label>
+              <Label>{t('billing.tax', 'Tax')} ($)</Label>
               <Input
                 type="number"
                 min={0}
@@ -311,7 +313,7 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label>Discount ($)</Label>
+              <Label>{t('billing.discount', 'Discount')} ($)</Label>
               <Input
                 type="number"
                 min={0}
@@ -326,23 +328,23 @@ export function InvoiceForm({ open, onOpenChange }: InvoiceFormProps) {
 
           {/* Totals */}
           <div className="space-y-1 text-sm text-right">
-            <p>Subtotal: <span className="font-medium">{formatCurrency(subtotal)}</span></p>
-            {tax > 0 && <p>Tax: <span className="font-medium">+{formatCurrency(tax)}</span></p>}
-            {discount > 0 && <p>Discount: <span className="font-medium text-green-600">-{formatCurrency(discount)}</span></p>}
-            <p className="text-base font-bold">Total: {formatCurrency(total)}</p>
+            <p>{t('billing.subtotal', 'Subtotal')}: <span className="font-medium">{formatCurrency(subtotal)}</span></p>
+            {tax > 0 && <p>{t('billing.tax', 'Tax')}: <span className="font-medium">+{formatCurrency(tax)}</span></p>}
+            {discount > 0 && <p>{t('billing.discount', 'Discount')}: <span className="font-medium text-green-600">-{formatCurrency(discount)}</span></p>}
+            <p className="text-base font-bold">{t('billing.grandTotal', 'Total')}: {formatCurrency(total)}</p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={createInvoice.isPending || !selectedPatient}
           >
             {createInvoice.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Create Invoice
+            {t('billing.createInvoice', 'Create Invoice')}
           </Button>
         </DialogFooter>
       </DialogContent>

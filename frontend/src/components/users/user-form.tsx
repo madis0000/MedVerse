@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -32,12 +33,12 @@ interface UserFormData {
   phone: string;
 }
 
-const ROLES: { value: Role; label: string }[] = [
-  { value: 'SUPER_ADMIN', label: 'Super Admin' },
-  { value: 'DOCTOR', label: 'Doctor' },
-  { value: 'NURSE', label: 'Nurse' },
-  { value: 'RECEPTIONIST', label: 'Receptionist' },
-  { value: 'LAB_TECH', label: 'Lab Technician' },
+const ROLE_KEYS: { value: Role; labelKey: string }[] = [
+  { value: 'SUPER_ADMIN', labelKey: 'roles.SUPER_ADMIN' },
+  { value: 'DOCTOR', labelKey: 'roles.DOCTOR' },
+  { value: 'NURSE', labelKey: 'roles.NURSE' },
+  { value: 'RECEPTIONIST', labelKey: 'roles.RECEPTIONIST' },
+  { value: 'LAB_TECH', labelKey: 'roles.LAB_TECH' },
 ];
 
 const DEFAULT_FORM: UserFormData = {
@@ -87,6 +88,7 @@ function useUpdateUser() {
 }
 
 export function UserForm({ open, onOpenChange, user }: UserFormProps) {
+  const { t } = useTranslation();
   const { data: specialtiesData } = useSpecialties();
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
@@ -119,12 +121,12 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
     e.preventDefault();
 
     if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) {
-      toast.error('Please fill in all required fields');
+      toast.error(t('users.fillRequiredFields'));
       return;
     }
 
     if (!isEditing && !form.password) {
-      toast.error('Password is required for new users');
+      toast.error(t('users.passwordRequired'));
       return;
     }
 
@@ -140,16 +142,16 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
 
       if (isEditing) {
         await updateUser.mutateAsync({ id: user!.id, ...payload });
-        toast.success('User updated successfully');
+        toast.success(t('users.userUpdated'));
       } else {
         payload.password = form.password;
         await createUser.mutateAsync(payload);
-        toast.success('User created successfully');
+        toast.success(t('users.userCreated'));
       }
 
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to save user');
+      toast.error(err.response?.data?.message || t('users.saveFailed'));
     }
   };
 
@@ -157,34 +159,34 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Staff Member' : 'Add New Staff Member'}</DialogTitle>
+          <DialogTitle>{isEditing ? t('users.editStaffMember') : t('users.addNewStaffMember')}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Update the staff member information below.'
-              : 'Fill in the details to create a new staff account.'}
+              ? t('users.editDescription')
+              : t('users.addDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="firstName">{t('users.firstName')} *</Label>
               <Input
                 id="firstName"
                 value={form.firstName}
                 onChange={(e) => handleChange('firstName', e.target.value)}
-                placeholder="First name"
+                placeholder={t('users.firstNamePlaceholder')}
                 className="mt-1.5"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="lastName">Last Name *</Label>
+              <Label htmlFor="lastName">{t('users.lastName')} *</Label>
               <Input
                 id="lastName"
                 value={form.lastName}
                 onChange={(e) => handleChange('lastName', e.target.value)}
-                placeholder="Last name"
+                placeholder={t('users.lastNamePlaceholder')}
                 className="mt-1.5"
                 required
               />
@@ -192,7 +194,7 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t('users.email')} *</Label>
             <Input
               id="email"
               type="email"
@@ -206,13 +208,13 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
 
           {!isEditing && (
             <div>
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t('users.password')} *</Label>
               <Input
                 id="password"
                 type="password"
                 value={form.password}
                 onChange={(e) => handleChange('password', e.target.value)}
-                placeholder="Enter password"
+                placeholder={t('users.enterPassword')}
                 className="mt-1.5"
                 required
               />
@@ -220,15 +222,15 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
           )}
 
           <div>
-            <Label htmlFor="role">Role *</Label>
+            <Label htmlFor="role">{t('users.role')} *</Label>
             <Select value={form.role} onValueChange={(val) => handleChange('role', val)}>
               <SelectTrigger className="mt-1.5">
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder={t('users.selectRole')} />
               </SelectTrigger>
               <SelectContent>
-                {ROLES.map((role) => (
+                {ROLE_KEYS.map((role) => (
                   <SelectItem key={role.value} value={role.value}>
-                    {role.label}
+                    {t(role.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -237,13 +239,13 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
 
           {form.role === 'DOCTOR' && (
             <div>
-              <Label htmlFor="specialty">Specialty</Label>
+              <Label htmlFor="specialty">{t('users.specialty')}</Label>
               <Select
                 value={form.specialtyId}
                 onValueChange={(val) => handleChange('specialtyId', val)}
               >
                 <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select specialty" />
+                  <SelectValue placeholder={t('users.selectSpecialty')} />
                 </SelectTrigger>
                 <SelectContent>
                   {specialties.map((specialty) => (
@@ -257,7 +259,7 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
           )}
 
           <div>
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{t('users.phone')}</Label>
             <Input
               id="phone"
               type="tel"
@@ -270,14 +272,14 @@ export function UserForm({ open, onOpenChange, user }: UserFormProps) {
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={createUser.isPending || updateUser.isPending}>
               {createUser.isPending || updateUser.isPending
-                ? 'Saving...'
+                ? t('common.saving')
                 : isEditing
-                  ? 'Update'
-                  : 'Create'}
+                  ? t('common.update')
+                  : t('common.create')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   Plus,
@@ -59,7 +60,22 @@ function createEmptyRow(): MedicationRow {
   };
 }
 
-const FREQUENCY_OPTIONS = [
+const FREQUENCY_KEYS = [
+  'onceDaily',
+  'twiceDaily',
+  'threeTimesDaily',
+  'fourTimesDaily',
+  'every4Hours',
+  'every6Hours',
+  'every8Hours',
+  'every12Hours',
+  'asNeeded',
+  'atBedtime',
+  'beforeMeals',
+  'afterMeals',
+] as const;
+
+const FREQUENCY_VALUES = [
   'Once daily',
   'Twice daily',
   'Three times daily',
@@ -89,6 +105,7 @@ const ROUTE_OPTIONS = [
 ];
 
 export function PrescriptionWriterPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const createPrescription = useCreatePrescription();
   const checkInteractions = useCheckInteractions();
@@ -168,7 +185,7 @@ export function PrescriptionWriterPage() {
       .map((m) => m.medicationId);
 
     if (medicationIds.length < 2) {
-      toast.info('Add at least two medications to check interactions');
+      toast.info(t('prescriptions.drugInteractions.addAtLeastTwo', 'Add at least two medications to check interactions'));
       return;
     }
 
@@ -178,12 +195,12 @@ export function PrescriptionWriterPage() {
       setInteractions(interactionList);
 
       if (interactionList.length === 0) {
-        toast.success('No drug interactions found');
+        toast.success(t('prescriptions.drugInteractions.noneFound', 'No drug interactions found'));
       } else {
-        toast.warning(`Found ${interactionList.length} interaction(s)`);
+        toast.warning(t('prescriptions.drugInteractions.found', 'Found {{count}} interaction(s)', { count: interactionList.length }));
       }
     } catch {
-      toast.error('Failed to check drug interactions');
+      toast.error(t('prescriptions.drugInteractions.checkFailed', 'Failed to check drug interactions'));
     }
   }
 
@@ -208,11 +225,11 @@ export function PrescriptionWriterPage() {
   function handlePreview() {
     const items = buildItems();
     if (items.length === 0) {
-      toast.error('Add at least one medication');
+      toast.error(t('prescriptions.noMedications', 'Add at least one medication'));
       return;
     }
     if (!selectedPatient) {
-      toast.error('Select a patient first');
+      toast.error(t('prescriptions.selectPatient', 'Select a patient first'));
       return;
     }
     setShowPreview(true);
@@ -221,13 +238,13 @@ export function PrescriptionWriterPage() {
   // Submit
   async function handleSubmit() {
     if (!selectedPatient) {
-      toast.error('Select a patient first');
+      toast.error(t('prescriptions.selectPatient', 'Select a patient first'));
       return;
     }
 
     const items = buildItems();
     if (items.length === 0) {
-      toast.error('Add at least one medication');
+      toast.error(t('prescriptions.noMedications', 'Add at least one medication'));
       return;
     }
 
@@ -239,27 +256,27 @@ export function PrescriptionWriterPage() {
       });
       const rx = result.data ?? result;
       setSavedPrescriptionId(rx.id);
-      toast.success('Prescription created successfully');
+      toast.success(t('prescriptions.prescriptionCreated', 'Prescription created successfully'));
       setShowPreview(true);
     } catch {
-      toast.error('Failed to create prescription');
+      toast.error(t('common.error', 'Failed to create prescription'));
     }
   }
 
-  const doctorName = user ? `Dr. ${user.firstName} ${user.lastName}` : 'Doctor';
+  const doctorName = user ? `Dr. ${user.firstName} ${user.lastName}` : t('common.doctor', 'Doctor');
 
   return (
     <PageWrapper
-      title="Prescription Writer"
+      title={t('prescriptions.writer', 'Prescription Writer')}
       breadcrumbs={[
-        { label: 'Prescriptions', path: '/prescriptions' },
-        { label: 'Write Prescription' },
+        { label: t('nav.prescriptions', 'Prescriptions'), path: '/prescriptions' },
+        { label: t('prescriptions.newPrescription', 'Write Prescription') },
       ]}
     >
       {showPreview ? (
         <div className="space-y-4">
           <Button variant="outline" onClick={() => setShowPreview(false)}>
-            Back to Editor
+            {t('common.backToEditor', 'Back to Editor')}
           </Button>
           <PrescriptionPreview
             prescriptionId={savedPrescriptionId ?? undefined}
@@ -276,7 +293,7 @@ export function PrescriptionWriterPage() {
             {/* Patient Search */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Patient</CardTitle>
+                <CardTitle className="text-base">{t('common.patient', 'Patient')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="relative">
@@ -284,7 +301,7 @@ export function PrescriptionWriterPage() {
                   <Input
                     value={patientQuery}
                     onChange={(e) => searchPatients(e.target.value)}
-                    placeholder="Search patient by name or MRN..."
+                    placeholder={t('prescriptions.medicationSearch', 'Search patient by name or MRN...')}
                     className="pl-9"
                   />
                   {patientSearchLoading && (
@@ -304,7 +321,7 @@ export function PrescriptionWriterPage() {
                               {p.firstName} {p.lastName}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              MRN: {p.mrn} &middot; {p.gender} &middot; DOB: {p.dob}
+                              {t('common.mrn', 'MRN')}: {p.mrn} &middot; {p.gender} &middot; {t('common.dob', 'DOB')}: {p.dob}
                             </p>
                           </div>
                         </button>
@@ -318,7 +335,7 @@ export function PrescriptionWriterPage() {
                       {selectedPatient.firstName} {selectedPatient.lastName}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      MRN: {selectedPatient.mrn} &middot; Blood Type: {selectedPatient.bloodType}
+                      {t('common.mrn', 'MRN')}: {selectedPatient.mrn} &middot; {t('common.bloodType', 'Blood Type')}: {selectedPatient.bloodType}
                     </p>
                   </div>
                 )}
@@ -331,11 +348,11 @@ export function PrescriptionWriterPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Pill className="h-4 w-4" />
-                    Medications
+                    {t('prescriptions.medication', 'Medications')}
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={addMedicationRow}>
                     <Plus className="h-4 w-4 mr-1" />
-                    Add Medication
+                    {t('prescriptions.addMedication', 'Add Medication')}
                   </Button>
                 </div>
               </CardHeader>
@@ -344,7 +361,7 @@ export function PrescriptionWriterPage() {
                   <div key={row.tempId} className="space-y-3 p-4 rounded-lg border bg-muted/20">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-muted-foreground">
-                        Medication #{index + 1}
+                        {t('prescriptions.medication', 'Medication')} #{index + 1}
                       </span>
                       {medications.length > 1 && (
                         <Button
@@ -360,7 +377,7 @@ export function PrescriptionWriterPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="md:col-span-2">
-                        <Label className="text-xs">Medication</Label>
+                        <Label className="text-xs">{t('prescriptions.medication', 'Medication')}</Label>
                         <MedicationSearch
                           value={row.medicationName}
                           onSelect={(med) => handleMedicationSelect(row.tempId, med)}
@@ -368,27 +385,27 @@ export function PrescriptionWriterPage() {
                       </div>
 
                       <div>
-                        <Label className="text-xs">Dosage</Label>
+                        <Label className="text-xs">{t('prescriptions.dosage', 'Dosage')}</Label>
                         <Input
                           value={row.dosage}
                           onChange={(e) => updateMedicationRow(row.tempId, 'dosage', e.target.value)}
-                          placeholder="e.g., 500mg"
+                          placeholder={t('prescriptions.dosagePlaceholder', 'e.g., 500mg')}
                         />
                       </div>
 
                       <div>
-                        <Label className="text-xs">Frequency</Label>
+                        <Label className="text-xs">{t('prescriptions.frequency', 'Frequency')}</Label>
                         <Select
                           value={row.frequency}
                           onValueChange={(v) => updateMedicationRow(row.tempId, 'frequency', v)}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select frequency" />
+                            <SelectValue placeholder={t('prescriptions.selectFrequency', 'Select frequency')} />
                           </SelectTrigger>
                           <SelectContent>
-                            {FREQUENCY_OPTIONS.map((opt) => (
-                              <SelectItem key={opt} value={opt}>
-                                {opt}
+                            {FREQUENCY_KEYS.map((key, i) => (
+                              <SelectItem key={FREQUENCY_VALUES[i]} value={FREQUENCY_VALUES[i]}>
+                                {t(`prescriptions.frequencies.${key}`, FREQUENCY_VALUES[i])}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -396,27 +413,27 @@ export function PrescriptionWriterPage() {
                       </div>
 
                       <div>
-                        <Label className="text-xs">Duration</Label>
+                        <Label className="text-xs">{t('prescriptions.duration', 'Duration')}</Label>
                         <Input
                           value={row.duration}
                           onChange={(e) => updateMedicationRow(row.tempId, 'duration', e.target.value)}
-                          placeholder="e.g., 7 days"
+                          placeholder={t('prescriptions.durationPlaceholder', 'e.g., 7 days')}
                         />
                       </div>
 
                       <div>
-                        <Label className="text-xs">Route</Label>
+                        <Label className="text-xs">{t('prescriptions.route', 'Route')}</Label>
                         <Select
                           value={row.route}
                           onValueChange={(v) => updateMedicationRow(row.tempId, 'route', v)}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select route" />
+                            <SelectValue placeholder={t('prescriptions.selectRoute', 'Select route')} />
                           </SelectTrigger>
                           <SelectContent>
                             {ROUTE_OPTIONS.map((opt) => (
                               <SelectItem key={opt} value={opt}>
-                                {opt}
+                                {t(`prescriptions.routes.${opt}`, opt)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -424,24 +441,24 @@ export function PrescriptionWriterPage() {
                       </div>
 
                       <div>
-                        <Label className="text-xs">Quantity</Label>
+                        <Label className="text-xs">{t('prescriptions.quantity', 'Quantity')}</Label>
                         <Input
                           type="number"
                           value={row.quantity}
                           onChange={(e) => updateMedicationRow(row.tempId, 'quantity', e.target.value)}
-                          placeholder="e.g., 30"
+                          placeholder={t('prescriptions.quantityPlaceholder', 'e.g., 30')}
                           min={1}
                         />
                       </div>
 
                       <div>
-                        <Label className="text-xs">Instructions</Label>
+                        <Label className="text-xs">{t('prescriptions.instructions', 'Instructions')}</Label>
                         <Input
                           value={row.instructions}
                           onChange={(e) =>
                             updateMedicationRow(row.tempId, 'instructions', e.target.value)
                           }
-                          placeholder="e.g., Take with food"
+                          placeholder={t('prescriptions.instructionsPlaceholder', 'e.g., Take with food')}
                         />
                       </div>
                     </div>
@@ -453,13 +470,13 @@ export function PrescriptionWriterPage() {
             {/* Notes */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Notes</CardTitle>
+                <CardTitle className="text-base">{t('common.notes', 'Notes')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Additional notes or instructions..."
+                  placeholder={t('prescriptions.notesPlaceholder', 'Additional notes or instructions...')}
                   rows={3}
                 />
               </CardContent>
@@ -469,7 +486,7 @@ export function PrescriptionWriterPage() {
             <div className="flex items-center gap-3">
               <Button variant="outline" onClick={handlePreview}>
                 <Eye className="h-4 w-4 mr-2" />
-                Preview
+                {t('prescriptions.preview', 'Preview')}
               </Button>
               <Button
                 onClick={handleSubmit}
@@ -480,7 +497,7 @@ export function PrescriptionWriterPage() {
                 ) : (
                   <Send className="h-4 w-4 mr-2" />
                 )}
-                Submit Prescription
+                {t('prescriptions.send', 'Submit Prescription')}
               </Button>
             </div>
           </div>
@@ -493,7 +510,7 @@ export function PrescriptionWriterPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <ShieldAlert className="h-4 w-4" />
-                    Interactions
+                    {t('prescriptions.drugInteractions', 'Interactions')}
                   </CardTitle>
                   <Button
                     variant="outline"
@@ -504,7 +521,7 @@ export function PrescriptionWriterPage() {
                     {checkInteractions.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      'Check'
+                      t('common.check', 'Check')
                     )}
                   </Button>
                 </div>
@@ -514,7 +531,7 @@ export function PrescriptionWriterPage() {
                   <DrugInteractionAlert interactions={interactions} />
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    Add medications and click Check to verify drug interactions
+                    {t('prescriptions.drugInteractions.hint', 'Add medications and click Check to verify drug interactions')}
                   </p>
                 )}
               </CardContent>
@@ -524,7 +541,7 @@ export function PrescriptionWriterPage() {
             {selectedPatient && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">History</CardTitle>
+                  <CardTitle className="text-base">{t('prescriptions.history', 'History')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <PrescriptionHistory patientId={selectedPatient.id} />

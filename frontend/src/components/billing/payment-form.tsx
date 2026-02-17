@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -31,15 +32,16 @@ interface PaymentFormProps {
   remainingBalance: number;
 }
 
-const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
-  { value: 'CASH', label: 'Cash' },
-  { value: 'CARD', label: 'Card' },
-  { value: 'INSURANCE', label: 'Insurance' },
-  { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
-];
-
 export function PaymentForm({ open, onOpenChange, invoiceId, remainingBalance }: PaymentFormProps) {
+  const { t } = useTranslation();
   const recordPayment = useRecordPayment();
+
+  const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
+    { value: 'CASH', label: t('billing.paymentMethods.cash', 'Cash') },
+    { value: 'CARD', label: t('billing.paymentMethods.card', 'Card') },
+    { value: 'INSURANCE', label: t('billing.paymentMethods.insurance', 'Insurance') },
+    { value: 'BANK_TRANSFER', label: t('billing.paymentMethods.bankTransfer', 'Bank Transfer') },
+  ];
 
   const [amount, setAmount] = useState(remainingBalance);
   const [method, setMethod] = useState<PaymentMethod>('CASH');
@@ -55,12 +57,12 @@ export function PaymentForm({ open, onOpenChange, invoiceId, remainingBalance }:
 
   async function handleSubmit() {
     if (amount <= 0) {
-      toast.error('Payment amount must be greater than zero');
+      toast.error(t('billing.paymentAmountError', 'Payment amount must be greater than zero'));
       return;
     }
 
     if (amount > remainingBalance) {
-      toast.error(`Amount exceeds remaining balance of ${formatCurrency(remainingBalance)}`);
+      toast.error(t('billing.paymentExceedsBalance', 'Amount exceeds remaining balance of {{balance}}', { balance: formatCurrency(remainingBalance) }));
       return;
     }
 
@@ -72,11 +74,11 @@ export function PaymentForm({ open, onOpenChange, invoiceId, remainingBalance }:
         reference: reference || undefined,
         notes: notes || undefined,
       });
-      toast.success('Payment recorded successfully');
+      toast.success(t('billing.paymentRecorded', 'Payment recorded successfully'));
       resetForm();
       onOpenChange(false);
     } catch {
-      toast.error('Failed to record payment');
+      toast.error(t('billing.paymentFailed', 'Failed to record payment'));
     }
   }
 
@@ -86,17 +88,17 @@ export function PaymentForm({ open, onOpenChange, invoiceId, remainingBalance }:
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Record Payment
+            {t('billing.recordPayment', 'Record Payment')}
           </DialogTitle>
           <DialogDescription>
-            Remaining balance: {formatCurrency(remainingBalance)}
+            {t('billing.remainingBalance', 'Remaining balance')}: {formatCurrency(remainingBalance)}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Amount */}
           <div className="space-y-2">
-            <Label>Amount</Label>
+            <Label>{t('billing.amount', 'Amount')}</Label>
             <Input
               type="number"
               min={0}
@@ -110,13 +112,13 @@ export function PaymentForm({ open, onOpenChange, invoiceId, remainingBalance }:
               className="text-xs text-primary hover:underline"
               onClick={() => setAmount(remainingBalance)}
             >
-              Pay full balance ({formatCurrency(remainingBalance)})
+              {t('billing.payFullBalance', 'Pay full balance')} ({formatCurrency(remainingBalance)})
             </button>
           </div>
 
           {/* Payment Method */}
           <div className="space-y-2">
-            <Label>Payment Method</Label>
+            <Label>{t('billing.paymentMethod', 'Payment Method')}</Label>
             <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
               <SelectTrigger>
                 <SelectValue />
@@ -133,21 +135,21 @@ export function PaymentForm({ open, onOpenChange, invoiceId, remainingBalance }:
 
           {/* Reference Number */}
           <div className="space-y-2">
-            <Label>Reference Number</Label>
+            <Label>{t('billing.referenceNumber', 'Reference Number')}</Label>
             <Input
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              placeholder="Transaction or check number"
+              placeholder={t('billing.referencePlaceholder', 'Transaction or check number')}
             />
           </div>
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t('common.notes', 'Notes')}</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional notes..."
+              placeholder={t('billing.notesPlaceholder', 'Additional notes...')}
               rows={2}
             />
           </div>
@@ -155,14 +157,14 @@ export function PaymentForm({ open, onOpenChange, invoiceId, remainingBalance }:
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={recordPayment.isPending || amount <= 0}
           >
             {recordPayment.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Record Payment
+            {t('billing.recordPayment', 'Record Payment')}
           </Button>
         </DialogFooter>
       </DialogContent>

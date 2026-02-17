@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,12 +68,6 @@ const patientFormSchema = z.object({
 
 type PatientFormValues = z.infer<typeof patientFormSchema>;
 
-const genderOptions = [
-  { label: 'Male', value: 'MALE' },
-  { label: 'Female', value: 'FEMALE' },
-  { label: 'Other', value: 'OTHER' },
-];
-
 const bloodTypeOptions = [
   { label: 'Unknown', value: 'UNKNOWN' },
   { label: 'A+', value: 'A_POSITIVE' },
@@ -88,6 +83,13 @@ const bloodTypeOptions = [
 export function PatientCreatePage() {
   const navigate = useNavigate();
   const createPatient = useCreatePatient();
+  const { t } = useTranslation();
+
+  const genderOptions = [
+    { label: t('common.male'), value: 'MALE' },
+    { label: t('common.female'), value: 'FEMALE' },
+    { label: t('common.other'), value: 'OTHER' },
+  ];
 
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientFormSchema),
@@ -135,16 +137,16 @@ export function PatientCreatePage() {
 
   return (
     <PageWrapper
-      title="Register New Patient"
+      title={t('patients.createPatient')}
       breadcrumbs={[
-        { label: 'Dashboard', path: '/dashboard' },
-        { label: 'Patients', path: '/patients' },
-        { label: 'New Patient' },
+        { label: t('nav.dashboard'), path: '/dashboard' },
+        { label: t('nav.patients'), path: '/patients' },
+        { label: t('patients.createPatient') },
       ]}
       actions={
         <Button variant="outline" onClick={() => navigate('/patients')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Patients
+          {t('nav.patients')}
         </Button>
       }
     >
@@ -153,7 +155,7 @@ export function PatientCreatePage() {
           {/* Personal Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Personal Information</CardTitle>
+              <CardTitle className="text-lg">{t('patients.personalInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,9 +164,9 @@ export function PatientCreatePage() {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name *</FormLabel>
+                      <FormLabel>{t('patients.firstName')} *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter first name" {...field} />
+                        <Input placeholder={t('patients.firstName')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -175,9 +177,9 @@ export function PatientCreatePage() {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Last Name *</FormLabel>
+                      <FormLabel>{t('patients.lastName')} *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter last name" {...field} />
+                        <Input placeholder={t('patients.lastName')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -191,7 +193,7 @@ export function PatientCreatePage() {
                   name="dob"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Date of Birth *</FormLabel>
+                      <FormLabel>{t('patients.dateOfBirth')} *</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -204,11 +206,11 @@ export function PatientCreatePage() {
                   name="gender"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Gender *</FormLabel>
+                      <FormLabel>{t('patients.gender')} *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select gender" />
+                            <SelectValue placeholder={t('patients.gender')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -228,9 +230,9 @@ export function PatientCreatePage() {
                   name="nationalId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>National ID</FormLabel>
+                      <FormLabel>{t('patients.nationalId')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter national ID" {...field} />
+                        <Input placeholder={t('patients.nationalId')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -244,7 +246,7 @@ export function PatientCreatePage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone *</FormLabel>
+                      <FormLabel>{t('patients.phone')} *</FormLabel>
                       <FormControl>
                         <Input placeholder="+1 (555) 000-0000" {...field} />
                       </FormControl>
@@ -257,9 +259,9 @@ export function PatientCreatePage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('patients.email')}</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="patient@example.com" {...field} />
+                        <Input type="email" placeholder={t('patients.email')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -272,11 +274,11 @@ export function PatientCreatePage() {
                 name="bloodType"
                 render={({ field }) => (
                   <FormItem className="max-w-xs">
-                    <FormLabel>Blood Type</FormLabel>
+                    <FormLabel>{t('patients.bloodType')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select blood type" />
+                          <SelectValue placeholder={t('patients.bloodType')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -297,7 +299,7 @@ export function PatientCreatePage() {
           {/* Address */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Address</CardTitle>
+              <CardTitle className="text-lg">{t('patients.address')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -305,9 +307,9 @@ export function PatientCreatePage() {
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Street Address</FormLabel>
+                    <FormLabel>{t('patients.address')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Main St" {...field} />
+                      <Input placeholder={t('patients.address')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -319,9 +321,9 @@ export function PatientCreatePage() {
                   name="city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City</FormLabel>
+                      <FormLabel>{t('patients.city')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="City" {...field} />
+                        <Input placeholder={t('patients.city')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -332,9 +334,9 @@ export function PatientCreatePage() {
                   name="state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State / Province</FormLabel>
+                      <FormLabel>{t('patients.state')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="State" {...field} />
+                        <Input placeholder={t('patients.state')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -345,9 +347,9 @@ export function PatientCreatePage() {
                   name="zipCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>ZIP / Postal Code</FormLabel>
+                      <FormLabel>{t('patients.zipCode')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="12345" {...field} />
+                        <Input placeholder={t('patients.zipCode')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -360,7 +362,7 @@ export function PatientCreatePage() {
           {/* Emergency Contact */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Emergency Contact</CardTitle>
+              <CardTitle className="text-lg">{t('patients.emergencyContact')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -369,9 +371,9 @@ export function PatientCreatePage() {
                   name="emergencyContactName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Name</FormLabel>
+                      <FormLabel>{t('patients.emergencyContactName')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Full name" {...field} />
+                        <Input placeholder={t('patients.emergencyContactName')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -382,7 +384,7 @@ export function PatientCreatePage() {
                   name="emergencyContactPhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Phone</FormLabel>
+                      <FormLabel>{t('patients.emergencyContactPhone')}</FormLabel>
                       <FormControl>
                         <Input placeholder="+1 (555) 000-0000" {...field} />
                       </FormControl>
@@ -397,7 +399,7 @@ export function PatientCreatePage() {
           {/* Insurance */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Insurance Information</CardTitle>
+              <CardTitle className="text-lg">{t('patients.insurance')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -406,9 +408,9 @@ export function PatientCreatePage() {
                   name="insuranceProvider"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Insurance Provider</FormLabel>
+                      <FormLabel>{t('patients.insuranceProvider')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Provider name" {...field} />
+                        <Input placeholder={t('patients.insuranceProvider')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -419,9 +421,9 @@ export function PatientCreatePage() {
                   name="insuranceNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Insurance Number</FormLabel>
+                      <FormLabel>{t('patients.insuranceNumber')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Policy number" {...field} />
+                        <Input placeholder={t('patients.insuranceNumber')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -434,7 +436,7 @@ export function PatientCreatePage() {
           {/* Notes */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Additional Notes</CardTitle>
+              <CardTitle className="text-lg">{t('patients.notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               <FormField
@@ -442,10 +444,10 @@ export function PatientCreatePage() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes</FormLabel>
+                    <FormLabel>{t('patients.notes')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Any additional notes about the patient (allergies, special conditions, etc.)"
+                        placeholder={t('patients.allergies')}
                         rows={4}
                         {...field}
                       />
@@ -461,11 +463,11 @@ export function PatientCreatePage() {
 
           <div className="flex items-center justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => navigate('/patients')}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={createPatient.isPending}>
               {createPatient.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Register Patient
+              {t('common.save')}
             </Button>
           </div>
         </form>

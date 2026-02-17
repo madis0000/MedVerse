@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   startOfMonth,
   endOfMonth,
@@ -64,6 +65,7 @@ function MonthView({
   onDateSelect,
   onAppointmentClick,
 }: Omit<CalendarViewProps, 'view'>) {
+  const { t } = useTranslation();
   const grouped = useMemo(() => groupAppointmentsByDate(appointments), [appointments]);
 
   const calendarDays = useMemo(() => {
@@ -130,7 +132,7 @@ function MonthView({
                 ))}
                 {dayAppointments.length > 3 && (
                   <span className="block text-[10px] text-muted-foreground pl-1">
-                    +{dayAppointments.length - 3} more
+                    +{dayAppointments.length - 3} {t('common.more', 'more')}
                   </span>
                 )}
               </div>
@@ -253,6 +255,7 @@ function DayView({
   appointments,
   onAppointmentClick,
 }: Omit<CalendarViewProps, 'view' | 'onDateSelect'>) {
+  const { t } = useTranslation();
   const dateKey = format(selectedDate, 'yyyy-MM-dd');
 
   const dayAppointments = useMemo(
@@ -271,7 +274,7 @@ function DayView({
           {format(selectedDate, 'EEEE, MMMM d, yyyy')}
         </h3>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {dayAppointments.length} appointment{dayAppointments.length !== 1 ? 's' : ''}
+          {dayAppointments.length} {t('appointments.title', 'appointment')}{dayAppointments.length !== 1 ? 's' : ''}
         </p>
       </div>
 
