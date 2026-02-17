@@ -17,6 +17,7 @@ import { CreateExpenseCategoryDto } from './dto/create-expense-category.dto';
 import { CreateRecurringExpenseDto } from './dto/create-recurring-expense.dto';
 import { CloseDayDto } from './dto/close-day.dto';
 import { CreateWriteOffDto } from './dto/create-write-off.dto';
+import { MonthlyDataEntryDto } from './dto/data-entry.dto';
 import { QueryExpenseDto, QueryRevenueDto, QueryReportDto } from './dto/query-finance.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -211,5 +212,19 @@ export class FinanceController {
   @ApiOperation({ summary: 'Create a write-off for an invoice' })
   createWriteOff(@Body() dto: CreateWriteOffDto, @CurrentUser('id') userId: string) {
     return this.financeService.createWriteOff(dto, userId);
+  }
+
+  // ─── Data Entry ──────────────────────────────────────────────
+
+  @Post('data-entry')
+  @ApiOperation({ summary: 'Bulk enter monthly revenue and expense data' })
+  submitMonthlyData(@Body() dto: MonthlyDataEntryDto, @CurrentUser('id') userId: string) {
+    return this.financeService.submitMonthlyData(dto, userId);
+  }
+
+  @Get('data-entry/:year/:month')
+  @ApiOperation({ summary: 'Get existing data entry for a specific month' })
+  getMonthlyData(@Param('year') year: string, @Param('month') month: string) {
+    return this.financeService.getMonthlyData(parseInt(year), parseInt(month));
   }
 }

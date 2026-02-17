@@ -11,6 +11,7 @@ import { CreateExpenseCategoryDto } from './dto/create-expense-category.dto';
 import { CreateRecurringExpenseDto } from './dto/create-recurring-expense.dto';
 import { CloseDayDto } from './dto/close-day.dto';
 import { CreateWriteOffDto } from './dto/create-write-off.dto';
+import { MonthlyDataEntryDto } from './dto/data-entry.dto';
 import { QueryExpenseDto, QueryRevenueDto, QueryReportDto } from './dto/query-finance.dto';
 import { paginate, paginationMeta } from '../common/dto/pagination.dto';
 
@@ -967,5 +968,232 @@ export class FinanceService {
     const totalWrittenOff = writeOffs.reduce((s, w) => s + w.amount, 0);
 
     return { data: writeOffs, totalWrittenOff };
+  }
+
+  // ─── Data Entry ──────────────────────────────────────────────
+
+  async submitMonthlyData(dto: MonthlyDataEntryDto, userId: string) {
+    const results = { invoices: 0, payments: 0, closings: 0, expenses: 0 };
+
+    // Ensure a legacy patient exists for attaching invoices
+    let legacyPatient = await this.prisma.patient.findFirst({
+      where: { mrn: 'LEGACY-001' },
+    });
+    if (!legacyPatient) {
+      legacyPatient = await this.prisma.patient.create({
+        data: {
+          mrn: 'LEGACY-001',
+          firstName: 'Legacy',
+          lastName: 'Walk-In',
+          dob: new Date('1990-01-01'),
+          gender: 'OTHER',
+          status: 'ACTIVE',
+          notes: 'Aggregate patient record for legacy/historical data entry',
+        },
+      });
+    }
+
+    // Process each day's revenue
+    for (const day of dto.days) {
+      if (day.revenue <= 0) continue;
+
+      const date = new Date(dto.year, dto.month - 1, day.day);
+      date.setHours(12, 0, 0, 0); // Noon to avoid timezone issues
+      const dayStart = new Date(dto.year, dto.month - 1, day.day);
+      dayStart.setHours(0, 0, 0, 0);
+
+      // Check if data already exists for this day (skip if so)
+      const existingClosing = await this.prisma.dailyClosing.findUnique({
+        where: { date: dayStart },
+      });
+      if (existingClosing) continue;
+
+      // Create invoice
+      const invoiceNumber = `LEG-${dto.year}${String(dto.month).padStart(2, '0')}${String(day.day).padStart(2, '0')}`;
+
+      const existingInvoice = await this.prisma.invoice.findUnique({
+        where: { invoiceNumber },
+      });
+      if (existingInvoice) continue;
+
+      await this.prisma.$transaction(async (tx) => {
+        // Create invoice
+        const invoice = await tx.invoice.create({
+          data: {
+            invoiceNumber,
+            patientId: legacyPatient.id,
+            subtotal: day.revenue,
+            total: day.revenue,
+            status: 'PAID',
+            notes: `Legacy data entry: ${day.patientsEffective || 0} patients seen, ${day.newPatients || 0} new, ${day.fullPricePatients || 0} full price`,
+            createdAt: date,
+            items: {
+              create: [{
+                description: `Daily consultations - ${day.patientsEffective || 0} patients`,
+                category: 'CONSULTATION',
+                quantity: day.patientsEffective || 1,
+                unitPrice: day.patientsEffective ? day.revenue / day.patientsEffective : day.revenue,
+                total: day.revenue,
+              }],
+            },
+          },
+        });
+        results.invoices++;
+
+        // Create payment
+        await tx.payment.create({
+          data: {
+            invoiceId: invoice.id,
+            amount: day.revenue,
+            method: 'CASH',
+            receivedById: userId,
+            paidAt: date,
+            notes: 'Legacy data entry',
+          },
+        });
+        results.payments++;
+
+        // Create daily closing
+        await tx.dailyClosing.create({
+          data: {
+            date: dayStart,
+            status: 'CLOSED',
+            expectedCash: day.revenue,
+            actualCash: day.revenue,
+            expectedCard: 0,
+            actualCard: 0,
+            expectedInsurance: 0,
+            actualInsurance: 0,
+            expectedBankTransfer: 0,
+            actualBankTransfer: 0,
+            varianceCash: 0,
+            varianceTotal: 0,
+            invoiceCount: 1,
+            paymentCount: 1,
+            consultationCount: day.patientsEffective || 0,
+            closedById: userId,
+            closedAt: date,
+            notes: `Legacy: ${day.patientsEffective || 0} effective, ${day.newPatients || 0} new, ${day.totalPatients || 0} total, ${day.fullPricePatients || 0} fullPrice`,
+          },
+        });
+        results.closings++;
+      });
+    }
+
+    // Process monthly expenses
+    if (dto.expenses?.length) {
+      const monthStart = new Date(dto.year, dto.month - 1, 1);
+      monthStart.setHours(12, 0, 0, 0);
+
+      for (const expense of dto.expenses) {
+        // Find or create category
+        let category = await this.prisma.expenseCategory.findFirst({
+          where: { name: expense.categoryName },
+        });
+        if (!category) {
+          category = await this.prisma.expenseCategory.create({
+            data: { name: expense.categoryName },
+          });
+        }
+
+        // Check for existing expense with same category + date + description
+        const existing = await this.prisma.expense.findFirst({
+          where: {
+            categoryId: category.id,
+            expenseDate: monthStart,
+            description: expense.description || expense.categoryName,
+          },
+        });
+
+        if (existing) {
+          // Update if amount changed
+          if (existing.amount !== expense.amount) {
+            await this.prisma.expense.update({
+              where: { id: existing.id },
+              data: { amount: expense.amount },
+            });
+            results.expenses++;
+          }
+          continue;
+        }
+
+        await this.prisma.expense.create({
+          data: {
+            categoryId: category.id,
+            description: expense.description || expense.categoryName,
+            amount: expense.amount,
+            expenseDate: monthStart,
+            status: 'PAID',
+            createdById: userId,
+            notes: 'Data entry',
+          },
+        });
+        results.expenses++;
+      }
+    }
+
+    return results;
+  }
+
+  async getMonthlyData(year: number, month: number) {
+    const monthStart = new Date(year, month - 1, 1);
+    const monthEnd = new Date(year, month, 0, 23, 59, 59);
+
+    // Get daily closings for this month
+    const closings = await this.prisma.dailyClosing.findMany({
+      where: { date: { gte: monthStart, lte: monthEnd } },
+      orderBy: { date: 'asc' },
+    });
+
+    // Get payments for this month (for revenue data)
+    const payments = await this.prisma.payment.findMany({
+      where: { paidAt: { gte: monthStart, lte: monthEnd } },
+      include: {
+        invoice: { select: { invoiceNumber: true, notes: true } },
+      },
+      orderBy: { paidAt: 'asc' },
+    });
+
+    // Get expenses for this month
+    const expenses = await this.prisma.expense.findMany({
+      where: { expenseDate: { gte: monthStart, lte: monthEnd } },
+      include: { category: true },
+      orderBy: { expenseDate: 'asc' },
+    });
+
+    // Build days array from closings
+    const days = closings.map((c) => {
+      const dayPayments = payments.filter((p) => {
+        const pDay = p.paidAt.getDate();
+        const cDay = c.date.getDate();
+        return pDay === cDay;
+      });
+      const revenue = dayPayments.reduce((sum, p) => sum + p.amount, 0);
+
+      // Parse patient counts from notes
+      const notesMatch = c.notes?.match(/(\d+) effective, (\d+) new, (\d+) total, (\d+) fullPrice/);
+      const legacyMatch = !notesMatch ? c.notes?.match(/(\d+) effective, (\d+) new, (\d+) total/) : null;
+
+      return {
+        day: c.date.getDate(),
+        revenue: revenue || (c.expectedCash + c.expectedCard + c.expectedInsurance + c.expectedBankTransfer),
+        patientsEffective: notesMatch ? parseInt(notesMatch[1]) : legacyMatch ? parseInt(legacyMatch[1]) : c.consultationCount,
+        newPatients: notesMatch ? parseInt(notesMatch[2]) : legacyMatch ? parseInt(legacyMatch[2]) : 0,
+        totalPatients: notesMatch ? parseInt(notesMatch[3]) : legacyMatch ? parseInt(legacyMatch[3]) : 0,
+        fullPricePatients: notesMatch ? parseInt(notesMatch[4]) : 0,
+        status: c.status,
+      };
+    });
+
+    return {
+      year,
+      month,
+      days,
+      expenses: expenses.map((e) => ({
+        categoryName: e.category.name,
+        amount: e.amount,
+        description: e.description,
+      })),
+    };
   }
 }

@@ -25,6 +25,7 @@ import { FinanceDailyPage } from '@/pages/finance/finance-daily';
 import { FinanceRevenuePage } from '@/pages/finance/finance-revenue';
 import { FinanceExpensesPage } from '@/pages/finance/finance-expenses';
 import { FinanceReportsPage } from '@/pages/finance/finance-reports';
+import { FinanceDataEntryPage } from '@/pages/finance/finance-data-entry';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +74,7 @@ export function App() {
               <Route path="finance/revenue" element={<FinanceRevenuePage />} />
               <Route path="finance/expenses" element={<FinanceExpensesPage />} />
               <Route path="finance/reports" element={<FinanceReportsPage />} />
+              <Route path="finance/data-entry" element={<FinanceDataEntryPage />} />
               <Route path="documents" element={<DocumentManagerPage />} />
               <Route path="users" element={<UserManagementPage />} />
               <Route path="settings" element={<SettingsPage />} />

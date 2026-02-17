@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { CalendarCheck, Plus, FileBarChart, BarChart3 } from 'lucide-react';
+import { CalendarCheck, CalendarDays, Plus, FileBarChart, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -7,7 +7,8 @@ export function QuickActionsPanel() {
   const navigate = useNavigate();
 
   const actions = [
-    { label: 'Close Today', icon: CalendarCheck, path: '/finance/daily', variant: 'default' as const },
+    { label: 'Data Entry', icon: CalendarDays, path: '/finance/data-entry', variant: 'default' as const },
+    { label: 'Close Today', icon: CalendarCheck, path: '/finance/daily', variant: 'outline' as const },
     { label: 'Record Expense', icon: Plus, path: '/finance/expenses', variant: 'outline' as const },
     { label: 'View P&L', icon: FileBarChart, path: '/finance/reports', variant: 'outline' as const },
     { label: 'Revenue Drilldown', icon: BarChart3, path: '/finance/revenue', variant: 'outline' as const },
