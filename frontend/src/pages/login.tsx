@@ -95,14 +95,16 @@ export function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 p-3 bg-muted rounded-lg">
-            <p className="text-xs font-medium text-muted-foreground mb-2">{t('auth.demoCredentials')}</p>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p><span className="font-medium">{t('auth.admin')}:</span> admin@medpulse.com / Admin@123</p>
-              <p><span className="font-medium">{t('auth.doctor')}:</span> dr.smith@medpulse.com / Doctor@123</p>
-              <p><span className="font-medium">{t('auth.nurse')}:</span> nurse.johnson@medpulse.com / Staff@123</p>
+          {import.meta.env.VITE_SHOW_DEMO_CREDENTIALS === 'true' && (
+            <div className="mt-6 p-3 bg-muted rounded-lg">
+              <p className="text-xs font-medium text-muted-foreground mb-2">{t('auth.demoCredentials')}</p>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p><span className="font-medium">{t('auth.admin')}:</span> admin@medpulse.com / Admin@123</p>
+                <p><span className="font-medium">{t('auth.doctor')}:</span> dr.smith@medpulse.com / Doctor@123</p>
+                <p><span className="font-medium">{t('auth.nurse')}:</span> nurse.johnson@medpulse.com / Staff@123</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

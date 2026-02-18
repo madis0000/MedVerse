@@ -10,7 +10,7 @@ import { NotificationsGateway } from './notifications.gateway';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET', 'default-secret'),
+        secret: config.getOrThrow('JWT_SECRET'),
       }),
     }),
   ],

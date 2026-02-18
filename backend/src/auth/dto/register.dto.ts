@@ -1,6 +1,7 @@
-import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
+import { IsEmail, IsString, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
+import { IsStrongPassword } from '../../common/validators/password.validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'user@medpulse.com' })
@@ -9,7 +10,7 @@ export class RegisterDto {
 
   @ApiProperty({ example: 'Password@123' })
   @IsString()
-  @MinLength(6)
+  @IsStrongPassword()
   password: string;
 
   @ApiProperty({ example: 'John' })

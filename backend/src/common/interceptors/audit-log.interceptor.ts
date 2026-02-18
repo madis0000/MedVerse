@@ -2,6 +2,20 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable, tap } from 'rxjs';
 import { PrismaService } from '../../prisma/prisma.service';
 
+// Fields that should never be logged
+const SENSITIVE_FIELDS = ['password', 'newPassword', 'refreshToken', 'token', 'accessToken', 'secret'];
+
+function sanitizeBody(body: any): any {
+  if (!body || typeof body !== 'object') return body;
+  const sanitized = { ...body };
+  for (const key of Object.keys(sanitized)) {
+    if (SENSITIVE_FIELDS.includes(key)) {
+      sanitized[key] = '[REDACTED]';
+    }
+  }
+  return sanitized;
+}
+
 @Injectable()
 export class AuditLogInterceptor implements NestInterceptor {
   constructor(private prisma: PrismaService) {}
@@ -30,7 +44,7 @@ export class AuditLogInterceptor implements NestInterceptor {
               action,
               entity,
               entityId: entityId?.toString(),
-              newValues: request.body ? JSON.parse(JSON.stringify(request.body)) : undefined,
+              newValues: request.body ? sanitizeBody(request.body) : undefined,
               ipAddress,
             },
           });

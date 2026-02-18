@@ -1,0 +1,116 @@
+@media print {
+  /* Hide non-printable elements */
+  nav,
+  .sidebar,
+  .header,
+  .notification-center,
+  button:not(.print-visible),
+  .no-print,
+  .toast-container,
+  [role="dialog"],
+  [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+
+  /* Reset layout for printing */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  main,
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure tables print well */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th,
+  td {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+    text-align: left !important;
+  }
+
+  th {
+    background-color: #f5f5f5 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Prescription and invoice print styles */
+  .prescription-header,
+  .invoice-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+  }
+
+  .prescription-footer,
+  .invoice-footer {
+    margin-top: 40px;
+    border-top: 1px solid #999;
+    padding-top: 10px;
+  }
+
+  /* Page break control */
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  .no-page-break {
+    page-break-inside: avoid;
+  }
+
+  /* Cards should have borders in print */
+  .card,
+  [class*="rounded-xl"],
+  [class*="rounded-lg"] {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  /* Links should show URLs */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  a[href^="#"]:after,
+  a[href^="javascript"]:after {
+    content: "";
+  }
+
+  /* Ensure dark mode doesn't affect printing */
+  .dark {
+    background: white !important;
+    color: black !important;
+  }
+
+  .dark * {
+    background: transparent !important;
+    color: black !important;
+    border-color: #ddd !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+}

@@ -7,16 +7,19 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    credentials: true,
   },
 })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
+  private readonly logger = new Logger(NotificationsGateway.name);
   private userSockets = new Map<string, string[]>();
 
   constructor(
@@ -33,7 +36,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       }
 
       const payload = this.jwtService.verify(token, {
-        secret: this.configService.get('JWT_SECRET'),
+        secret: this.configService.getOrThrow('JWT_SECRET'),
       });
 
       const userId = payload.sub;
@@ -44,6 +47,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       this.userSockets.set(userId, existing);
 
       client.join(`user:${userId}`);
+      this.logger.debug(`User ${userId} connected via WebSocket`);
     } catch {
       client.disconnect();
     }

@@ -1,8 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import * as path from 'path';
+import { isPathSafe, sanitizeFilename } from '../common/validators/safe-path.validator';
+
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'application/dicom',
+];
 
 @Injectable()
 export class DocumentsService {
@@ -18,16 +33,39 @@ export class DocumentsService {
     category: string,
     consultationId?: string,
   ) {
+    // Validate patientId to prevent path traversal
+    if (!isPathSafe(patientId)) {
+      throw new BadRequestException('Invalid patient ID format');
+    }
+
+    // Validate file MIME type
+    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `File type ${file.mimetype} is not allowed. Allowed types: PDF, images, Word, Excel, text, DICOM`,
+      );
+    }
+
     const uploadDir = this.configService.get('UPLOAD_DIR', './uploads');
     const patientDir = path.join(uploadDir, patientId);
 
-    if (!fs.existsSync(patientDir)) {
-      fs.mkdirSync(patientDir, { recursive: true });
+    // Verify the resolved path is within the upload directory
+    const resolvedDir = path.resolve(patientDir);
+    const resolvedUploadDir = path.resolve(uploadDir);
+    if (!resolvedDir.startsWith(resolvedUploadDir)) {
+      throw new BadRequestException('Invalid patient ID');
     }
 
-    const uniqueName = `${Date.now()}-${file.originalname}`;
+    try {
+      await fs.mkdir(patientDir, { recursive: true });
+    } catch {
+      throw new BadRequestException('Failed to create upload directory');
+    }
+
+    const safeName = sanitizeFilename(file.originalname);
+    const uniqueName = `${Date.now()}-${safeName}`;
     const filePath = path.join(patientDir, uniqueName);
-    fs.writeFileSync(filePath, file.buffer);
+
+    await fs.writeFile(filePath, file.buffer);
 
     return this.prisma.document.create({
       data: {
@@ -62,17 +100,22 @@ export class DocumentsService {
 
   async getFileBuffer(id: string): Promise<{ buffer: Buffer; document: any }> {
     const doc = await this.findOne(id);
-    if (!fs.existsSync(doc.path)) {
+    try {
+      await fs.access(doc.path);
+    } catch {
       throw new NotFoundException('File not found on disk');
     }
-    const buffer = fs.readFileSync(doc.path);
+    const buffer = await fs.readFile(doc.path);
     return { buffer, document: doc };
   }
 
   async remove(id: string) {
     const doc = await this.findOne(id);
-    if (fs.existsSync(doc.path)) {
-      fs.unlinkSync(doc.path);
+    try {
+      await fs.access(doc.path);
+      await fs.unlink(doc.path);
+    } catch {
+      // File may already be gone, continue with DB deletion
     }
     return this.prisma.document.delete({ where: { id } });
   }

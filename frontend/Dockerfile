@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+ARG VITE_SHOW_DEMO_CREDENTIALS=false
+ENV VITE_SHOW_DEMO_CREDENTIALS=$VITE_SHOW_DEMO_CREDENTIALS
+
 COPY package*.json ./
 RUN npm ci
 

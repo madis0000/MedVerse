@@ -14,6 +14,7 @@ import { CreateWriteOffDto } from './dto/create-write-off.dto';
 import { MonthlyDataEntryDto } from './dto/data-entry.dto';
 import { QueryExpenseDto, QueryRevenueDto, QueryReportDto } from './dto/query-finance.dto';
 import { paginate, paginationMeta } from '../common/dto/pagination.dto';
+import { toNumber } from '../common/utils/decimal';
 
 @Injectable()
 export class FinanceService {
@@ -79,20 +80,20 @@ export class FinanceService {
       }),
     ]);
 
-    const totalRevenue = currentRevenue._sum.amount || 0;
-    const prevTotalRevenue = previousRevenue._sum.amount || 0;
-    const totalExpenses = currentExpenses._sum.amount || 0;
-    const prevTotalExpenses = previousExpenses._sum.amount || 0;
+    const totalRevenue = toNumber(currentRevenue._sum.amount);
+    const prevTotalRevenue = toNumber(previousRevenue._sum.amount);
+    const totalExpenses = toNumber(currentExpenses._sum.amount);
+    const prevTotalExpenses = toNumber(previousExpenses._sum.amount);
     const netProfit = totalRevenue - totalExpenses;
     const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
-    const outstandingAR = outstandingInvoices._sum.total || 0;
+    const outstandingAR = toNumber(outstandingInvoices._sum.total);
 
     // Collection rate: payments received / total invoiced in period
     const totalInvoiced = await this.prisma.invoice.aggregate({
       _sum: { total: true },
       where: { createdAt: { gte: start, lte: end }, status: { not: 'CANCELLED' } },
     });
-    const totalInvoicedAmount = totalInvoiced._sum.total || 0;
+    const totalInvoicedAmount = toNumber(totalInvoiced._sum.total);
     const collectionRate = totalInvoicedAmount > 0 ? (totalRevenue / totalInvoicedAmount) * 100 : 0;
 
     // Avg days to payment
@@ -142,8 +143,8 @@ export class FinanceService {
       avgDaysToPayment,
       revenueMoM: Math.round(revenueMoM * 100) / 100,
       expenseMoM: Math.round(expenseMoM * 100) / 100,
-      todayRevenue: todayRevenue._sum.amount || 0,
-      todayExpenses: todayExpenses._sum.amount || 0,
+      todayRevenue: toNumber(todayRevenue._sum.amount),
+      todayExpenses: toNumber(todayExpenses._sum.amount),
     };
   }
 
@@ -177,12 +178,12 @@ export class FinanceService {
 
     for (const p of payments) {
       const key = `${p.paidAt.getFullYear()}-${String(p.paidAt.getMonth() + 1).padStart(2, '0')}`;
-      if (monthlyData[key]) monthlyData[key].inflows += p.amount;
+      if (monthlyData[key]) monthlyData[key].inflows += toNumber(p.amount);
     }
 
     for (const e of expenses) {
       const key = `${e.expenseDate.getFullYear()}-${String(e.expenseDate.getMonth() + 1).padStart(2, '0')}`;
-      if (monthlyData[key]) monthlyData[key].outflows += e.amount;
+      if (monthlyData[key]) monthlyData[key].outflows += toNumber(e.amount);
     }
 
     return Object.entries(monthlyData).map(([month, data]) => ({
@@ -223,12 +224,12 @@ export class FinanceService {
 
       const dayRevenue = payments
         .filter((p) => p.paidAt >= day && p.paidAt < nextDay)
-        .reduce((sum, p) => sum + p.amount, 0);
+        .reduce((sum, p) => sum + toNumber(p.amount), 0);
       revenue.push(dayRevenue);
 
       const dayExpense = expenses
         .filter((e) => e.expenseDate >= day && e.expenseDate < nextDay)
-        .reduce((sum, e) => sum + e.amount, 0);
+        .reduce((sum, e) => sum + toNumber(e.amount), 0);
       expenseData.push(dayExpense);
     }
 
@@ -283,7 +284,7 @@ export class FinanceService {
     // Calculate totals by payment method
     const byMethod = { CASH: 0, CARD: 0, INSURANCE: 0, BANK_TRANSFER: 0 };
     for (const p of payments) {
-      byMethod[p.method] += p.amount;
+      byMethod[p.method] += toNumber(p.amount);
     }
 
     return {
@@ -331,7 +332,7 @@ export class FinanceService {
 
     const expected = { CASH: 0, CARD: 0, INSURANCE: 0, BANK_TRANSFER: 0 };
     for (const p of payments) {
-      expected[p.method] += p.amount;
+      expected[p.method] += toNumber(p.amount);
     }
 
     const invoiceCount = await this.prisma.invoice.count({
@@ -411,7 +412,7 @@ export class FinanceService {
       },
     });
 
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalRevenue = payments.reduce((sum, p) => sum + toNumber(p.amount), 0);
 
     return {
       totalRevenue,
@@ -450,7 +451,7 @@ export class FinanceService {
       for (const inv of c.invoices) {
         for (const pay of inv.payments) {
           if (pay.paidAt >= start && pay.paidAt <= end) {
-            byDoctor[key].revenue += pay.amount;
+            byDoctor[key].revenue += toNumber(pay.amount);
           }
         }
       }
@@ -488,7 +489,7 @@ export class FinanceService {
       for (const inv of c.invoices) {
         for (const pay of inv.payments) {
           if (pay.paidAt >= start && pay.paidAt <= end) {
-            bySpecialty[key].revenue += pay.amount;
+            bySpecialty[key].revenue += toNumber(pay.amount);
           }
         }
       }
@@ -518,7 +519,7 @@ export class FinanceService {
       if (!byCategory[item.category]) {
         byCategory[item.category] = { category: item.category, revenue: 0, count: 0 };
       }
-      byCategory[item.category].revenue += item.total;
+      byCategory[item.category].revenue += toNumber(item.total);
       byCategory[item.category].count += item.quantity;
     }
 
@@ -535,7 +536,7 @@ export class FinanceService {
 
     const byMethod: Record<string, number> = { CASH: 0, CARD: 0, INSURANCE: 0, BANK_TRANSFER: 0 };
     for (const p of payments) {
-      byMethod[p.method] += p.amount;
+      byMethod[p.method] += toNumber(p.amount);
     }
 
     return Object.entries(byMethod).map(([method, amount]) => ({ method, amount }));
@@ -563,7 +564,7 @@ export class FinanceService {
 
     for (const p of payments) {
       const key = `${p.paidAt.getFullYear()}-${String(p.paidAt.getMonth() + 1).padStart(2, '0')}`;
-      if (monthly[key] !== undefined) monthly[key] += p.amount;
+      if (monthly[key] !== undefined) monthly[key] += toNumber(p.amount);
     }
 
     return Object.entries(monthly).map(([month, revenue]) => ({ month, revenue }));
@@ -585,7 +586,7 @@ export class FinanceService {
       const mEnd = new Date(start.getFullYear(), start.getMonth() + i + 1, 1);
       const total = payments
         .filter((p) => p.paidAt >= mStart && p.paidAt < mEnd)
-        .reduce((sum, p) => sum + p.amount, 0);
+        .reduce((sum, p) => sum + toNumber(p.amount), 0);
       monthly.push(total);
     }
 
@@ -776,7 +777,7 @@ export class FinanceService {
 
     const revenueByCategory: Record<string, number> = {};
     for (const item of paidInvoiceItems) {
-      revenueByCategory[item.category] = (revenueByCategory[item.category] || 0) + item.total;
+      revenueByCategory[item.category] = (revenueByCategory[item.category] || 0) + toNumber(item.total);
     }
 
     // Expenses by category
@@ -791,7 +792,7 @@ export class FinanceService {
     const expenseByCategory: Record<string, number> = {};
     for (const e of expenses) {
       const cat = e.category.name;
-      expenseByCategory[cat] = (expenseByCategory[cat] || 0) + e.amount;
+      expenseByCategory[cat] = (expenseByCategory[cat] || 0) + toNumber(e.amount);
     }
 
     const totalRevenue = Object.values(revenueByCategory).reduce((a, b) => a + b, 0);
@@ -833,8 +834,8 @@ export class FinanceService {
     ];
 
     for (const inv of unpaidInvoices) {
-      const paidAmount = inv.payments.reduce((s, p) => s + p.amount, 0);
-      const outstanding = inv.total - paidAmount;
+      const paidAmount = inv.payments.reduce((s, p) => s + toNumber(p.amount), 0);
+      const outstanding = toNumber(inv.total) - paidAmount;
       const daysOld = Math.floor((now.getTime() - inv.createdAt.getTime()) / (1000 * 60 * 60 * 24));
 
       const bucket = buckets.find((b) => daysOld >= b.min && daysOld <= b.max);
@@ -845,7 +846,7 @@ export class FinanceService {
           id: inv.id,
           invoiceNumber: inv.invoiceNumber,
           patient: inv.patient,
-          total: inv.total,
+          total: toNumber(inv.total),
           outstanding,
           daysOld,
           dueDate: inv.dueDate,
@@ -877,8 +878,8 @@ export class FinanceService {
       }),
     ]);
 
-    const cashFromPatients = payments.reduce((s, p) => s + p.amount, 0);
-    const cashToSuppliers = expenses.reduce((s, e) => s + e.amount, 0);
+    const cashFromPatients = payments.reduce((s, p) => s + toNumber(p.amount), 0);
+    const cashToSuppliers = expenses.reduce((s, e) => s + toNumber(e.amount), 0);
     const netOperating = cashFromPatients - cashToSuppliers;
 
     return {
@@ -902,9 +903,9 @@ export class FinanceService {
 
     if (!invoice) throw new NotFoundException('Invoice not found');
 
-    const totalPaid = invoice.payments.reduce((s, p) => s + p.amount, 0);
-    const totalWrittenOff = invoice.writeOffs.reduce((s, w) => s + w.amount, 0);
-    const remaining = invoice.total - totalPaid - totalWrittenOff;
+    const totalPaid = invoice.payments.reduce((s, p) => s + toNumber(p.amount), 0);
+    const totalWrittenOff = invoice.writeOffs.reduce((s, w) => s + toNumber(w.amount), 0);
+    const remaining = toNumber(invoice.total) - totalPaid - totalWrittenOff;
 
     if (dto.amount > remaining) {
       throw new BadRequestException(
@@ -913,7 +914,7 @@ export class FinanceService {
     }
 
     const newTotalResolved = totalPaid + totalWrittenOff + dto.amount;
-    const newStatus = newTotalResolved >= invoice.total ? InvoiceStatus.PAID : invoice.status;
+    const newStatus = newTotalResolved >= toNumber(invoice.total) ? InvoiceStatus.PAID : invoice.status;
 
     return this.prisma.$transaction(async (tx) => {
       const writeOff = await tx.writeOff.create({
@@ -965,7 +966,7 @@ export class FinanceService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalWrittenOff = writeOffs.reduce((s, w) => s + w.amount, 0);
+    const totalWrittenOff = writeOffs.reduce((s, w) => s + toNumber(w.amount), 0);
 
     return { data: writeOffs, totalWrittenOff };
   }
@@ -1107,7 +1108,7 @@ export class FinanceService {
 
         if (existing) {
           // Update if amount changed
-          if (existing.amount !== expense.amount) {
+          if (toNumber(existing.amount) !== expense.amount) {
             await this.prisma.expense.update({
               where: { id: existing.id },
               data: { amount: expense.amount },
@@ -1168,7 +1169,7 @@ export class FinanceService {
         const cDay = c.date.getDate();
         return pDay === cDay;
       });
-      const revenue = dayPayments.reduce((sum, p) => sum + p.amount, 0);
+      const revenue = dayPayments.reduce((sum, p) => sum + toNumber(p.amount), 0);
 
       // Parse patient counts from notes
       const notesMatch = c.notes?.match(/(\d+) effective, (\d+) new, (\d+) total, (\d+) fullPrice/);
@@ -1176,7 +1177,7 @@ export class FinanceService {
 
       return {
         day: c.date.getDate(),
-        revenue: revenue || (c.expectedCash + c.expectedCard + c.expectedInsurance + c.expectedBankTransfer),
+        revenue: revenue || (toNumber(c.expectedCash) + toNumber(c.expectedCard) + toNumber(c.expectedInsurance) + toNumber(c.expectedBankTransfer)),
         patientsEffective: notesMatch ? parseInt(notesMatch[1]) : legacyMatch ? parseInt(legacyMatch[1]) : c.consultationCount,
         newPatients: notesMatch ? parseInt(notesMatch[2]) : legacyMatch ? parseInt(legacyMatch[2]) : 0,
         totalPatients: notesMatch ? parseInt(notesMatch[3]) : legacyMatch ? parseInt(legacyMatch[3]) : 0,
@@ -1191,7 +1192,7 @@ export class FinanceService {
       days,
       expenses: expenses.map((e) => ({
         categoryName: e.category.name,
-        amount: e.amount,
+        amount: toNumber(e.amount),
         description: e.description,
       })),
     };

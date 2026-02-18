@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../common/services/email.service';
 import { LoginDto } from './dto/login.dto';
@@ -38,10 +38,12 @@ export class AuthService {
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
+    // Hash the refresh token before storing
+    const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
-        refreshToken: tokens.refreshToken,
+        refreshToken: hashedRefreshToken,
         lastLogin: new Date(),
       },
     });
@@ -69,7 +71,7 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await bcrypt.hash(dto.password, 12);
 
     const user = await this.prisma.user.create({
       data: {
@@ -95,26 +97,35 @@ export class AuthService {
   async refreshTokens(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        secret: this.configService.getOrThrow('JWT_REFRESH_SECRET'),
       });
 
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
       });
 
-      if (!user || !user.isActive || user.refreshToken !== refreshToken) {
+      if (!user || !user.isActive || !user.refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // Compare hashed refresh token
+      const tokenValid = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!tokenValid) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
       const tokens = await this.generateTokens(user.id, user.email, user.role);
 
+      // Hash and store the new refresh token (token rotation)
+      const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
       await this.prisma.user.update({
         where: { id: user.id },
-        data: { refreshToken: tokens.refreshToken },
+        data: { refreshToken: hashedRefreshToken },
       });
 
       return tokens;
-    } catch {
+    } catch (error) {
+      if (error instanceof UnauthorizedException) throw error;
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
@@ -132,13 +143,19 @@ export class AuthService {
       return { message: 'If the email exists, a reset link has been sent' };
     }
 
-    const token = uuidv4();
+    // Generate a cryptographically secure reset token
+    const token = randomBytes(32).toString('hex');
     const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
 
-    // Store token in refreshToken field temporarily
+    // Hash the token before storing
+    const hashedToken = await bcrypt.hash(token, 10);
+
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { refreshToken: `reset:${token}:${resetTokenExpiry.getTime()}` },
+      data: {
+        resetToken: hashedToken,
+        resetTokenExpiry: resetTokenExpiry,
+      },
     });
 
     try {
@@ -151,31 +168,36 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
+    // Find users with non-expired reset tokens
     const users = await this.prisma.user.findMany({
       where: {
-        refreshToken: { startsWith: `reset:${token}:` },
+        resetToken: { not: null },
+        resetTokenExpiry: { gt: new Date() },
       },
     });
 
-    if (users.length === 0) {
+    // Check each candidate against the hashed token
+    let matchedUser: any = null;
+    for (const user of users) {
+      if (user.resetToken && await bcrypt.compare(token, user.resetToken)) {
+        matchedUser = user;
+        break;
+      }
+    }
+
+    if (!matchedUser) {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
-    const user = users[0];
-    const parts = user.refreshToken!.split(':');
-    const expiry = parseInt(parts[2]);
-
-    if (Date.now() > expiry) {
-      throw new BadRequestException('Reset token has expired');
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     await this.prisma.user.update({
-      where: { id: user.id },
+      where: { id: matchedUser.id },
       data: {
         password: hashedPassword,
         refreshToken: null,
+        resetToken: null,
+        resetTokenExpiry: null,
       },
     });
 
@@ -187,11 +209,11 @@ export class AuthService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get('JWT_SECRET'),
+        secret: this.configService.getOrThrow('JWT_SECRET'),
         expiresIn: this.configService.get('JWT_EXPIRATION', '15m'),
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        secret: this.configService.getOrThrow('JWT_REFRESH_SECRET'),
         expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION', '7d'),
       }),
     ]);

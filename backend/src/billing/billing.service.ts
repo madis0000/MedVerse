@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { PaginationDto, paginate, paginationMeta } from '../common/dto/pagination.dto';
+import { toNumber } from '../common/utils/decimal';
 
 @Injectable()
 export class BillingService {
@@ -200,19 +201,19 @@ export class BillingService {
     }
 
     const totalPaidBefore = invoice.payments.reduce(
-      (sum, p) => sum + p.amount,
+      (sum, p) => sum + toNumber(p.amount),
       0,
     );
     const totalPaidAfter = totalPaidBefore + dto.amount;
 
-    if (totalPaidAfter > invoice.total) {
+    if (totalPaidAfter > toNumber(invoice.total)) {
       throw new BadRequestException(
-        `Payment amount exceeds the remaining balance. Remaining: ${(invoice.total - totalPaidBefore).toFixed(2)}`,
+        `Payment amount exceeds the remaining balance. Remaining: ${(toNumber(invoice.total) - totalPaidBefore).toFixed(2)}`,
       );
     }
 
     const newStatus: InvoiceStatus =
-      totalPaidAfter >= invoice.total
+      totalPaidAfter >= toNumber(invoice.total)
         ? InvoiceStatus.PAID
         : InvoiceStatus.PARTIAL;
 

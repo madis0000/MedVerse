@@ -1,5 +1,6 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsStrongPassword } from '../../common/validators/password.validator';
 
 export class ForgotPasswordDto {
   @ApiProperty({ example: 'user@medpulse.com' })
@@ -14,6 +15,6 @@ export class ResetPasswordDto {
 
   @ApiProperty({ example: 'NewPassword@123' })
   @IsString()
-  @MinLength(6)
+  @IsStrongPassword()
   newPassword: string;
 }

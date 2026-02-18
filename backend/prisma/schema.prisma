@@ -175,6 +175,8 @@ model User {
   isActive    Boolean  @default(true)
   lastLogin   DateTime?
   refreshToken String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -237,6 +239,7 @@ model Patient {
   invoices        Invoice[]
   documents       Document[]
   vitalSigns      VitalSign[]
+  deletedAt       DateTime?
 
   @@index([mrn])
   @@index([lastName, firstName])
@@ -341,6 +344,7 @@ model Consultation {
   labOrders     LabOrder[]
   invoices      Invoice[]
   documents     Document[]
+  deletedAt     DateTime?
 
   @@index([patientId])
   @@index([doctorId])
@@ -429,6 +433,7 @@ model Prescription {
   patient      Patient          @relation(fields: [patientId], references: [id])
   doctor       User             @relation(fields: [doctorId], references: [id])
   items        PrescriptionItem[]
+  deletedAt    DateTime?
 
   @@index([patientId])
   @@index([doctorId])
@@ -559,10 +564,10 @@ model Invoice {
   patientId       String
   consultationId  String?
   invoiceNumber   String        @unique
-  subtotal        Float
-  tax             Float         @default(0)
-  discount        Float         @default(0)
-  total           Float
+  subtotal        Decimal       @db.Decimal(12, 2)
+  tax             Decimal       @default(0.00) @db.Decimal(12, 2)
+  discount        Decimal       @default(0.00) @db.Decimal(12, 2)
+  total           Decimal       @db.Decimal(12, 2)
   status          InvoiceStatus @default(DRAFT)
   dueDate         DateTime?
   notes           String?
@@ -586,8 +591,8 @@ model InvoiceItem {
   description String
   category    InvoiceItemCategory
   quantity    Int                 @default(1)
-  unitPrice   Float
-  total       Float
+  unitPrice   Decimal             @db.Decimal(12, 2)
+  total       Decimal             @db.Decimal(12, 2)
   createdAt   DateTime            @default(now())
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -598,7 +603,7 @@ model InvoiceItem {
 model Payment {
   id           String        @id @default(uuid())
   invoiceId    String
-  amount       Float
+  amount       Decimal       @db.Decimal(12, 2)
   method       PaymentMethod
   reference    String?
   paidAt       DateTime      @default(now())
@@ -684,7 +689,7 @@ model ServicePrice {
   id          String  @id @default(uuid())
   name        String
   category    String
-  price       Float
+  price       Decimal @db.Decimal(12, 2)
   specialtyId String?
   isActive    Boolean @default(true)
   createdAt   DateTime @default(now())
@@ -750,7 +755,7 @@ model Expense {
   id           String        @id @default(uuid())
   categoryId   String
   description  String
-  amount       Float
+  amount       Decimal       @db.Decimal(12, 2)
   vendor       String?
   reference    String?
   expenseDate  DateTime
@@ -777,7 +782,7 @@ model RecurringExpense {
   id            String              @id @default(uuid())
   categoryId    String
   description   String
-  amount        Float
+  amount        Decimal             @db.Decimal(12, 2)
   vendor        String?
   frequency     RecurrenceFrequency
   dayOfMonth    Int?
@@ -803,16 +808,16 @@ model DailyClosing {
   id                    String             @id @default(uuid())
   date                  DateTime           @unique
   status                DailyClosingStatus @default(OPEN)
-  expectedCash          Float              @default(0)
-  actualCash            Float              @default(0)
-  expectedCard          Float              @default(0)
-  actualCard            Float              @default(0)
-  expectedInsurance     Float              @default(0)
-  actualInsurance       Float              @default(0)
-  expectedBankTransfer  Float              @default(0)
-  actualBankTransfer    Float              @default(0)
-  varianceCash          Float?
-  varianceTotal         Float?
+  expectedCash          Decimal            @default(0.00) @db.Decimal(12, 2)
+  actualCash            Decimal            @default(0.00) @db.Decimal(12, 2)
+  expectedCard          Decimal            @default(0.00) @db.Decimal(12, 2)
+  actualCard            Decimal            @default(0.00) @db.Decimal(12, 2)
+  expectedInsurance     Decimal            @default(0.00) @db.Decimal(12, 2)
+  actualInsurance       Decimal            @default(0.00) @db.Decimal(12, 2)
+  expectedBankTransfer  Decimal            @default(0.00) @db.Decimal(12, 2)
+  actualBankTransfer    Decimal            @default(0.00) @db.Decimal(12, 2)
+  varianceCash          Decimal?           @db.Decimal(12, 2)
+  varianceTotal         Decimal?           @db.Decimal(12, 2)
   invoiceCount          Int                @default(0)
   paymentCount          Int                @default(0)
   consultationCount     Int                @default(0)
@@ -831,7 +836,7 @@ model DailyClosing {
 model WriteOff {
   id           String        @id @default(uuid())
   invoiceId    String
-  amount       Float
+  amount       Decimal       @db.Decimal(12, 2)
   reason       WriteOffReason
   description  String?
   approvedById String

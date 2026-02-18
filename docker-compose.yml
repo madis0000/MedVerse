@@ -39,12 +39,12 @@ services:
     ports:
       - '3001:3001'
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-development}
       DATABASE_URL: postgresql://medpulse:medpulse_secret@postgres:5432/medpulse?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: medpulse-jwt-secret-change-in-production
-      JWT_REFRESH_SECRET: medpulse-jwt-refresh-secret-change-in-production
+      JWT_SECRET: ${JWT_SECRET:-medpulse-jwt-dev-a7f3b2c9e1d4f6a8b0c2e4f6a8b0d2e4}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-medpulse-jwt-refresh-dev-c3d5e7f9a1b3d5e7f9a1c3d5e7f9a1b3}
       JWT_EXPIRATION: 15m
       JWT_REFRESH_EXPIRATION: 7d
       PORT: 3001
@@ -69,7 +69,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_SHOW_DEMO_CREDENTIALS: 'true'
     container_name: medpulse-frontend
+    environment:
+      VITE_SHOW_DEMO_CREDENTIALS: 'true'
     ports:
       - '3000:80'
     depends_on:
