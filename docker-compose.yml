@@ -1,54 +1,22 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: medpulse-postgres
-    environment:
-      POSTGRES_DB: medpulse
-      POSTGRES_USER: medpulse
-      POSTGRES_PASSWORD: medpulse_secret
-    ports:
-      - '5432:5432'
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - medpulse-network
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U medpulse']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    container_name: medpulse-redis
-    ports:
-      - '6379:6379'
-    networks:
-      - medpulse-network
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: medpulse-backend
     ports:
-      - '3001:3001'
+      - '3005:3001'
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      DATABASE_URL: postgresql://medpulse:medpulse_secret@postgres:5432/medpulse?schema=public
-      REDIS_HOST: redis
+      DATABASE_URL: postgresql://postgres:MadisTrader2026@shared-postgres:5432/medpulse?schema=public
+      REDIS_HOST: shared-redis
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET:-medpulse-jwt-dev-a7f3b2c9e1d4f6a8b0c2e4f6a8b0d2e4}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-medpulse-jwt-refresh-dev-c3d5e7f9a1b3d5e7f9a1c3d5e7f9a1b3}
       JWT_EXPIRATION: 15m
       JWT_REFRESH_EXPIRATION: 7d
       PORT: 3001
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3006
       UPLOAD_DIR: /app/uploads
       SMTP_HOST: smtp.ethereal.email
       SMTP_PORT: 587
@@ -57,13 +25,10 @@ services:
       SMTP_FROM: noreply@medpulse.com
     volumes:
       - uploads:/app/uploads
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
-      - medpulse-network
+      shared-infra-network:
+        aliases:
+          - backend
 
   frontend:
     build:
@@ -75,31 +40,15 @@ services:
     environment:
       VITE_SHOW_DEMO_CREDENTIALS: 'true'
     ports:
-      - '3000:80'
+      - '3006:80'
     depends_on:
       - backend
     networks:
-      - medpulse-network
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: medpulse-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@medpulse.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - '5050:80'
-    depends_on:
-      - postgres
-    networks:
-      - medpulse-network
-    profiles:
-      - dev
+      - shared-infra-network
 
 volumes:
-  pgdata:
   uploads:
 
 networks:
-  medpulse-network:
-    driver: bridge
+  shared-infra-network:
+    external: true
