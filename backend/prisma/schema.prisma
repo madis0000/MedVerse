@@ -198,6 +198,7 @@ model User {
   recurringExpenses  RecurringExpense[]
   dailyClosings      DailyClosing[]
   writeOffs          WriteOff[]
+  passwordHistory    PasswordHistory[]
 
   @@index([email])
   @@index([role])
@@ -240,6 +241,7 @@ model Patient {
   documents       Document[]
   vitalSigns      VitalSign[]
   deletedAt       DateTime?
+  screeningResults ScreeningResult[]
 
   @@index([mrn])
   @@index([lastName, firstName])
@@ -344,11 +346,14 @@ model Consultation {
   labOrders     LabOrder[]
   invoices      Invoice[]
   documents     Document[]
+  screeningResults ScreeningResult[]
   deletedAt     DateTime?
 
   @@index([patientId])
   @@index([doctorId])
   @@index([status])
+  @@index([patientId, createdAt])
+  @@index([doctorId, createdAt])
 }
 
 model ConsultationTemplate {
@@ -615,6 +620,8 @@ model Payment {
   receivedBy User    @relation("ReceivedBy", fields: [receivedById], references: [id])
 
   @@index([invoiceId])
+  @@index([paidAt])
+  @@index([invoiceId, paidAt])
 }
 
 model Document {
@@ -672,6 +679,8 @@ model AuditLog {
   @@index([userId])
   @@index([entity])
   @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([action])
 }
 
 model ClinicSetting {
@@ -776,6 +785,7 @@ model Expense {
   @@index([categoryId])
   @@index([expenseDate])
   @@index([status])
+  @@index([categoryId, expenseDate])
 }
 
 model RecurringExpense {
@@ -847,4 +857,49 @@ model WriteOff {
 
   @@index([invoiceId])
   @@index([createdAt])
+}
+
+// ===== Security & Compliance Models =====
+
+model PasswordHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  password  String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  email     String
+  ipAddress String?
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model ScreeningResult {
+  id              String   @id @default(uuid())
+  consultationId  String
+  patientId       String
+  instrumentType  String   // PHQ9, GAD7, AUDIT, CAGE, etc.
+  score           Int
+  severity        String
+  responses       Json     // Array of response values
+  notes           String?
+  administeredAt  DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  consultation Consultation @relation(fields: [consultationId], references: [id])
+  patient      Patient      @relation(fields: [patientId], references: [id])
+
+  @@index([consultationId])
+  @@index([patientId])
+  @@index([instrumentType])
+  @@index([patientId, instrumentType, administeredAt])
 }

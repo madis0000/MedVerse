@@ -17,7 +17,7 @@ import { CreateExpenseCategoryDto } from './dto/create-expense-category.dto';
 import { CreateRecurringExpenseDto } from './dto/create-recurring-expense.dto';
 import { CloseDayDto } from './dto/close-day.dto';
 import { CreateWriteOffDto } from './dto/create-write-off.dto';
-import { MonthlyDataEntryDto } from './dto/data-entry.dto';
+import { MonthlyDataEntryDto, UpdateDailyEntryDto } from './dto/data-entry.dto';
 import { QueryExpenseDto, QueryRevenueDto, QueryReportDto } from './dto/query-finance.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -163,6 +163,12 @@ export class FinanceController {
     return this.financeService.createExpenseCategory(dto);
   }
 
+  @Delete('expense-categories/:id')
+  @ApiOperation({ summary: 'Delete an expense category (only if no transactions)' })
+  deleteExpenseCategory(@Param('id') id: string) {
+    return this.financeService.deleteExpenseCategory(id);
+  }
+
   // ─── Recurring Expenses ────────────────────────────────────────
 
   @Get('recurring-expenses')
@@ -226,5 +232,23 @@ export class FinanceController {
   @ApiOperation({ summary: 'Get existing data entry for a specific month' })
   getMonthlyData(@Param('year') year: string, @Param('month') month: string) {
     return this.financeService.getMonthlyData(parseInt(year), parseInt(month));
+  }
+
+  @Patch('data-entry/:year/:month/:day')
+  @ApiOperation({ summary: 'Update a single daily entry' })
+  updateDailyEntry(
+    @Param('year') year: string,
+    @Param('month') month: string,
+    @Param('day') day: string,
+    @Body() dto: UpdateDailyEntryDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.financeService.updateDailyEntry(
+      parseInt(year),
+      parseInt(month),
+      parseInt(day),
+      dto,
+      userId,
+    );
   }
 }

@@ -26,6 +26,12 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 export class PatientsController {
   constructor(private patientsService: PatientsService) {}
 
+  @Get('quick-search')
+  @ApiOperation({ summary: 'Fast fuzzy search for command palette (max 5 results)' })
+  quickSearch(@Query('q') query: string) {
+    return this.patientsService.quickSearch(query);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Paginated list of patients with search and filters' })
   findAll(@Query() query: SearchPatientDto) {

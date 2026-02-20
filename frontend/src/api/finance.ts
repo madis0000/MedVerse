@@ -220,6 +220,19 @@ export function useCreateExpenseCategory() {
   });
 }
 
+export function useDeleteExpenseCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.delete(`/finance/expense-categories/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['finance', 'expense-categories'] });
+    },
+  });
+}
+
 // ─── Recurring Expenses ────────────────────────────────────────
 
 export function useRecurringExpenses() {
@@ -273,6 +286,21 @@ export function useCashFlowReport(params?: { startDate?: string; endDate?: strin
     queryFn: async () => {
       const { data } = await apiClient.get('/finance/reports/cash-flow', { params });
       return data;
+    },
+  });
+}
+
+// ─── Data Entry ────────────────────────────────────────────────
+
+export function useUpdateDailyEntry() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ year, month, day, data: payload }: { year: number; month: number; day: number; data: any }) => {
+      const { data } = await apiClient.patch(`/finance/data-entry/${year}/${month}/${day}`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['finance'] });
     },
   });
 }

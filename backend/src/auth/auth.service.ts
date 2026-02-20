@@ -22,19 +22,41 @@ export class AuthService {
     private emailService: EmailService,
   ) {}
 
+  private readonly MAX_LOGIN_ATTEMPTS = 5;
+  private readonly LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
   async login(dto: LoginDto) {
+    // Check for account lockout
+    const recentFailures = await this.prisma.loginAttempt.count({
+      where: {
+        email: dto.email,
+        success: false,
+        createdAt: { gt: new Date(Date.now() - this.LOCKOUT_DURATION_MS) },
+      },
+    });
+
+    if (recentFailures >= this.MAX_LOGIN_ATTEMPTS) {
+      throw new UnauthorizedException('Account locked due to too many failed attempts. Please try again in 15 minutes.');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
 
     if (!user || !user.isActive) {
+      // Log failed attempt
+      await this.recordLoginAttempt(dto.email, false);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.password);
     if (!passwordValid) {
+      await this.recordLoginAttempt(dto.email, false);
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    // Log successful attempt
+    await this.recordLoginAttempt(dto.email, true);
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
@@ -202,6 +224,52 @@ export class AuthService {
     });
 
     return { message: 'Password reset successfully' };
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    // Check password history (prevent reuse of last 5)
+    const passwordHistory = await this.prisma.passwordHistory.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    });
+
+    for (const entry of passwordHistory) {
+      const isReused = await bcrypt.compare(newPassword, entry.password);
+      if (isReused) {
+        throw new BadRequestException('Cannot reuse any of your last 5 passwords');
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword, refreshToken: null },
+      }),
+      this.prisma.passwordHistory.create({
+        data: { userId, password: hashedPassword },
+      }),
+    ]);
+
+    return { message: 'Password changed successfully' };
+  }
+
+  private async recordLoginAttempt(email: string, success: boolean) {
+    await this.prisma.loginAttempt.create({
+      data: { email, success },
+    });
   }
 
   private async generateTokens(userId: string, email: string, role: string) {

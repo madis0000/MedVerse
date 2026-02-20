@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ConsultationsService } from './consultations.service';
 import { CreateConsultationDto } from './dto/create-consultation.dto';
 import { UpdateConsultationDto } from './dto/update-consultation.dto';
+import { CreateScreeningResultDto } from './dto/screening-result.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -84,6 +85,33 @@ export class ConsultationsController {
     @Param('diagnosisId') diagnosisId: string,
   ) {
     return this.consultationsService.removeDiagnosis(id, diagnosisId);
+  }
+
+  @Post('consultations/:id/screenings')
+  @ApiOperation({ summary: 'Add screening result to consultation' })
+  addScreeningResult(
+    @Param('id') id: string,
+    @Body() dto: CreateScreeningResultDto,
+  ) {
+    return this.consultationsService.addScreeningResult(id, dto);
+  }
+
+  @Get('consultations/:id/screenings')
+  @ApiOperation({ summary: 'Get screening results for consultation' })
+  getConsultationScreenings(
+    @Param('id') id: string,
+    @Query('type') type?: string,
+  ) {
+    return this.consultationsService.getConsultationScreenings(id, type);
+  }
+
+  @Get('patients/:patientId/screening-history')
+  @ApiOperation({ summary: 'Get patient screening history across consultations' })
+  getPatientScreeningHistory(
+    @Param('patientId') patientId: string,
+    @Query('type') type?: string,
+  ) {
+    return this.consultationsService.getPatientScreeningHistory(patientId, type);
   }
 
   @Get('icd10/search')

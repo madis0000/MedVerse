@@ -10,6 +10,38 @@ import { paginate, paginationMeta } from '../common/dto/pagination.dto';
 export class PatientsService {
   constructor(private prisma: PrismaService) {}
 
+  async quickSearch(query: string) {
+    if (!query || query.length < 2) {
+      return { data: [] };
+    }
+
+    const patients = await this.prisma.patient.findMany({
+      where: {
+        OR: [
+          { firstName: { contains: query, mode: 'insensitive' } },
+          { lastName: { contains: query, mode: 'insensitive' } },
+          { mrn: { contains: query, mode: 'insensitive' } },
+          { phone: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      take: 5,
+      select: {
+        id: true,
+        mrn: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        dob: true,
+        gender: true,
+        status: true,
+        photo: true,
+      },
+      orderBy: { lastName: 'asc' },
+    });
+
+    return { data: patients };
+  }
+
   async findAll(query: SearchPatientDto) {
     const { skip, take } = paginate(query);
 

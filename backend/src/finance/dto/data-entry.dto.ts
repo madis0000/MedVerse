@@ -55,6 +55,38 @@ export class MonthlyExpenseEntryDto {
   description?: string;
 }
 
+export class UpdateDailyEntryDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  revenue?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  patientsEffective?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  newPatients?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  totalPatients?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  fullPricePatients?: number;
+}
+
 export class MonthlyDataEntryDto {
   @ApiProperty()
   @IsInt()

@@ -11,7 +11,7 @@ import { CreateExpenseCategoryDto } from './dto/create-expense-category.dto';
 import { CreateRecurringExpenseDto } from './dto/create-recurring-expense.dto';
 import { CloseDayDto } from './dto/close-day.dto';
 import { CreateWriteOffDto } from './dto/create-write-off.dto';
-import { MonthlyDataEntryDto } from './dto/data-entry.dto';
+import { MonthlyDataEntryDto, UpdateDailyEntryDto } from './dto/data-entry.dto';
 import { QueryExpenseDto, QueryRevenueDto, QueryReportDto } from './dto/query-finance.dto';
 import { paginate, paginationMeta } from '../common/dto/pagination.dto';
 import { toNumber } from '../common/utils/decimal';
@@ -711,7 +711,7 @@ export class FinanceService {
     return this.prisma.expenseCategory.findMany({
       where: { isActive: true },
       include: {
-        _count: { select: { expenses: true } },
+        _count: { select: { expenses: true, recurringExpenses: true } },
       },
       orderBy: { name: 'asc' },
     });
@@ -721,6 +721,20 @@ export class FinanceService {
     return this.prisma.expenseCategory.create({
       data: dto,
     });
+  }
+
+  async deleteExpenseCategory(id: string) {
+    const category = await this.prisma.expenseCategory.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { expenses: true, recurringExpenses: true } },
+      },
+    });
+    if (!category) throw new NotFoundException('Expense category not found');
+    if (category._count.expenses > 0 || category._count.recurringExpenses > 0) {
+      throw new BadRequestException('Cannot delete category with existing transactions');
+    }
+    return this.prisma.expenseCategory.delete({ where: { id } });
   }
 
   // ─── Recurring Expenses ────────────────────────────────────────
@@ -1196,5 +1210,84 @@ export class FinanceService {
         description: e.description,
       })),
     };
+  }
+
+  async updateDailyEntry(
+    year: number,
+    month: number,
+    day: number,
+    dto: UpdateDailyEntryDto,
+    userId: string,
+  ) {
+    const invoiceNumber = `LEG-${year}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}`;
+
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { invoiceNumber },
+      include: { items: true, payments: true },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException(`No data entry found for ${year}-${month}-${day}`);
+    }
+
+    const revenue = dto.revenue ?? toNumber(invoice.subtotal);
+    const patientsEffective = dto.patientsEffective ?? 0;
+    const newPatients = dto.newPatients ?? 0;
+    const totalPatients = dto.totalPatients ?? 0;
+    const fullPricePatients = dto.fullPricePatients ?? 0;
+
+    const dayStart = new Date(year, month - 1, day);
+    dayStart.setHours(0, 0, 0, 0);
+
+    return this.prisma.$transaction(async (tx) => {
+      // Update invoice
+      await tx.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          subtotal: revenue,
+          total: revenue,
+          notes: `Legacy data entry: ${patientsEffective} patients seen, ${newPatients} new, ${fullPricePatients} full price`,
+        },
+      });
+
+      // Update invoice item
+      if (invoice.items.length > 0) {
+        await tx.invoiceItem.update({
+          where: { id: invoice.items[0].id },
+          data: {
+            description: `Daily consultations - ${patientsEffective} patients`,
+            quantity: patientsEffective || 1,
+            unitPrice: patientsEffective ? revenue / patientsEffective : revenue,
+            total: revenue,
+          },
+        });
+      }
+
+      // Update payment
+      if (invoice.payments.length > 0) {
+        await tx.payment.update({
+          where: { id: invoice.payments[0].id },
+          data: { amount: revenue },
+        });
+      }
+
+      // Update daily closing
+      const closing = await tx.dailyClosing.findUnique({
+        where: { date: dayStart },
+      });
+      if (closing) {
+        await tx.dailyClosing.update({
+          where: { id: closing.id },
+          data: {
+            expectedCash: revenue,
+            actualCash: revenue,
+            consultationCount: patientsEffective,
+            notes: `Legacy: ${patientsEffective} effective, ${newPatients} new, ${totalPatients} total, ${fullPricePatients} fullPrice`,
+          },
+        });
+      }
+
+      return { success: true };
+    });
   }
 }

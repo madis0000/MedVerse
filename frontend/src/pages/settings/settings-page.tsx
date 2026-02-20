@@ -4,10 +4,11 @@ import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ClinicProfileForm } from '@/components/settings/clinic-profile-form';
 import { SpecialtyManager } from '@/components/settings/specialty-manager';
+import { ExpenseCategoryManager } from '@/components/settings/expense-category-manager';
 import { PrintSettings } from '@/components/settings/print-settings';
 import { NotificationSettings } from '@/components/settings/notification-settings';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Building2, Stethoscope, Printer, BellRing, ShieldAlert } from 'lucide-react';
+import { Building2, Stethoscope, Tags, Printer, BellRing, ShieldAlert } from 'lucide-react';
 
 export function SettingsPage() {
   const { t } = useTranslation();
@@ -43,6 +44,10 @@ export function SettingsPage() {
             <Stethoscope className="w-4 h-4" />
             {t('settings.tabs.specialties')}
           </TabsTrigger>
+          <TabsTrigger value="expense-categories" className="gap-2">
+            <Tags className="w-4 h-4" />
+            {t('settings.tabs.expenseCategories')}
+          </TabsTrigger>
           <TabsTrigger value="printing" className="gap-2">
             <Printer className="w-4 h-4" />
             {t('settings.tabs.printing')}
@@ -59,6 +64,10 @@ export function SettingsPage() {
 
         <TabsContent value="specialties">
           <SpecialtyManager />
+        </TabsContent>
+
+        <TabsContent value="expense-categories">
+          <ExpenseCategoryManager />
         </TabsContent>
 
         <TabsContent value="printing">

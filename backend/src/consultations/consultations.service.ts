@@ -122,6 +122,7 @@ export class ConsultationsService {
           },
           orderBy: { createdAt: 'desc' },
         },
+        screeningResults: { orderBy: { administeredAt: 'desc' } },
       },
     });
 
@@ -342,6 +343,68 @@ export class ConsultationsService {
         title: data.title,
         content: data.content,
         category: data.category,
+      },
+    });
+  }
+
+  // ─── Screening Results ────────────────────────────────────────────
+
+  async addScreeningResult(
+    consultationId: string,
+    data: {
+      instrumentType: string;
+      score: number;
+      severity: string;
+      responses: number[];
+      notes?: string;
+    },
+  ) {
+    const consultation = await this.prisma.consultation.findUnique({
+      where: { id: consultationId },
+    });
+
+    if (!consultation) {
+      throw new NotFoundException('Consultation not found');
+    }
+
+    return this.prisma.screeningResult.create({
+      data: {
+        consultationId,
+        patientId: consultation.patientId,
+        instrumentType: data.instrumentType,
+        score: data.score,
+        severity: data.severity,
+        responses: data.responses,
+        notes: data.notes,
+      },
+    });
+  }
+
+  async getConsultationScreenings(consultationId: string, type?: string) {
+    const where: any = { consultationId };
+    if (type) {
+      where.instrumentType = type;
+    }
+
+    return this.prisma.screeningResult.findMany({
+      where,
+      orderBy: { administeredAt: 'desc' },
+    });
+  }
+
+  async getPatientScreeningHistory(patientId: string, instrumentType?: string) {
+    const where: any = { patientId };
+    if (instrumentType) {
+      where.instrumentType = instrumentType;
+    }
+
+    return this.prisma.screeningResult.findMany({
+      where,
+      orderBy: { administeredAt: 'asc' },
+      include: {
+        consultation: {
+          select: { id: true, createdAt: true },
+        },
       },
     });
   }

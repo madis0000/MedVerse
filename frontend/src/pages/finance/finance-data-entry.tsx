@@ -7,10 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { CalendarDays, Save, ChevronLeft, ChevronRight, Loader2, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { CalendarDays, Save, ChevronLeft, ChevronRight, Loader2, ArrowLeft, Plus, Trash2, Pencil, Check, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { useExpenseCategories } from '@/api/finance';
 
 const MONTH_KEYS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 
@@ -72,6 +76,11 @@ export function FinanceDataEntryPage() {
   const [saving, setSaving] = useState(false);
   const [existingData, setExistingData] = useState<any>(null);
 
+  // Per-row editing state
+  const [editingDay, setEditingDay] = useState<number | null>(null);
+  const [originalEntry, setOriginalEntry] = useState<DayEntry | null>(null);
+  const [savingDay, setSavingDay] = useState<number | null>(null);
+
   // Build days grid for the month
   const days: DayEntry[] = useMemo(() => {
     const count = getDaysInMonth(year, month);
@@ -102,6 +111,8 @@ export function FinanceDataEntryPage() {
   useEffect(() => {
     setDayEntries(days);
     setExpenses(DEFAULT_EXPENSES.map((e) => ({ ...e, amount: String(e.amount) })));
+    setEditingDay(null);
+    setOriginalEntry(null);
     loadExistingData();
   }, [year, month]);
 
@@ -162,7 +173,80 @@ export function FinanceDataEntryPage() {
     });
   }
 
+  // Per-row editing functions
+  function startEditing(entry: DayEntry) {
+    setEditingDay(entry.day);
+    setOriginalEntry({ ...entry });
+  }
+
+  function cancelEditing(entry: DayEntry) {
+    if (originalEntry && entry.hasData) {
+      // Revert to original values
+      setDayEntries((prev) =>
+        prev.map((d) => (d.day === entry.day ? { ...originalEntry } : d))
+      );
+    } else if (!entry.hasData) {
+      // Clear values for new row
+      setDayEntries((prev) =>
+        prev.map((d) =>
+          d.day === entry.day
+            ? { ...d, revenue: '', patientsEffective: '', newPatients: '', totalPatients: '', fullPricePatients: '' }
+            : d
+        )
+      );
+    }
+    setEditingDay(null);
+    setOriginalEntry(null);
+  }
+
+  async function saveRow(entry: DayEntry) {
+    const revenue = parseFloat(entry.revenue);
+    if (isNaN(revenue)) return;
+
+    setSavingDay(entry.day);
+    try {
+      if (entry.hasData) {
+        // PATCH existing entry
+        await apiClient.patch(`/finance/data-entry/${year}/${month}/${entry.day}`, {
+          revenue,
+          patientsEffective: parseInt(entry.patientsEffective) || 0,
+          newPatients: parseInt(entry.newPatients) || 0,
+          totalPatients: parseInt(entry.totalPatients) || 0,
+          fullPricePatients: parseInt(entry.fullPricePatients) || 0,
+        });
+        toast.success(t('finance.dataEntry.rowUpdated', { day: entry.day }));
+      } else {
+        // POST new single day
+        await apiClient.post('/finance/data-entry', {
+          year,
+          month,
+          days: [{
+            day: entry.day,
+            revenue,
+            patientsEffective: parseInt(entry.patientsEffective) || 0,
+            newPatients: parseInt(entry.newPatients) || 0,
+            totalPatients: parseInt(entry.totalPatients) || 0,
+            fullPricePatients: parseInt(entry.fullPricePatients) || 0,
+          }],
+        });
+        toast.success(t('finance.dataEntry.rowSaved', { day: entry.day }));
+      }
+      setEditingDay(null);
+      setOriginalEntry(null);
+      loadExistingData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || t('finance.dataEntry.saveFailed'));
+    } finally {
+      setSavingDay(null);
+    }
+  }
+
+  function rowHasValues(entry: DayEntry): boolean {
+    return entry.revenue !== '' || entry.patientsEffective !== '' || entry.newPatients !== '' || entry.totalPatients !== '' || entry.fullPricePatients !== '';
+  }
+
   // Expense dialog state
+  const { data: expenseCategories } = useExpenseCategories();
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [editingExpenseIdx, setEditingExpenseIdx] = useState<number | null>(null);
   const [expenseForm, setExpenseForm] = useState({ categoryName: '', description: '', amount: '' });
@@ -384,74 +468,134 @@ export function FinanceDataEntryPage() {
                     <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.new')}</th>
                     <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.patNum')}</th>
                     <th className="text-right py-2.5 px-1 w-[88px]">{t('finance.dataEntry.columns.fullPaid')}</th>
+                    <th className="text-center py-2.5 px-1 w-[80px]">{t('finance.dataEntry.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {dayEntries.map((entry, idx) => (
-                    <tr
-                      key={entry.day}
-                      className={`border-b transition-colors ${
-                        entry.isWeekend
-                          ? 'bg-muted/40 text-muted-foreground'
-                          : entry.hasData
-                          ? 'bg-green-50 dark:bg-green-950/20'
-                          : 'hover:bg-muted/20'
-                      }`}
-                    >
-                      <td className="py-1 px-3 font-medium">{entry.day}</td>
-                      <td className="py-1 px-2 text-xs">{getDayOfWeekLabel(entry.dayOfWeekIndex)}</td>
-                      <td className="py-1 px-1">
-                        <Input
-                          type="number"
-                          className={`${INPUT_CLASS} min-w-[120px]`}
-                          placeholder={entry.isWeekend ? '—' : '0'}
-                          disabled={entry.isWeekend || entry.hasData}
-                          value={entry.revenue}
-                          onChange={(e) => updateDay(idx, 'revenue', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1 px-1">
-                        <Input
-                          type="number"
-                          className={`${INPUT_CLASS} w-[72px]`}
-                          placeholder={entry.isWeekend ? '—' : '0'}
-                          disabled={entry.isWeekend || entry.hasData}
-                          value={entry.patientsEffective}
-                          onChange={(e) => updateDay(idx, 'patientsEffective', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1 px-1">
-                        <Input
-                          type="number"
-                          className={`${INPUT_CLASS} w-[72px]`}
-                          placeholder={entry.isWeekend ? '—' : '0'}
-                          disabled={entry.isWeekend || entry.hasData}
-                          value={entry.newPatients}
-                          onChange={(e) => updateDay(idx, 'newPatients', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1 px-1">
-                        <Input
-                          type="number"
-                          className={`${INPUT_CLASS} w-[72px]`}
-                          placeholder={entry.isWeekend ? '—' : '0'}
-                          disabled={entry.isWeekend || entry.hasData}
-                          value={entry.totalPatients}
-                          onChange={(e) => updateDay(idx, 'totalPatients', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1 px-1">
-                        <Input
-                          type="number"
-                          className={`${INPUT_CLASS} w-[72px]`}
-                          placeholder={entry.isWeekend ? '—' : '0'}
-                          disabled={entry.isWeekend || entry.hasData}
-                          value={entry.fullPricePatients}
-                          onChange={(e) => updateDay(idx, 'fullPricePatients', e.target.value)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                  {dayEntries.map((entry, idx) => {
+                    const isEditing = editingDay === entry.day;
+                    const isSavingRow = savingDay === entry.day;
+                    const isDisabled = entry.isWeekend || (entry.hasData && !isEditing);
+                    const showNewRowActions = !entry.isWeekend && !entry.hasData && rowHasValues(entry);
+
+                    return (
+                      <tr
+                        key={entry.day}
+                        className={`border-b transition-colors ${
+                          entry.isWeekend
+                            ? 'bg-muted/40 text-muted-foreground'
+                            : isEditing
+                            ? 'bg-blue-50 dark:bg-blue-950/20'
+                            : entry.hasData
+                            ? 'bg-green-50 dark:bg-green-950/20'
+                            : 'hover:bg-muted/20'
+                        }`}
+                      >
+                        <td className="py-1 px-3 font-medium">{entry.day}</td>
+                        <td className="py-1 px-2 text-xs">{getDayOfWeekLabel(entry.dayOfWeekIndex)}</td>
+                        <td className="py-1 px-1">
+                          <Input
+                            type="number"
+                            className={`${INPUT_CLASS} min-w-[120px]`}
+                            placeholder={entry.isWeekend ? '—' : '0'}
+                            disabled={isDisabled}
+                            value={entry.revenue}
+                            onChange={(e) => updateDay(idx, 'revenue', e.target.value)}
+                          />
+                        </td>
+                        <td className="py-1 px-1">
+                          <Input
+                            type="number"
+                            className={`${INPUT_CLASS} w-[72px]`}
+                            placeholder={entry.isWeekend ? '—' : '0'}
+                            disabled={isDisabled}
+                            value={entry.patientsEffective}
+                            onChange={(e) => updateDay(idx, 'patientsEffective', e.target.value)}
+                          />
+                        </td>
+                        <td className="py-1 px-1">
+                          <Input
+                            type="number"
+                            className={`${INPUT_CLASS} w-[72px]`}
+                            placeholder={entry.isWeekend ? '—' : '0'}
+                            disabled={isDisabled}
+                            value={entry.newPatients}
+                            onChange={(e) => updateDay(idx, 'newPatients', e.target.value)}
+                          />
+                        </td>
+                        <td className="py-1 px-1">
+                          <Input
+                            type="number"
+                            className={`${INPUT_CLASS} w-[72px]`}
+                            placeholder={entry.isWeekend ? '—' : '0'}
+                            disabled={isDisabled}
+                            value={entry.totalPatients}
+                            onChange={(e) => updateDay(idx, 'totalPatients', e.target.value)}
+                          />
+                        </td>
+                        <td className="py-1 px-1">
+                          <Input
+                            type="number"
+                            className={`${INPUT_CLASS} w-[72px]`}
+                            placeholder={entry.isWeekend ? '—' : '0'}
+                            disabled={isDisabled}
+                            value={entry.fullPricePatients}
+                            onChange={(e) => updateDay(idx, 'fullPricePatients', e.target.value)}
+                          />
+                        </td>
+                        <td className="py-1 px-1">
+                          <div className="flex items-center justify-center gap-1">
+                            {entry.isWeekend ? null : isEditing ? (
+                              <>
+                                <button
+                                  className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 disabled:opacity-50"
+                                  onClick={() => saveRow(entry)}
+                                  disabled={isSavingRow}
+                                  title={t('common.save')}
+                                >
+                                  {isSavingRow ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                </button>
+                                <button
+                                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600"
+                                  onClick={() => cancelEditing(entry)}
+                                  disabled={isSavingRow}
+                                  title={t('common.cancel')}
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </>
+                            ) : entry.hasData ? (
+                              <button
+                                className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                                onClick={() => startEditing(entry)}
+                                title={t('common.edit')}
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            ) : showNewRowActions ? (
+                              <>
+                                <button
+                                  className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 disabled:opacity-50"
+                                  onClick={() => saveRow(entry)}
+                                  disabled={isSavingRow}
+                                  title={t('common.save')}
+                                >
+                                  {isSavingRow ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                </button>
+                                <button
+                                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-muted-foreground hover:text-red-600"
+                                  onClick={() => cancelEditing(entry)}
+                                  title={t('common.clear')}
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
                 <tfoot className="sticky bottom-0 bg-card shadow-[0_-1px_0_0_hsl(var(--border))]">
                   <tr className="border-t-2 font-bold">
@@ -461,6 +605,7 @@ export function FinanceDataEntryPage() {
                     <td className="py-2 px-1 text-right">{newPatientsTotal}</td>
                     <td className="py-2 px-1 text-right">{totalPatientsTotal}</td>
                     <td className="py-2 px-1 text-right">{fullPriceTotal}</td>
+                    <td></td>
                   </tr>
                   {workingDaysWithData > 0 && (
                     <tr className="text-muted-foreground text-xs">
@@ -470,6 +615,7 @@ export function FinanceDataEntryPage() {
                       <td className="py-1 px-1 text-right">{(newPatientsTotal / workingDaysWithData).toFixed(1)}</td>
                       <td className="py-1 px-1 text-right">{(totalPatientsTotal / workingDaysWithData).toFixed(1)}</td>
                       <td className="py-1 px-1 text-right">{(fullPriceTotal / workingDaysWithData).toFixed(1)}</td>
+                      <td></td>
                     </tr>
                   )}
                 </tfoot>
@@ -539,12 +685,22 @@ export function FinanceDataEntryPage() {
           <div className="space-y-4 py-2">
             <div>
               <Label>{t('finance.dataEntry.columns.category')}</Label>
-              <Input
+              <Select
                 value={expenseForm.categoryName}
-                onChange={(e) => setExpenseForm((f) => ({ ...f, categoryName: e.target.value }))}
+                onValueChange={(val) => setExpenseForm((f) => ({ ...f, categoryName: val }))}
                 disabled={editingExpenseIdx !== null && editingExpenseIdx < DEFAULT_EXPENSES.length}
-                placeholder={t('finance.dataEntry.columns.category')}
-              />
+              >
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder={t('finance.dataEntry.columns.category')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(expenseCategories || []).map((cat: any) => (
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>{t('finance.dataEntry.columns.description')}</Label>

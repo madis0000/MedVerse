@@ -266,12 +266,14 @@
     "noPatientsEmpty": "Get started by registering your first patient.",
     "tabs": {
       "overview": "Overview",
+      "timeline": "Timeline",
       "visits": "Visit History",
       "prescriptions": "Prescriptions",
       "labResults": "Lab Results",
       "documents": "Documents",
       "billing": "Billing"
     },
+    "clinicalTimeline": "Clinical Timeline",
     "personalInfo": "Personal Information",
     "medicalInfo": "Medical Information",
     "contactInfo": "Contact Information",
@@ -860,7 +862,10 @@
       "clickToEdit": "Click a row to set its amount",
       "totalExpenses": "Total Expenses",
       "profitMargin": "Profit Margin",
-      "saveMonthData": "Save Month Data"
+      "saveMonthData": "Save Month Data",
+      "actions": "Actions",
+      "rowSaved": "Day {{day}} saved successfully",
+      "rowUpdated": "Day {{day}} updated successfully"
     },
     "kpi": {
       "vsLastMonth": "vs last month",
@@ -937,6 +942,7 @@
     "tabs": {
       "clinic": "Clinic Profile",
       "specialties": "Specialties",
+      "expenseCategories": "Expense Categories",
       "printing": "Print Settings",
       "notifications": "Notifications"
     },
@@ -1014,6 +1020,23 @@
         "textarea": "Text Area",
         "boolean": "Yes / No"
       }
+    },
+    "expenseCategories": {
+      "noCategories": "No expense categories",
+      "noCategoriesDesc": "Add your first expense category to organize clinic expenses.",
+      "addCategory": "Add Category",
+      "addDesc": "Create a new expense category for your clinic.",
+      "categoryName": "Category Name",
+      "categoryNamePlaceholder": "e.g., Rent & Facilities",
+      "nameRequired": "Category name is required",
+      "created": "Category created successfully",
+      "createFailed": "Failed to create category",
+      "deleted": "{{name}} deleted successfully",
+      "deleteFailed": "Failed to delete category",
+      "cannotDelete": "Cannot delete: category has transactions",
+      "expenseCount_one": "{{count}} expense",
+      "expenseCount_other": "{{count}} expenses",
+      "expenseCount": "{{count}} expenses"
     },
     "printing": {
       "title": "Print Settings",
@@ -1180,5 +1203,1156 @@
     "next": "Next",
     "page": "Page {{current}} of {{total}}",
     "rowsSelected": "{{count}} of {{total}} row(s) selected."
+  },
+  "commandPalette": {
+    "placeholder": "Search patients, navigate, or calculate...",
+    "noResults": "No results found. Try a different search.",
+    "patients": "Patients",
+    "navigation": "Navigation",
+    "quickActions": "Quick Actions",
+    "calculator": "Calculator Result",
+    "recentPatients": "Recent Patients",
+    "hint": "Type to search",
+    "navigate": "Navigate",
+    "select": "Select",
+    "calculatorHint": "Try: BMI 75 1.80, eGFR 1.2 45 m, CrCl 1.2 45 75 f"
+  },
+  "security": {
+    "sessionExpired": "Session Expired",
+    "sessionExpiredMessage": "Your session has expired due to inactivity. Please log in again to continue.",
+    "loginAgain": "Log In Again",
+    "accessJustification": "Access Justification Required",
+    "justificationRequired": "Please provide a reason for accessing this patient record.",
+    "justificationRequiredFor": "Please provide a reason for accessing {{name}}'s record.",
+    "reason": "Reason for Access",
+    "justificationPlaceholder": "Enter the clinical reason for accessing this record...",
+    "confirmAccess": "Confirm Access",
+    "sessionWarning": "Session Expiring Soon",
+    "sessionWarningMessage": "Your session will expire in 2 minutes. Click anywhere to stay logged in.",
+    "activeSessions": "Active Sessions",
+    "terminateSession": "Terminate",
+    "terminateAllSessions": "Terminate All Other Sessions",
+    "passwordChanged": "Password changed successfully",
+    "passwordChangeError": "Failed to change password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "passwordRequirements": "Min 12 characters, uppercase, lowercase, number, special character",
+    "accountLocked": "Account locked due to too many failed attempts",
+    "changePassword": "Change Password"
+  },
+  "calculators": {
+    "title": "Medical Calculators",
+    "calculate": "Calculate",
+    "result": "Result",
+    "categories": {
+      "universal": "Universal",
+      "renal": "Renal",
+      "hepatic": "Hepatic",
+      "cardiac": "Cardiac",
+      "psych": "Psychiatric",
+      "peds": "Pediatric"
+    }
+  },
+  "specialties": {
+    "psychiatry": {
+      "title": "Psychiatry Tools",
+      "screening": "Screening",
+      "moodSymptoms": "Mood & Symptoms",
+      "mse": "Mental Status Exam",
+      "safetyPlan": "Safety Plan",
+      "treatmentResponse": "Treatment Response",
+      "phq9": {
+        "title": "PHQ-9 Depression Screening",
+        "description": "Patient Health Questionnaire - 9 items",
+        "q1": "Little interest or pleasure in doing things",
+        "q2": "Feeling down, depressed, or hopeless",
+        "q3": "Trouble falling or staying asleep, or sleeping too much",
+        "q4": "Feeling tired or having little energy",
+        "q5": "Poor appetite or overeating",
+        "q6": "Feeling bad about yourself — or that you are a failure",
+        "q7": "Trouble concentrating on things",
+        "q8": "Moving or speaking so slowly that others noticed, or being fidgety/restless",
+        "q9": "Thoughts that you would be better off dead, or of hurting yourself"
+      },
+      "gad7": {
+        "title": "GAD-7 Anxiety Screening",
+        "description": "Generalized Anxiety Disorder - 7 items",
+        "q1": "Feeling nervous, anxious, or on edge",
+        "q2": "Not being able to stop or control worrying",
+        "q3": "Worrying too much about different things",
+        "q4": "Trouble relaxing",
+        "q5": "Being so restless that it's hard to sit still",
+        "q6": "Becoming easily annoyed or irritable",
+        "q7": "Feeling afraid as if something awful might happen"
+      },
+      "responseOptions": {
+        "notAtAll": "Not at all",
+        "severalDays": "Several days",
+        "moreThanHalf": "More than half the days",
+        "nearlyEvery": "Nearly every day"
+      },
+      "score": "Score",
+      "severity": "Severity",
+      "totalScore": "Total Score",
+      "history": "History",
+      "noHistory": "No previous screenings",
+      "complete": "Complete Screening",
+      "save": "Save",
+      "savedSuccessfully": "Screening saved successfully",
+      "saveFailed": "Failed to save screening",
+      "minimal": "Minimal",
+      "mild": "Mild",
+      "moderate": "Moderate",
+      "moderatelySevere": "Moderately Severe",
+      "severe": "Severe",
+      "moodTracker": {
+        "title": "Mood & Symptom Tracking",
+        "currentMood": "Current Session Mood",
+        "moodHistory": "Mood Over Sessions",
+        "sleep": "Sleep Quality",
+        "appetite": "Appetite",
+        "energy": "Energy Level",
+        "concentration": "Concentration",
+        "noData": "No mood data available"
+      },
+      "mseForm": {
+        "title": "Mental Status Examination",
+        "appearance": "Appearance",
+        "grooming": "Grooming",
+        "behavior": "Behavior",
+        "psychomotor": "Psychomotor Activity",
+        "cooperation": "Cooperation",
+        "speech": "Speech",
+        "rate": "Rate",
+        "volume": "Volume",
+        "mood": "Mood",
+        "affect": "Affect",
+        "range": "Range",
+        "congruence": "Congruence",
+        "thoughtProcess": "Thought Process",
+        "thoughtContent": "Thought Content",
+        "suicidalIdeation": "Suicidal Ideation",
+        "homicidalIdeation": "Homicidal Ideation",
+        "delusions": "Delusions",
+        "perception": "Perception",
+        "hallucinations": "Hallucinations",
+        "cognition": "Cognition",
+        "orientation": "Orientation",
+        "insight": "Insight",
+        "judgment": "Judgment",
+        "none": "None",
+        "normal": "Normal",
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor"
+      },
+      "safetyPlanForm": {
+        "title": "Safety Plan",
+        "active": "Active Safety Plan",
+        "warningSigns": "Warning Signs",
+        "copingStrategies": "Internal Coping Strategies",
+        "distractions": "People & Places for Distraction",
+        "helpContacts": "People to Ask for Help",
+        "professionals": "Professionals & Agencies",
+        "environmentSafety": "Making the Environment Safe",
+        "name": "Name",
+        "phone": "Phone",
+        "addItem": "Add Item",
+        "print": "Print Safety Plan",
+        "saved": "Safety plan saved"
+      },
+      "treatmentResponseChart": {
+        "title": "Treatment Response",
+        "screeningScores": "Screening Scores",
+        "medications": "Medications",
+        "noData": "Not enough data to display treatment response"
+      },
+      "psychiatricNotes": {
+        "presentation": "Presentation",
+        "riskAssessment": "Risk Assessment",
+        "treatmentPlan": "Treatment Plan",
+        "psychotherapy": "Psychotherapy Modality",
+        "medicationChanges": "Medication Changes",
+        "followUp": "Follow-up Interval"
+      }
+    },
+    "cardiology": {
+      "title": "Cardiology Tools",
+      "tabs": {
+        "calculators": "Risk Calculators",
+        "ecg": "ECG",
+        "echo": "Echo",
+        "stressTest": "Stress Test",
+        "trends": "Trends"
+      },
+      "calculators": {
+        "title": "Cardiac Risk Calculators",
+        "saved": "Risk scores saved successfully",
+        "saveFailed": "Failed to save risk scores",
+        "framingham": {
+          "title": "Framingham Risk Score",
+          "age": "Age",
+          "totalCholesterol": "Total Cholesterol (mg/dL)",
+          "hdl": "HDL (mg/dL)",
+          "systolicBP": "Systolic BP (mmHg)",
+          "treatedBP": "On BP Treatment",
+          "smoker": "Current Smoker",
+          "sex": "Sex",
+          "tenYearRisk": "10-Year CVD Risk"
+        },
+        "heart": {
+          "title": "HEART Score",
+          "history": "History",
+          "ecg": "ECG",
+          "age": "Age",
+          "riskFactors": "Risk Factors",
+          "troponin": "Troponin",
+          "score": "HEART Score",
+          "historyOpts": {
+            "0": "Slightly suspicious",
+            "1": "Moderately suspicious",
+            "2": "Highly suspicious"
+          },
+          "ecgOpts": {
+            "0": "Normal",
+            "1": "Non-specific repolarization",
+            "2": "Significant ST deviation"
+          },
+          "ageOpts": {
+            "0": "<45 years",
+            "1": "45-64 years",
+            "2": ">=65 years"
+          },
+          "riskFactorsOpts": {
+            "0": "No known risk factors",
+            "1": "1-2 risk factors",
+            "2": ">=3 risk factors or history of atherosclerosis"
+          },
+          "troponinOpts": {
+            "0": "<=normal limit",
+            "1": "1-3x normal limit",
+            "2": ">3x normal limit"
+          }
+        },
+        "cha2ds2vasc": {
+          "title": "CHA2DS2-VASc Score",
+          "chf": "Congestive Heart Failure",
+          "hypertension": "Hypertension",
+          "age": "Age",
+          "diabetes": "Diabetes Mellitus",
+          "strokeTIA": "Prior Stroke / TIA / Thromboembolism",
+          "vascularDisease": "Vascular Disease",
+          "female": "Female Sex",
+          "score": "CHA2DS2-VASc Score",
+          "strokeRisk": "Annual Stroke Risk",
+          "perYear": "per year"
+        },
+        "hasbled": {
+          "title": "HAS-BLED Score",
+          "hypertension": "Hypertension (uncontrolled, >160 mmHg)",
+          "abnormalRenal": "Abnormal Renal Function",
+          "abnormalLiver": "Abnormal Liver Function",
+          "stroke": "Stroke History",
+          "bleedingHistory": "Prior Major Bleeding",
+          "labileINR": "Labile INR",
+          "elderly": "Age >65",
+          "drugs": "Drugs (antiplatelets, NSAIDs)",
+          "alcohol": "Alcohol Use (>=8 drinks/week)",
+          "score": "HAS-BLED Score",
+          "bleedingRisk": "Bleeding Risk"
+        },
+        "nyha": {
+          "title": "NYHA Functional Classification",
+          "classLabel": "Class {{class}}",
+          "classIDesc": "No limitation of physical activity. Ordinary physical activity does not cause symptoms.",
+          "classIIDesc": "Slight limitation. Comfortable at rest, ordinary activity causes fatigue, palpitation, or dyspnea.",
+          "classIIIDesc": "Marked limitation. Comfortable at rest, less than ordinary activity causes symptoms.",
+          "classIVDesc": "Severe limitation. Symptoms at rest. Any physical activity increases discomfort.",
+          "classification": "NYHA Classification",
+          "mortality": "1-Year Mortality"
+        }
+      },
+      "ecg": {
+        "title": "ECG Findings",
+        "rate": "Heart Rate",
+        "rhythm": "Rhythm",
+        "selectRhythm": "Select rhythm...",
+        "axis": "Axis",
+        "selectAxis": "Select axis...",
+        "intervals": "Intervals",
+        "prInterval": "PR Interval",
+        "qrsDuration": "QRS Duration",
+        "qtInterval": "QT Interval",
+        "qtcCalculated": "QTc (Bazett)",
+        "qtcNormal": "Normal",
+        "qtcBorderline": "Borderline",
+        "qtcProlonged": "Prolonged",
+        "stChanges": "ST Changes",
+        "affectedLeads": "Affected Leads",
+        "affectedLeadsPlaceholder": "e.g. V1-V4, II, III, aVF",
+        "interpretation": "Interpretation",
+        "interpretationPlaceholder": "Enter ECG interpretation...",
+        "saveFailed": "Failed to save ECG findings",
+        "rhythms": {
+          "sinus": "Sinus Rhythm",
+          "atrialFibrillation": "Atrial Fibrillation",
+          "atrialFlutter": "Atrial Flutter",
+          "svt": "Supraventricular Tachycardia",
+          "vt": "Ventricular Tachycardia",
+          "paced": "Paced",
+          "other": "Other"
+        },
+        "axes": {
+          "normal": "Normal",
+          "leftAxisDeviation": "Left Axis Deviation",
+          "rightAxisDeviation": "Right Axis Deviation",
+          "extremeAxis": "Extreme Axis"
+        },
+        "stOptions": {
+          "none": "None",
+          "stElevation": "ST Elevation",
+          "stDepression": "ST Depression",
+          "tWaveInversion": "T-wave Inversion",
+          "tWaveFlattening": "T-wave Flattening"
+        }
+      },
+      "echo": {
+        "title": "Echocardiography Results",
+        "saved": "Echo data saved successfully",
+        "saveFailed": "Failed to save echo data",
+        "lvFunction": "Left Ventricular Function",
+        "ef": "Ejection Fraction",
+        "efNormal": "Normal (>=55%)",
+        "efMildlyReduced": "Mildly Reduced (40-54%)",
+        "efModeratelyReduced": "Moderately Reduced (30-39%)",
+        "efSeverelyReduced": "Severely Reduced (<30%)",
+        "lvedd": "LVEDD",
+        "lvesd": "LVESD",
+        "wallMotion": "Wall Motion",
+        "lvMass": "LV Mass",
+        "wallMotions": {
+          "normal": "Normal",
+          "hypokinesis": "Hypokinesis",
+          "akinesis": "Akinesis",
+          "dyskinesis": "Dyskinesis"
+        },
+        "rvFunction": "Right Ventricular Function",
+        "tapse": "TAPSE",
+        "rvSize": "RV Size",
+        "rvSizes": {
+          "normal": "Normal",
+          "mildlyDilated": "Mildly Dilated",
+          "severelyDilated": "Severely Dilated"
+        },
+        "valves": "Valvular Assessment",
+        "valveNames": {
+          "aortic": "Aortic Valve",
+          "mitral": "Mitral Valve",
+          "tricuspid": "Tricuspid Valve",
+          "pulmonic": "Pulmonic Valve"
+        },
+        "stenosis": "Stenosis",
+        "regurgitation": "Regurgitation",
+        "valveNotesPlaceholder": "Additional notes...",
+        "grades": {
+          "none": "None",
+          "trivial": "Trivial",
+          "mild": "Mild",
+          "moderate": "Moderate",
+          "severe": "Severe"
+        },
+        "otherFindings": "Other Findings",
+        "laSize": "LA Size",
+        "aorticRoot": "Aortic Root",
+        "pericardialEffusion": "Pericardial Effusion",
+        "pericardialOptions": {
+          "none": "None",
+          "small": "Small",
+          "moderate": "Moderate",
+          "large": "Large"
+        },
+        "diastolicFunction": "Diastolic Function",
+        "diastolicOptions": {
+          "normal": "Normal",
+          "grade1": "Grade I (Impaired Relaxation)",
+          "grade2": "Grade II (Pseudonormal)",
+          "grade3": "Grade III (Restrictive)"
+        }
+      },
+      "stressTest": {
+        "title": "Stress Test Documentation",
+        "saved": "Stress test data saved successfully",
+        "saveFailed": "Failed to save stress test data",
+        "protocolSection": "Protocol & Duration",
+        "protocol": "Protocol",
+        "selectProtocol": "Select protocol...",
+        "protocols": {
+          "bruce": "Bruce",
+          "modifiedBruce": "Modified Bruce",
+          "pharmDobutamine": "Pharmacological - Dobutamine",
+          "pharmAdenosine": "Pharmacological - Adenosine"
+        },
+        "duration": "Duration",
+        "mets": "METs Achieved",
+        "heartRateSection": "Heart Rate",
+        "patientAge": "Patient Age",
+        "ageForTarget": "Age (for target HR)",
+        "baselineHR": "Baseline HR",
+        "peakHR": "Peak HR",
+        "targetHR": "Target HR (220-age)",
+        "ofTarget": "of target",
+        "bloodPressure": "Blood Pressure",
+        "baseline": "Baseline",
+        "peak": "Peak",
+        "findingsSection": "Findings",
+        "symptoms": "Symptoms",
+        "symptomOptions": {
+          "none": "None",
+          "chestPain": "Chest Pain",
+          "dyspnea": "Dyspnea",
+          "fatigue": "Fatigue",
+          "dizziness": "Dizziness",
+          "legPain": "Leg Pain"
+        },
+        "ecgChanges": "ECG Changes",
+        "ecgChangeOptions": {
+          "none": "None",
+          "stDepression": "ST Depression",
+          "stElevation": "ST Elevation",
+          "arrhythmia": "Arrhythmia"
+        },
+        "conclusionSection": "Conclusion & Interpretation",
+        "conclusion": "Conclusion",
+        "selectConclusion": "Select conclusion...",
+        "conclusions": {
+          "normal": "Normal",
+          "positiveForIschemia": "Positive for Ischemia",
+          "equivocal": "Equivocal",
+          "nonDiagnostic": "Non-diagnostic"
+        },
+        "interpretation": "Interpretation",
+        "interpretationPlaceholder": "Enter stress test interpretation..."
+      },
+      "trends": {
+        "title": "Cardiac Data Trends",
+        "noData": "No data available",
+        "bpTrend": "Blood Pressure Trend",
+        "hrTrend": "Heart Rate Trend",
+        "lipidPanel": "Lipid Panel",
+        "efProgression": "EF% Progression",
+        "systolic": "Systolic",
+        "diastolic": "Diastolic",
+        "heartRate": "Heart Rate",
+        "ldl": "LDL",
+        "hdl": "HDL",
+        "totalCholesterol": "Total Cholesterol",
+        "triglycerides": "Triglycerides",
+        "ejectionFraction": "Ejection Fraction %"
+      }
+    },
+    "pediatrics": {
+      "title": "Pediatrics Tools",
+      "noDobAvailable": "Date of birth not available for this patient",
+      "tabs": {
+        "growth": "Growth Charts",
+        "vaccinations": "Vaccinations",
+        "development": "Development",
+        "vitals": "Vitals"
+      },
+      "growth": {
+        "title": "Growth Charts",
+        "weight": "Weight-for-Age",
+        "height": "Height-for-Age",
+        "headCircumference": "Head Circumference",
+        "bmi": "BMI-for-Age",
+        "boys": "Boys",
+        "girls": "Girls",
+        "ageMonths": "Age (months)",
+        "value": "Value",
+        "patient": "Patient",
+        "measurements": "Measurements",
+        "addMeasurement": "Add Measurement",
+        "measurementSaved": "Measurement saved successfully",
+        "saveFailed": "Failed to save measurement",
+        "percentile": "Percentile",
+        "noData": "No measurements recorded"
+      },
+      "vaccination": {
+        "title": "Vaccination Tracker",
+        "schedule": "Vaccination Schedule",
+        "vaccine": "Vaccine",
+        "dose": "Dose",
+        "doseNum": "Dose {{num}}",
+        "recommendedAge": "Recommended Age",
+        "dateGiven": "Date Given",
+        "clickToAdminister": "Click to administer",
+        "administerVaccine": "Administer Vaccine",
+        "administer": "Administer",
+        "administered": "Vaccine administered successfully",
+        "dateAdministered": "Date Administered",
+        "lotNumber": "Lot Number",
+        "lotNumberPlaceholder": "Enter lot number",
+        "injectionSite": "Injection Site",
+        "selectSite": "Select injection site",
+        "sites": {
+          "left_deltoid": "Left Deltoid",
+          "right_deltoid": "Right Deltoid",
+          "left_thigh": "Left Thigh",
+          "right_thigh": "Right Thigh"
+        },
+        "administeredBy": "Administered By",
+        "administeredByPlaceholder": "Name of administrator",
+        "printCard": "Print Vaccination Card",
+        "summary": "{{completed}} of {{total}} doses completed",
+        "status": {
+          "completed": "Completed",
+          "due": "Due",
+          "overdue": "Overdue",
+          "upcoming": "Upcoming"
+        },
+        "saveFailed": "Failed to save vaccination record"
+      },
+      "milestones": {
+        "title": "Developmental Milestones",
+        "summary": "{{achieved}} of {{total}} milestones achieved",
+        "significantDelay": "Significant developmental delay",
+        "saved": "Milestones saved successfully",
+        "saveFailed": "Failed to save milestones",
+        "categories": {
+          "gross_motor": "Gross Motor",
+          "fine_motor": "Fine Motor",
+          "language": "Language",
+          "social_emotional": "Social / Emotional",
+          "cognitive": "Cognitive"
+        },
+        "statusLabels": {
+          "achieved": "Achieved",
+          "emerging": "Emerging",
+          "notYet": "Not Yet",
+          "concern": "Concern"
+        },
+        "ageGroups": {
+          "0to3": "0-3 months",
+          "3to6": "3-6 months",
+          "6to9": "6-9 months",
+          "9to12": "9-12 months",
+          "12to18": "12-18 months",
+          "18to24": "18-24 months",
+          "2to3": "2-3 years",
+          "3to4": "3-4 years",
+          "4to5": "4-5 years"
+        },
+        "items": {
+          "liftsHead": "Lifts head when on tummy",
+          "pushesUpOnArms": "Pushes up on arms when on tummy",
+          "graspReflex": "Grasp reflex present",
+          "bringsHandsToMouth": "Brings hands to mouth",
+          "coosGurgles": "Coos and gurgles",
+          "turnsToSound": "Turns toward sound",
+          "socialSmile": "Social smile",
+          "eyeContact": "Makes eye contact",
+          "followsMovingObject": "Follows moving objects with eyes",
+          "recognizesCaregiver": "Recognizes familiar caregiver",
+          "rollsOver": "Rolls over (front to back or back to front)",
+          "sitsWithSupport": "Sits with support",
+          "reachesForObjects": "Reaches for and grasps objects",
+          "holdsRattle": "Holds rattle and shakes it",
+          "laughsAloud": "Laughs aloud",
+          "vowelSounds": "Makes vowel sounds (ah, eh, oh)",
+          "smilesAtSelf": "Smiles at self in mirror",
+          "enjoysPlay": "Enjoys social play",
+          "exploresHandsFeet": "Explores hands and feet",
+          "mouths objects": "Mouths objects to explore",
+          "sitsWithoutSupport": "Sits without support",
+          "pullsToStand": "Pulls to standing position",
+          "crawls": "Crawls on hands and knees",
+          "transfersObjects": "Transfers objects hand to hand",
+          "pincerGraspDeveloping": "Pincer grasp developing",
+          "bangsObjectsTogether": "Bangs objects together",
+          "babbles": "Babbles consonant sounds (ba-ba, da-da)",
+          "respondsToName": "Responds to own name",
+          "understandsNo": "Understands 'no'",
+          "strangerAnxiety": "Shows stranger anxiety",
+          "looksForDropped": "Looks for dropped objects",
+          "playsPeekaboo": "Plays peek-a-boo",
+          "objectPermanence": "Shows object permanence",
+          "exploresCauseEffect": "Explores cause and effect",
+          "cruisesFurniture": "Cruises along furniture",
+          "standsAlone": "Stands alone briefly",
+          "pincerGrasp": "Mature pincer grasp",
+          "pointsAtObjects": "Points at objects",
+          "saysMamaDada": "Says 'mama' and 'dada' with meaning",
+          "usesGestures": "Uses gestures (waving, shaking head)",
+          "separationAnxiety": "Separation anxiety",
+          "imitatesActions": "Imitates actions and sounds",
+          "findsHiddenObjects": "Finds hidden objects",
+          "exploresContainers": "Puts objects in and out of containers",
+          "walksIndependently": "Walks independently",
+          "climbsStairs": "Climbs stairs with support",
+          "stacksTwoBlocks": "Stacks 2-3 blocks",
+          "scribbles": "Scribbles with crayon",
+          "saysThreeWords": "Says at least 3 words besides mama/dada",
+          "followsSimpleCommands": "Follows simple commands",
+          "showsAffection": "Shows affection to familiar people",
+          "parallelPlay": "Engages in parallel play",
+          "usesObjectsFunctionally": "Uses objects functionally (spoon, cup)",
+          "pointsToBodyParts": "Points to body parts when named",
+          "runs": "Runs fairly well",
+          "kicksBall": "Kicks ball forward",
+          "stacksSixBlocks": "Stacks 6+ blocks",
+          "turnsPages": "Turns book pages one at a time",
+          "twoWordPhrases": "Uses 2-word phrases",
+          "fiftyWords": "Vocabulary of 50+ words",
+          "beginsPretendPlay": "Begins pretend play",
+          "showsDefiance": "Shows defiance (says 'no')",
+          "sortsShapes": "Sorts shapes and colors",
+          "completesSimplePuzzle": "Completes simple puzzle (3-4 pieces)",
+          "jumpsInPlace": "Jumps in place with both feet",
+          "pedalsTricycle": "Pedals a tricycle",
+          "drawsCircle": "Draws a circle",
+          "usesScissors": "Uses scissors to snip",
+          "threeWordSentences": "Uses 3-word sentences",
+          "asksQuestions": "Asks 'why' and 'what' questions",
+          "takeTurns": "Takes turns in games",
+          "expressesEmotions": "Expresses a wide range of emotions",
+          "matchesColors": "Matches colors",
+          "understandsConcepts": "Understands concepts of 'same' and 'different'",
+          "hopsOnOneFoot": "Hops on one foot",
+          "catchesBall": "Catches a bounced ball",
+          "drawsPerson": "Draws a person with 2-4 body parts",
+          "usesForksSpoon": "Uses fork and spoon well",
+          "tellsStories": "Tells simple stories",
+          "knowsFirstLastName": "Knows first and last name",
+          "cooperativePlay": "Engages in cooperative play",
+          "showsEmpathy": "Shows empathy toward others",
+          "countsToFive": "Counts to 5",
+          "understandsTime": "Understands concept of time (morning, night)",
+          "skips": "Skips and hops well",
+          "balancesOneFoot": "Balances on one foot for 10 seconds",
+          "writesLetters": "Writes some letters",
+          "dressesIndependently": "Dresses and undresses independently",
+          "speaksInSentences": "Speaks in full sentences (5-6 words)",
+          "understandsRhymes": "Understands rhyming words",
+          "followsRules": "Follows rules in games",
+          "expressesFeelingsWords": "Expresses feelings with words",
+          "countsToTen": "Counts to 10",
+          "understandsOpposites": "Understands opposites (big/small, up/down)"
+        }
+      },
+      "vitals": {
+        "title": "Pediatric Vitals",
+        "months": "months",
+        "heartRate": "Heart Rate",
+        "respiratoryRate": "Respiratory Rate",
+        "systolicBP": "Systolic BP",
+        "normalRange": "Normal range",
+        "temperature": "Temperature",
+        "oxygenSat": "O2 Saturation",
+        "weight": "Weight",
+        "height": "Height",
+        "percentile": "Percentile",
+        "statusLabels": {
+          "normal": "Normal",
+          "low": "Low",
+          "high": "High"
+        },
+        "ageGroups": {
+          "newborn": "Newborn (0-1 mo)",
+          "infant": "Infant (1-12 mo)",
+          "toddler": "Toddler (1-3 yr)",
+          "preschool": "Preschool (3-6 yr)",
+          "schoolAge": "School Age (6-12 yr)",
+          "adolescent": "Adolescent (12+ yr)"
+        },
+        "dosingCalculator": "Weight-Based Dosing Calculator",
+        "weightForDosing": "Weight for dosing",
+        "medication": "Medication",
+        "dosePerKg": "Dose/kg",
+        "calculatedDose": "Calculated Dose",
+        "frequency": "Frequency",
+        "enterWeight": "Enter patient weight to calculate doses",
+        "maxDoseCapped": "Max dose",
+        "meds": {
+          "paracetamol": "Paracetamol (Acetaminophen)",
+          "ibuprofen": "Ibuprofen",
+          "amoxicillin": "Amoxicillin (standard)",
+          "amoxicillinHigh": "Amoxicillin (high dose)",
+          "cephalexin": "Cephalexin",
+          "azithromycin": "Azithromycin",
+          "q4to6h": "Every 4-6 hours",
+          "q6to8h": "Every 6-8 hours",
+          "q8h": "Every 8 hours (standard)",
+          "q8hHigh": "Every 8 hours (high dose)",
+          "q6h": "Every 6 hours",
+          "day1Then5": "Day 1, then 5 mg/kg/day"
+        }
+      },
+      "saved": "Data saved successfully",
+      "saveFailed": "Failed to save data"
+    },
+    "dermatology": {
+      "title": "Dermatology Tools",
+      "saved": "Lesion data saved successfully",
+      "saveFailed": "Failed to save lesion data",
+      "lesionSingular": "lesion",
+      "lesionPlural": "lesions",
+      "biopsy": "Biopsy",
+      "summary": "Lesion Summary",
+      "tabs": {
+        "lesionTracker": "Lesion Tracker",
+        "evolution": "Evolution"
+      },
+      "views": {
+        "anterior": "Front",
+        "posterior": "Back",
+        "left": "Left",
+        "right": "Right"
+      },
+      "bodyMap": {
+        "title": "Lesion Body Map",
+        "lesionsInView": "in this view",
+        "lesionList": "Lesions",
+        "clickToAdd": "Click on a body region to add a lesion",
+        "unclassified": "Unclassified"
+      },
+      "regions": {
+        "forehead": "Forehead",
+        "rightCheek": "Right Cheek",
+        "leftCheek": "Left Cheek",
+        "nose": "Nose",
+        "chin": "Chin",
+        "neck": "Neck",
+        "chest": "Chest",
+        "abdomen": "Abdomen",
+        "rightShoulder": "Right Shoulder",
+        "leftShoulder": "Left Shoulder",
+        "rightUpperArm": "Right Upper Arm",
+        "leftUpperArm": "Left Upper Arm",
+        "rightForearm": "Right Forearm",
+        "leftForearm": "Left Forearm",
+        "rightHand": "Right Hand",
+        "leftHand": "Left Hand",
+        "rightThigh": "Right Thigh",
+        "leftThigh": "Left Thigh",
+        "rightKnee": "Right Knee",
+        "leftKnee": "Left Knee",
+        "rightLowerLeg": "Right Lower Leg",
+        "leftLowerLeg": "Left Lower Leg",
+        "rightFoot": "Right Foot",
+        "leftFoot": "Left Foot",
+        "scalp": "Scalp",
+        "headBack": "Back of Head",
+        "neckBack": "Back of Neck",
+        "upperBack": "Upper Back",
+        "lowerBack": "Lower Back",
+        "rightButtock": "Right Buttock",
+        "leftButtock": "Left Buttock",
+        "headSide": "Head (Side)",
+        "torsoSide": "Torso (Side)",
+        "rightEar": "Right Ear",
+        "leftEar": "Left Ear",
+        "rightHip": "Right Hip",
+        "leftHip": "Left Hip"
+      },
+      "morphologyTypes": {
+        "macule": "Macule",
+        "papule": "Papule",
+        "nodule": "Nodule",
+        "vesicle": "Vesicle",
+        "plaque": "Plaque",
+        "patch": "Patch",
+        "pustule": "Pustule",
+        "bulla": "Bulla",
+        "wheal": "Wheal",
+        "ulcer": "Ulcer",
+        "erosion": "Erosion",
+        "cyst": "Cyst"
+      },
+      "colors": {
+        "skinColored": "Skin-colored",
+        "red": "Red / Erythematous",
+        "brown": "Brown / Hyperpigmented",
+        "black": "Black",
+        "white": "White / Depigmented",
+        "blue": "Blue",
+        "yellow": "Yellow",
+        "purple": "Purple / Violaceous"
+      },
+      "shapes": {
+        "round": "Round",
+        "oval": "Oval",
+        "irregular": "Irregular",
+        "annular": "Annular",
+        "linear": "Linear",
+        "serpiginous": "Serpiginous",
+        "polygonal": "Polygonal"
+      },
+      "borders": {
+        "wellDefined": "Well-defined",
+        "illDefined": "Ill-defined",
+        "raised": "Raised",
+        "flat": "Flat",
+        "rolled": "Rolled",
+        "undermined": "Undermined"
+      },
+      "distributions": {
+        "isolated": "Isolated",
+        "grouped": "Grouped / Clustered",
+        "scattered": "Scattered",
+        "dermatomal": "Dermatomal",
+        "bilateral": "Bilateral / Symmetric",
+        "generalized": "Generalized",
+        "acral": "Acral",
+        "photodistributed": "Photodistributed"
+      },
+      "surfaces": {
+        "smooth": "Smooth",
+        "rough": "Rough",
+        "scaly": "Scaly",
+        "crusted": "Crusted",
+        "eroded": "Eroded",
+        "ulcerated": "Ulcerated",
+        "verrucous": "Verrucous",
+        "atrophic": "Atrophic"
+      },
+      "lesionForm": {
+        "title": "Lesion Details",
+        "selectPrompt": "Select a lesion or click on the body map to add one",
+        "region": "Region",
+        "regionPlaceholder": "e.g., Left forearm, Right cheek",
+        "morphologyType": "Morphology Type",
+        "selectType": "Select type...",
+        "color": "Color",
+        "selectColor": "Select color...",
+        "shape": "Shape",
+        "selectShape": "Select shape...",
+        "size": "Size",
+        "sizePlaceholder": "e.g., 5 or 5x8",
+        "border": "Border",
+        "selectBorder": "Select border...",
+        "distribution": "Distribution",
+        "selectDistribution": "Select distribution...",
+        "surface": "Surface",
+        "selectSurface": "Select surface...",
+        "dermoscopyFindings": "Dermoscopy Findings",
+        "dermoscopyPlaceholder": "Describe dermoscopic patterns...",
+        "clinicalNotes": "Clinical Notes",
+        "notesPlaceholder": "Additional clinical observations...",
+        "biopsyOrdered": "Biopsy Ordered",
+        "biopsyResult": "Biopsy Result",
+        "biopsyResultPlaceholder": "Enter biopsy results..."
+      },
+      "abcde": {
+        "title": "ABCDE Melanoma Assessment",
+        "description": "Score each criterion 0-2 to assess melanoma risk",
+        "assess": "Assess ABCDE",
+        "editScore": "Edit ABCDE Score",
+        "saveScore": "Save Score",
+        "totalScore": "Total Score",
+        "criteria": {
+          "asymmetry": {
+            "label": "Asymmetry",
+            "options": {
+              "0": "Symmetric in both axes",
+              "1": "Asymmetric in one axis",
+              "2": "Asymmetric in two axes"
+            }
+          },
+          "border": {
+            "label": "Border",
+            "options": {
+              "0": "Even, well-defined borders",
+              "1": "Slightly irregular borders",
+              "2": "Very irregular, notched borders"
+            }
+          },
+          "color": {
+            "label": "Color",
+            "options": {
+              "0": "Uniform single color",
+              "1": "2-3 different colors",
+              "2": "4 or more colors"
+            }
+          },
+          "diameter": {
+            "label": "Diameter",
+            "options": {
+              "0": "Less than 5mm",
+              "1": "5-6mm",
+              "2": "Greater than 6mm"
+            }
+          },
+          "evolution": {
+            "label": "Evolution",
+            "options": {
+              "0": "Stable, no change",
+              "1": "Slow change over months",
+              "2": "Rapid change in weeks"
+            }
+          }
+        },
+        "riskLevels": {
+          "low": "Low Risk",
+          "moderate": "Moderate Risk",
+          "high": "High Risk"
+        },
+        "recommendations": {
+          "low": "Low risk. Continue routine skin checks. Monitor for any changes.",
+          "moderate": "Moderate risk. Recommend close monitoring with follow-up in 3 months. Consider dermoscopic photography.",
+          "high": "High risk. Biopsy strongly recommended. Refer for dermatopathology evaluation."
+        }
+      },
+      "evolution": {
+        "title": "Lesion Evolution",
+        "fetchError": "Failed to load lesion history",
+        "significantChanges": "Significant Changes",
+        "noHistory": "First Visit",
+        "noHistoryDescription": "No previous dermatology records found for this patient. Lesion evolution tracking will begin after this visit.",
+        "noMatchingLesions": "No matching lesions found in past visits",
+        "noChanges": "No changes detected since last visit",
+        "visit": "visit",
+        "visits": "visits",
+        "changesSinceLastVisit": "Changes Since Last Visit",
+        "timeline": "Visit Timeline",
+        "comparison": "Side-by-Side Comparison",
+        "previous": "Previous Visit",
+        "current": "Current Visit",
+        "fields": {
+          "size": "Size",
+          "color": "Color",
+          "border": "Border",
+          "type": "Morphology",
+          "shape": "Shape",
+          "surface": "Surface",
+          "distribution": "Distribution"
+        }
+      }
+    },
+    "ophthalmology": {
+      "title": "Ophthalmology Tools",
+      "od": "OD",
+      "os": "OS",
+      "ou": "OU",
+      "rightEye": "Right Eye",
+      "leftEye": "Left Eye",
+      "bothEyes": "Both Eyes",
+      "copyODtoOS": "Copy OD to OS",
+      "copiedODtoOS": "OD data copied to OS",
+      "saveFailed": "Failed to save eye exam data",
+      "tabs": {
+        "visualAcuity": "Visual Acuity",
+        "iop": "IOP",
+        "anteriorSegment": "Anterior Segment",
+        "fundus": "Fundus",
+        "refraction": "Refraction"
+      },
+      "visualAcuity": {
+        "title": "Visual Acuity",
+        "uncorrected": "Uncorrected VA",
+        "corrected": "Best Corrected VA (BCVA)",
+        "pinhole": "Pinhole VA",
+        "nearVision": "Near Vision",
+        "method": "Method",
+        "selectVA": "Select VA...",
+        "selectNearVA": "Select near VA...",
+        "notesPlaceholder": "Additional notes on visual acuity...",
+        "methods": {
+          "snellen": "Snellen",
+          "logMAR": "LogMAR",
+          "countingFingers": "Counting Fingers",
+          "handMotion": "Hand Motion",
+          "lightPerception": "Light Perception",
+          "nlp": "No Light Perception"
+        }
+      },
+      "iop": {
+        "title": "Intraocular Pressure (IOP)",
+        "pressure": "IOP",
+        "method": "Tonometry Method",
+        "time": "Time of Measurement",
+        "normalRange": "Normal range: 10-21 mmHg",
+        "targetPressure": "Target (mmHg)",
+        "history": "IOP History",
+        "noHistory": "No IOP history available",
+        "notesPlaceholder": "Notes on IOP measurement...",
+        "normal": "Normal",
+        "borderline": "Borderline",
+        "high": "High",
+        "low": "Low",
+        "methods": {
+          "goldmann": "Goldmann Applanation",
+          "tonopen": "Tonopen",
+          "nonContact": "Non-contact (Air-puff)",
+          "iCare": "iCare Rebound"
+        }
+      },
+      "anteriorSegment": {
+        "title": "Anterior Segment Examination",
+        "select": "Select finding...",
+        "notesPlaceholder": "Additional anterior segment notes...",
+        "fields": {
+          "lids": "Lids",
+          "conjunctiva": "Conjunctiva",
+          "cornea": "Cornea",
+          "anteriorChamber": "Anterior Chamber",
+          "iris": "Iris",
+          "pupil": "Pupil",
+          "lens": "Lens"
+        },
+        "options": {
+          "lids": {
+            "normal": "Normal",
+            "ptosis": "Ptosis",
+            "entropion": "Entropion",
+            "ectropion": "Ectropion",
+            "chalazion": "Chalazion",
+            "hordeolum": "Hordeolum",
+            "swelling": "Swelling"
+          },
+          "conjunctiva": {
+            "clearWhite": "Clear / White",
+            "injected": "Injected",
+            "chemotic": "Chemotic",
+            "subconjHemorrhage": "Subconjunctival Hemorrhage",
+            "papillae": "Papillae",
+            "follicles": "Follicles"
+          },
+          "cornea": {
+            "clear": "Clear",
+            "edema": "Edema",
+            "opacity": "Opacity",
+            "ulcer": "Ulcer",
+            "abrasion": "Abrasion",
+            "keraticPrecipitates": "Keratic Precipitates",
+            "bandKeratopathy": "Band Keratopathy",
+            "arcus": "Arcus"
+          },
+          "anteriorChamber": {
+            "deepQuiet": "Deep and Quiet",
+            "shallow": "Shallow",
+            "cells": "Cells",
+            "flare": "Flare",
+            "hyphema": "Hyphema",
+            "hypopyon": "Hypopyon"
+          },
+          "iris": {
+            "normal": "Normal",
+            "atrophic": "Atrophic",
+            "neovascularization": "Neovascularization",
+            "synechiae": "Synechiae",
+            "heterochromia": "Heterochromia"
+          },
+          "pupil": {
+            "roundReactive": "Round Reactive",
+            "irregular": "Irregular",
+            "fixedDilated": "Fixed Dilated",
+            "marcusGunn": "Marcus Gunn (RAPD)"
+          },
+          "lens": {
+            "clear": "Clear",
+            "nuclearSclerosis": "Nuclear Sclerosis",
+            "corticalCataract": "Cortical Cataract",
+            "psc": "Posterior Subcapsular Cataract (PSC)",
+            "iol": "IOL (Pseudophakic)",
+            "aphakic": "Aphakic",
+            "subluxated": "Subluxated"
+          }
+        }
+      },
+      "fundus": {
+        "title": "Fundus Examination",
+        "method": "Examination Method",
+        "select": "Select finding...",
+        "selectCDR": "Select C/D...",
+        "glaucomaSuspect": "Glaucoma Suspect",
+        "notesPlaceholder": "Additional fundus examination notes...",
+        "fields": {
+          "opticDisc": "Optic Disc",
+          "cupToDiscRatio": "Cup-to-Disc Ratio",
+          "neuroretinalRim": "Neuroretinal Rim",
+          "vessels": "Vessels",
+          "macula": "Macula",
+          "periphery": "Periphery",
+          "vitreous": "Vitreous"
+        },
+        "methods": {
+          "direct": "Direct Ophthalmoscopy",
+          "indirect": "Indirect Ophthalmoscopy",
+          "slitLampWithLens": "Slit Lamp with Lens",
+          "oct": "OCT"
+        },
+        "options": {
+          "opticDisc": {
+            "normal": "Normal",
+            "pale": "Pale",
+            "edematous": "Edematous (Papilledema)",
+            "cupped": "Cupped",
+            "tilted": "Tilted",
+            "drusen": "Drusen"
+          },
+          "neuroretinalRim": {
+            "intact": "Intact",
+            "thinning": "Thinning",
+            "notching": "Notching",
+            "pallor": "Pallor"
+          },
+          "vessels": {
+            "normal": "Normal",
+            "avNicking": "AV Nicking",
+            "tortuous": "Tortuous",
+            "neovascularization": "Neovascularization",
+            "attenuated": "Attenuated"
+          },
+          "macula": {
+            "normal": "Normal",
+            "drusen": "Drusen",
+            "edema": "Edema",
+            "hole": "Hole",
+            "erm": "Epiretinal Membrane (ERM)",
+            "atrophy": "Atrophy"
+          },
+          "periphery": {
+            "normal": "Normal",
+            "latticeDegeneration": "Lattice Degeneration",
+            "holesTears": "Holes / Tears",
+            "detachment": "Detachment",
+            "hemorrhage": "Hemorrhage"
+          },
+          "vitreous": {
+            "clear": "Clear",
+            "cells": "Cells",
+            "hemorrhage": "Hemorrhage",
+            "detachment": "PVD (Posterior Vitreous Detachment)",
+            "floaters": "Floaters"
+          }
+        }
+      },
+      "refraction": {
+        "title": "Refraction / Prescription",
+        "type": "Refraction Type",
+        "sphere": "Sphere",
+        "cylinder": "Cylinder",
+        "axis": "Axis",
+        "add": "Add (Near)",
+        "prism": "Prism",
+        "prismBase": "Prism Base",
+        "selectBase": "Select base...",
+        "pd": "Pupillary Distance (PD)",
+        "sphericalEquivalent": "Spherical Equivalent (SE)",
+        "notesPlaceholder": "Refraction notes...",
+        "types": {
+          "manifest": "Manifest Refraction",
+          "cycloplegic": "Cycloplegic Refraction",
+          "autoRefraction": "Auto-refraction",
+          "overRefraction": "Over-refraction"
+        },
+        "bases": {
+          "up": "Base Up (BU)",
+          "down": "Base Down (BD)",
+          "in": "Base In (BI)",
+          "out": "Base Out (BO)"
+        }
+      }
+    }
   }
 }

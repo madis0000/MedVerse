@@ -20,6 +20,7 @@ import { SOAPForm } from '@/components/consultations/soap-form';
 import { VitalsForm } from '@/components/consultations/vitals-form';
 import { DiagnosisSearch } from '@/components/consultations/diagnosis-search';
 import { BodyMap } from '@/components/consultations/body-map';
+import { SpecialtyLoader } from '@/components/specialties/specialty-loader';
 import apiClient from '@/lib/api-client';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -272,8 +273,8 @@ export function ConsultationFormPage() {
           )}
         </div>
 
-        {/* Right Column: SOAP Form Tabs */}
-        <div className="lg:col-span-8">
+        {/* Right Column: SOAP Form + Specialty Module */}
+        <div className="lg:col-span-8 space-y-6">
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
@@ -295,6 +296,15 @@ export function ConsultationFormPage() {
               />
             </CardContent>
           </Card>
+
+          {/* Specialty-Specific Module */}
+          {specialty?.name && (
+            <SpecialtyLoader
+              specialtyName={specialty.name}
+              consultationId={consultation.id}
+              patientId={consultation.patientId}
+            />
+          )}
         </div>
       </div>
 

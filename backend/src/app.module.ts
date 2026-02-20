@@ -20,6 +20,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { FinanceModule } from './finance/finance.module';
 import { HealthModule } from './health/health.module';
 import { LoggerService } from './common/services/logger.service';
+import { CacheService } from './common/services/cache.service';
 
 @Module({
   imports: [
@@ -63,10 +64,12 @@ import { LoggerService } from './common/services/logger.service';
   ],
   providers: [
     LoggerService,
+    CacheService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
   ],
+  exports: [CacheService],
 })
 export class AppModule {}

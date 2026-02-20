@@ -12,6 +12,7 @@ import {
   Calendar,
   TrendingUp,
   Minus,
+  Clock,
 } from 'lucide-react';
 import { PageWrapper } from '@/components/layout/page-wrapper';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CardSkeleton, FormSkeleton } from '@/components/ui/loading-skeleton';
 import { PatientSummaryCard } from '@/components/patients/patient-summary-card';
 import { VisitHistoryTimeline } from '@/components/patients/visit-history-timeline';
+import { ClinicalTimeline } from '@/components/patients/clinical-timeline';
 import { usePatient } from '@/api/patients';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
@@ -681,6 +683,10 @@ export function PatientProfilePage() {
               <Activity className="h-3.5 w-3.5" />
               {t('patients.tabs.overview')}
             </TabsTrigger>
+            <TabsTrigger value="timeline" className="gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              {t('patients.tabs.timeline')}
+            </TabsTrigger>
             <TabsTrigger value="visits" className="gap-1.5">
               <Calendar className="h-3.5 w-3.5" />
               {t('patients.tabs.visits')}
@@ -705,6 +711,10 @@ export function PatientProfilePage() {
 
           <TabsContent value="overview">
             <OverviewTab patientId={id!} />
+          </TabsContent>
+
+          <TabsContent value="timeline">
+            <ClinicalTimeline patientId={id!} />
           </TabsContent>
 
           <TabsContent value="visits">
